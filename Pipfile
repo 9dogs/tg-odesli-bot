@@ -1,0 +1,30 @@
+[packages]
+aiogram = "*"
+ujson = "*"
+sentry-sdk = "*"
+python-dotenv = "*"
+structlog = "*"
+black = {git = "https://github.com/psf/black.git",ref = "19.3b0"}
+isort = "*"
+flake8 = "*"
+flake8-bugbear = "*"
+flake8-comprehensions = "*"
+flake8-debugger = "*"
+flake8-print = "*"
+flake8-quotes = "*"
+flake8-todo = "*"
+pep8-naming = "*"
+pydocstyle = "*"
+mypy = "*"
+coverage = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-html = "*"
+pytest-sugar = "*"
+aioresponses = "*"
+
+[dev-packages]
+pre-commit = "*"
+
+[requires]
+python_version = "3.7"
