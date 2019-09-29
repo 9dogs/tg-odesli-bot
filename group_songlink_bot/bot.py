@@ -1,5 +1,4 @@
 import html
-import os
 import re
 from dataclasses import dataclass
 from urllib.parse import urlencode
@@ -7,17 +6,17 @@ from urllib.parse import urlencode
 import aiohttp
 import structlog
 from aiogram import Bot, Dispatcher, executor, types
-from dotenv import load_dotenv
 
-# Load env
-load_dotenv()
-# Configure logging
+from group_songlink_bot.config import Config
+
+# Load config
+config = Config.load_config()
+# Create a logger
 logger = structlog.get_logger(__name__)
 
 # Initialize bot and dispatcher
-bot = Bot(token=os.environ['BOT_API_TOKEN'])
+bot = Bot(token=config.BOT_API_TOKEN)
 dp = Dispatcher(bot)
-
 #: SongLink API URL template
 SONGLINK_API_URL = 'https://api.song.link/v1-alpha.1/links?{params}'
 #: If this string is in an incoming message, the message will be skipped
@@ -117,7 +116,7 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler()
-async def echo(message: types.Message):
+async def handle_message(message: types.Message):
     _logger = logger.bind(
         from_=message.from_user.username, message_id=message.message_id
     )
