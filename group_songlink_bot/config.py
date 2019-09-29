@@ -6,7 +6,7 @@ import dotenv
 import sentry_sdk
 import structlog
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
-from structlog_sentry import SentryProcessor
+from structlog_sentry import SentryJsonProcessor
 
 
 class Config:
@@ -81,7 +81,7 @@ class Config:
                 structlog.processors.StackInfoRenderer(),
                 structlog.processors.format_exc_info,
                 structlog.processors.UnicodeDecoder(),
-                SentryProcessor(level=logging.ERROR),
+                SentryJsonProcessor(level=logging.ERROR),
                 self.LOG_RENDERER,
             ],
             logger_factory=structlog.stdlib.LoggerFactory(),
