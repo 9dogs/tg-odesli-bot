@@ -6,6 +6,7 @@ import dotenv
 import sentry_sdk
 import structlog
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+from structlog_sentry import SentryProcessor
 
 
 class Config:
@@ -16,6 +17,8 @@ class Config:
 
     #: Telegram bot API key (required)
     BOT_API_TOKEN = ''
+    #: SongLink API URL (required)
+    SONGLINK_API_URL = 'https://api.song.link/v1-alpha.1/links'
     #: SongLink API key (optional)
     SONGLINK_API_KEY = ''
     #: Sentry DSN (optional)
@@ -69,6 +72,22 @@ class Config:
             ):
                 self.LOG_RENDERER = structlog.dev.ConsoleRenderer(pad_event=50)
         logging.config.dictConfig(self.LOG_CONFIG)
+        structlog.configure_once(
+            processors=[
+                structlog.stdlib.add_logger_name,
+                structlog.stdlib.add_log_level,
+                structlog.stdlib.PositionalArgumentsFormatter(),
+                structlog.processors.TimeStamper(fmt='iso'),
+                structlog.processors.StackInfoRenderer(),
+                structlog.processors.format_exc_info,
+                structlog.processors.UnicodeDecoder(),
+                SentryProcessor(level=logging.ERROR),
+                self.LOG_RENDERER,
+            ],
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            wrapper_class=structlog.stdlib.BoundLogger,
+            cache_logger_on_first_use=True,
+        )
 
     @classmethod
     def load_config(cls, env_prefix: str = 'GROUP_SONGLINK_BOT_'):

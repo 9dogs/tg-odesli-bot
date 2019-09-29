@@ -23,6 +23,7 @@ pytest-html = "*"
 pytest-sugar = "*"
 aioresponses = "*"
 colorama = "*"
+structlog-sentry = "*"
 
 [dev-packages]
 pre-commit = "*"
