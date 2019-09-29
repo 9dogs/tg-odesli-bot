@@ -22,6 +22,7 @@ pytest-cov = "*"
 pytest-html = "*"
 pytest-sugar = "*"
 aioresponses = "*"
+colorama = "*"
 
 [dev-packages]
 pre-commit = "*"
