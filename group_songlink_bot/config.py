@@ -5,6 +5,7 @@ import os
 import dotenv
 import sentry_sdk
 import structlog
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 
 
 class Config:
@@ -94,6 +95,8 @@ class Config:
                 '.env file.'
             )
         if config.SENTRY_DSN:
-            sentry_sdk.init(config.SENTRY_DSN)
+            sentry_sdk.init(
+                dsn=config.SENTRY_DSN, integrations=[AioHttpIntegration()]
+            )
         config.init_logging()
         return config
