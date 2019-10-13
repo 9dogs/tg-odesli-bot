@@ -35,6 +35,14 @@ stages:
         testResultsFiles: 'junit.xml'
       condition: always()
 
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'cobertura'
+        summaryFileLocation: 'coverage.xml'
+        pathToSources: 'group_songlink_bot'
+        reportDirectory: 'htmlcov'
+      condition: always()
+
     - script: |
         bash <(curl -s https://codecov.io/bash)
       displayName: 'Upload codecov'
