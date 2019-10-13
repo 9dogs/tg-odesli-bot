@@ -1,6 +1,7 @@
 """App configuration."""
 import logging.config
 import os
+from typing import Optional
 
 import dotenv
 import sentry_sdk
@@ -12,9 +13,8 @@ from structlog_sentry import SentryJsonProcessor
 class Config:
     """Configuration."""
 
-    #: Set DEBUG logging level
+    #: Logging level
     DEBUG = False
-
     #: Telegram bot API key (required)
     BOT_API_TOKEN = ''
     #: SongLink API URL (required)
@@ -22,7 +22,7 @@ class Config:
     #: SongLink API key (optional)
     SONGLINK_API_KEY = ''
     #: Sentry DSN (optional)
-    SENTRY_DSN = ''
+    SENTRY_DSN: Optional[str] = ''
 
     #: Logging configuration
     LOG_CONFIG = {
@@ -72,7 +72,7 @@ class Config:
             ):
                 self.LOG_RENDERER = structlog.dev.ConsoleRenderer(pad_event=50)
         logging.config.dictConfig(self.LOG_CONFIG)
-        structlog.configure_once(
+        structlog.configure(
             processors=[
                 structlog.stdlib.add_logger_name,
                 structlog.stdlib.add_log_level,
@@ -81,7 +81,7 @@ class Config:
                 structlog.processors.StackInfoRenderer(),
                 structlog.processors.format_exc_info,
                 structlog.processors.UnicodeDecoder(),
-                SentryJsonProcessor(level=logging.ERROR),
+                SentryJsonProcessor(level=logging.WARNING),
                 self.LOG_RENDERER,
             ],
             logger_factory=structlog.stdlib.LoggerFactory(),
@@ -104,18 +104,24 @@ class Config:
         for env_var_name, value in os.environ.items():
             if env_var_name.startswith(env_prefix):
                 var_name = env_var_name[len(env_prefix) :]
-                if hasattr(config, var_name):
+                if not hasattr(config, var_name):
                     setattr(config, var_name, value)
-        # Check the only required field
-        if not config.BOT_API_TOKEN:
-            raise Exception(
-                'BOT_API_TOKEN is missing. Please, provide '
-                f'{env_prefix}BOT_API_TOKEN either via environment variable or'
-                '.env file.'
-            )
         if config.SENTRY_DSN:
             sentry_sdk.init(
                 dsn=config.SENTRY_DSN, integrations=[AioHttpIntegration()]
             )
-        config.init_logging()
+        if not structlog.is_configured():
+            config.init_logging()
         return config
+
+
+class TestConfig(Config):
+    """Testing configuration."""
+
+    #: Set DEBUG logging level
+    DEBUG = True
+
+    #: Do not query Telegram API
+    BOT_API_TOKEN = 'invalid'
+    #: Do not send errors to Sentry
+    SENTRY_DSN = None
