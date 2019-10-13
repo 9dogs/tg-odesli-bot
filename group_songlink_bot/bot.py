@@ -82,7 +82,7 @@ class SonglinkBot:
     #: by the bot
     SKIP_MARK = '!skip'
     #: Time to wait before retrying and API call if 429 code was returned
-    RETRY_WAIT_TIME = 5
+    SONGLINK_RETRY_TIME = 5
 
     def __init__(self, config: Config = None):
         """Initialize the bot.
@@ -94,6 +94,8 @@ class SonglinkBot:
         # Create a logger
         self.logger = structlog.get_logger('group_songlink_bot')
         self.logger_var = contextvars.ContextVar('logger', default=self.logger)
+        # Create an HTTP session
+        self.session = aiohttp.ClientSession()
         # Initialize the bot and a dispatcher
         self._bot = Bot(token=self._config.BOT_API_TOKEN)
         self._dp = Dispatcher(self._bot)
@@ -198,8 +200,9 @@ class SonglinkBot:
                     or idx2 in merged_song_info_indexes
                 ):
                     continue
-                if ids1 & song_info2.ids:
-                    song_info1.ids = ids1 | song_info2.ids
+                ids2 = song_info2.ids
+                if ids1 & ids2:
+                    song_info1.ids = ids1 | ids2
                     song_info1.urls = {**song_info1.urls, **song_info2.urls}
                     song_info1.urls_in_text = (
                         song_info1.urls_in_text + song_info2.urls_in_text
@@ -267,34 +270,31 @@ class SonglinkBot:
         """
         logger = self.logger_var.get()
         url = self._make_query(song_url.url)
-        async with aiohttp.ClientSession() as client:
-            async with client.get(url) as resp:
-                if resp.status != HTTPStatus.OK:
-                    if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
-                        logger.warning(
-                            'Too many requests',
-                            status_code=resp.status,
-                            response=resp.content,
-                        )
-                        await asyncio.sleep(self.RETRY_WAIT_TIME)
-                    else:
-                        logger.error(
-                            'SongLink API error',
-                            status_code=resp.status,
-                            response=resp.content,
-                        )
-                response = await resp.json()
-                logger.debug('Got SongLink API response', response=response)
-                schema = SongLinkResponseSchema()
-                try:
-                    data = schema.load(response)
-                except ValidationError as exc:
-                    logger.error('Invalid response data', exc_info=exc)
-                else:
-                    song_info = self.process_songlink_response(
-                        data, song_url.url
+        async with self.session.get(url) as resp:
+            if resp.status != HTTPStatus.OK:
+                if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
+                    logger.warning(
+                        'Too many requests',
+                        status_code=resp.status,
+                        response=resp.content,
                     )
-                    return song_info
+                    await asyncio.sleep(self.SONGLINK_RETRY_TIME)
+                else:
+                    logger.error(
+                        'SongLink API error',
+                        status_code=resp.status,
+                        response=resp.content,
+                    )
+            response = await resp.json()
+            logger.debug('Got SongLink API response', response=response)
+            schema = SongLinkResponseSchema()
+            try:
+                data = schema.load(response)
+            except ValidationError as exc:
+                logger.error('Invalid response data', exc_info=exc)
+            else:
+                song_info = self.process_songlink_response(data, song_url.url)
+                return song_info
 
     def _filter_platform_urls(self, platform_urls: dict) -> dict:
         """Filter and reorder platform URLs.
@@ -358,6 +358,7 @@ class SonglinkBot:
 
     async def stop(self):
         """Stop the bot."""
+        await self.session.close()
         await self._bot.close()
 
 
