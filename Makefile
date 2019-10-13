@@ -1,6 +1,7 @@
 .PHONY: \
 	fmt \
 	lint \
+	build \
 	test
 
 all:
@@ -9,6 +10,7 @@ all:
 	@echo "test                Test code."
 
 FILES = group_songlink_bot tests
+IMAGE_NAME = 9dogs/group_songlink_bot:latest
 
 fmt:
 	pipenv run black $(FILES)
@@ -26,6 +28,12 @@ lint:
 	pipenv run flake8 $(FILES)
 	pipenv run pydocstyle $(FILES)
 	pipenv run mypy $(FILES)
+
+build:
+	docker build -t $(IMAGE_NAME) .
+
+push:
+	docker push $(IMAGE_NAME)
 
 TEST_OPTS ?= tests -r R
 TEST_OUTPUT ?= .
