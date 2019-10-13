@@ -69,7 +69,9 @@ class TestSonglinkBot:
         await bot._dp.message_handlers.notify(message)
         assert reply_mock.called
 
-    async def test_replies_to_group_message(self, bot: SonglinkBot):
+    async def test_replies_to_group_message(
+        self, bot: SonglinkBot, songlink_api
+    ):
         """Send reply to a group message."""
 
         async def reply_mock_fn(text, parse_mode, reply):
@@ -98,7 +100,9 @@ class TestSonglinkBot:
         assert reply_mock.called
         assert delete_mock.called
 
-    async def test_replies_to_private_message(self, bot: SonglinkBot):
+    async def test_replies_to_private_message(
+        self, bot: SonglinkBot, songlink_api
+    ):
         """Send reply to a private message."""
 
         async def reply_mock_fn(text, parse_mode, reply):
@@ -139,7 +143,7 @@ class TestSonglinkBot:
         assert 'No songs found in message' in caplog.text
 
     async def test_logs_if_cannot_delete_message(
-        self, caplog, bot: SonglinkBot
+        self, caplog, bot: SonglinkBot, songlink_api
     ):
         """Log if cannot delete the message."""
 

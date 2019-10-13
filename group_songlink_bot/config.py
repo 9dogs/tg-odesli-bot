@@ -104,7 +104,7 @@ class Config:
         for env_var_name, value in os.environ.items():
             if env_var_name.startswith(env_prefix):
                 var_name = env_var_name[len(env_prefix) :]
-                # Do not overwrite config vars in testing mode
+                # Do not override config vars in testing mode
                 if hasattr(config, 'TESTING') and hasattr(config, var_name):
                     continue
                 setattr(config, var_name, value)

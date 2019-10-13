@@ -1,14 +1,22 @@
 """Helpers and fixtures for pytest."""
 import re
+from functools import partial
+from pathlib import Path
 from unittest import mock
 
+import dotenv
 from aioresponses import aioresponses
 from pytest import fixture
 
 from group_songlink_bot.bot import SonglinkBot
 from group_songlink_bot.config import TestConfig
 
+#: Tests base dir
+BASE_DIR = Path(__file__).resolve().parent
+#: Songlink API test response
 TEST_RESPONSE = {
+    'entityUniqueId': 'GOOGLE_SONG::G1',
+    'userCountry': 'US',
     'entitiesByUniqueId': {
         'DEEZER_SONG::D1': {
             'id': 'D1',
@@ -117,6 +125,21 @@ TEST_RESPONSE = {
 
 
 @fixture
+def test_dotenv():
+    """Load test .env file."""
+    load_test_dotenv = partial(
+        dotenv.load_dotenv,
+        dotenv_path=BASE_DIR / 'test_env',
+        verbose=True,
+        override=True,
+    )
+    with mock.patch(
+        'group_songlink_bot.config.dotenv.load_dotenv', load_test_dotenv
+    ):
+        yield
+
+
+@fixture
 def test_config():
     """Test config fixture."""
     config = TestConfig.load_config()
@@ -136,7 +159,7 @@ async def bot(test_config):
     await bot.stop()
 
 
-@fixture(autouse=True)
+@fixture
 async def songlink_api(test_config):
     """Songlink API mock."""
     pattern = re.compile(rf'^{re.escape(test_config.SONGLINK_API_URL)}.*$')
