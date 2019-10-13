@@ -123,7 +123,7 @@ class SonglinkBot:
             'the platforms. If you invite me to a group chat I will do the '
             'same as well as trying to delete original message (you must '
             'promote me to admin to enable this behavior).\n'
-            'Supported platforms: {supported_platforms}.\n'
+            '<b>Supported platforms:</b> {supported_platforms}.\n'
             'Powered by great <a href="https://song.link/">SongLink</a> '
             '(thank you guys!).'
         )
@@ -133,7 +133,7 @@ class SonglinkBot:
         welcome_msg = welcome_msg_template.format(
             supported_platforms=' | '.join(supported_platforms)
         )
-        await message.reply(text=welcome_msg, parse_mode='HTML')
+        await message.reply(text=welcome_msg, parse_mode='HTML', reply=False)
 
     def _replace_urls_with_footnotes(
         self, message: str, song_infos: Tuple[SongInfo, ...]
@@ -219,6 +219,8 @@ class SonglinkBot:
         song_infos = await asyncio.gather(
             *[self.find_song_by_url(song_url) for song_url in song_urls]
         )
+        if not song_infos:
+            return
         # Combine song infos if different platform links point to
         # the same song
         song_infos = self._merge_same_songs(song_infos)
@@ -238,7 +240,7 @@ class SonglinkBot:
                 platform_urls.append(f'<a href="{url}">{platform_name}</a>')
             reply_list.append(' | '.join(platform_urls))
         reply_text = '\n'.join(reply_list)
-        await message.reply(text=reply_text, parse_mode='HTML')
+        await message.reply(text=reply_text, parse_mode='HTML', reply=False)
         # Try to delete original message if in group chat
         if message.chat.type != ChatType.PRIVATE:
             try:
@@ -276,7 +278,7 @@ class SonglinkBot:
                     )
             response = await resp.json()
             logger.debug('Got SongLink API response', response=response)
-            schema = SongLinkResponseSchema()
+            schema = SongLinkResponseSchema(unknown='EXCLUDE')
             try:
                 data = schema.load(response)
             except ValidationError as exc:
