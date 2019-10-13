@@ -104,8 +104,10 @@ class Config:
         for env_var_name, value in os.environ.items():
             if env_var_name.startswith(env_prefix):
                 var_name = env_var_name[len(env_prefix) :]
-                if not hasattr(config, var_name):
-                    setattr(config, var_name, value)
+                # Do not overwrite config vars in testing mode
+                if hasattr(config, 'TESTING') and hasattr(config, var_name):
+                    continue
+                setattr(config, var_name, value)
         if config.SENTRY_DSN:
             sentry_sdk.init(
                 dsn=config.SENTRY_DSN, integrations=[AioHttpIntegration()]
@@ -118,9 +120,10 @@ class Config:
 class TestConfig(Config):
     """Testing configuration."""
 
+    #: Testing mode
+    TESTING = True
     #: Set DEBUG logging level
     DEBUG = True
-
     #: Do not query Telegram API
     BOT_API_TOKEN = 'invalid'
     #: Do not send errors to Sentry
