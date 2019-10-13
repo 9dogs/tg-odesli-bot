@@ -27,13 +27,8 @@ stages:
       displayName: 'Install deps'
 
     - script: |
-        make test
+        pipenv run pytest
       displayName: 'Run tests'
-
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFiles: 'junit.xml'
-      condition: always()
 
     - script: |
         bash <(curl -s https://codecov.io/bash)

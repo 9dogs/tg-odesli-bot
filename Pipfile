@@ -26,6 +26,7 @@ colorama = "*"
 structlog-sentry = "*"
 marshmallow = "*"
 pytest-aiohttp = "*"
+pytest-azurepipelines = "*"
 
 [dev-packages]
 pre-commit = "*"
