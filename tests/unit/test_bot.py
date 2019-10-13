@@ -1,142 +1,14 @@
-"""Tests for the bot."""
-from unittest import mock
-
-from aiogram import types
-from aiogram.types import Chat, ChatType, ContentType, Message, User
+"""Unit tests for Songlink bot."""
 from pytest import mark
 
-from group_songlink_bot.bot import SonglinkBot
-
-
-def make_mock_message(
-    text: str, method_mocks: dict = None, chat_type: ChatType = ChatType.GROUP
-) -> mock.Mock:
-    """Make a mock message with given text.
-
-    :param text: text of the message
-    :param method_mocks: dict of message's method mocks if needed
-        {'reply': reply_mock, 'delete': delete_mock, ...}
-    :return: mock message
-    """
-    message = mock.Mock(spec=Message)
-    message.content_type = ContentType.TEXT
-    message.text = text
-    message.from_user = mock.Mock(spec=User)
-    message.from_user.username = 'test_user'
-    message.chat = mock.Mock(spec=Chat)
-    message.chat.type = chat_type
-    types.User.set_current(message.from_user)
-    types.Chat.set_current(message.chat)
-    if method_mocks:
-        for method_name, callback in method_mocks.items():
-            setattr(message, method_name, callback)
-    return message
+from group_songlink_bot.bot import SongInfo, SonglinkBot
 
 
 @mark.usefixtures('loop')
 class TestSonglinkBot:
-    """Tests for the bot."""
+    """Unit tests for Songlink bot."""
 
-    @mark.parametrize('text', ['/start', '/help'])
-    async def test_sends_welcome_message(self, bot: SonglinkBot, text):
-        """Send a welcome message with supported platforms list in reply to
-        /start or /help command.
-        """
-
-        async def reply_mock_fn(text, parse_mode):
-            assert parse_mode == 'HTML'
-            assert text == (
-                'Hi!\n'
-                "I'm a SongLink Bot. You can message me a link to a "
-                'supported music streaming platform and I will respond with '
-                'links from all the platforms. If you invite me to a group '
-                'chat I will do the same as well as trying to delete original '
-                'message (you must promote me to admin to enable this '
-                'behavior).\n'
-                'Supported platforms: Deezer | Google Music | SoundCloud.\n'
-                'Powered by great <a href="https://song.link/">SongLink</a> '
-                '(thank you guys!).'
-            )
-
-        reply_mock = mock.Mock(side_effect=reply_mock_fn)
-        message = make_mock_message(
-            text=text, method_mocks={'reply': reply_mock}
-        )
-        await bot._dp.message_handlers.notify(message)
-        assert reply_mock.called
-
-    async def test_replies_to_group_message(
-        self, bot: SonglinkBot, songlink_api
-    ):
-        """Send reply to a group message."""
-
-        async def reply_mock_fn(text, parse_mode):
-            """Message.reply method mock."""
-            assert parse_mode == 'HTML'
-            assert text == (
-                '@test_user wrote: checkout this one: [1]\n'
-                '\n'
-                '1. Test Artist - Test Title\n'
-                '<a href="https://www.test.com/test">Deezer</a> | '
-                '<a href="https://www.test.com/test">Google Music</a>'
-            )
-
-        async def delete_mock_fn():
-            """Message.delete method mock."""
-            pass
-
-        reply_mock = mock.Mock(side_effect=reply_mock_fn)
-        delete_mock = mock.Mock(side_effect=delete_mock_fn)
-        message = make_mock_message(
-            text='checkout this one: https://www.deezer.com/track/65760860',
-            method_mocks={'reply': reply_mock, 'delete': delete_mock},
-        )
-        await bot._dp.message_handlers.notify(message)
-        assert reply_mock.called
-        assert delete_mock.called
-
-    async def test_replies_to_private_message(
-        self, bot: SonglinkBot, songlink_api
-    ):
-        """Send reply to a private message."""
-
-        async def reply_mock_fn(text, parse_mode):
-            """Message.reply method mock."""
-            assert parse_mode == 'HTML'
-            assert text == (
-                '1. Test Artist - Test Title\n'
-                '<a href="https://www.test.com/test">Deezer</a> | '
-                '<a href="https://www.test.com/test">Google Music</a>'
-            )
-
-        reply_mock = mock.Mock(side_effect=reply_mock_fn)
-        message = make_mock_message(
-            text='checkout this one: https://www.deezer.com/track/65760860',
-            method_mocks={'reply': reply_mock},
-            chat_type=ChatType.PRIVATE,
-        )
-        await bot._dp.message_handlers.notify(message)
-        assert reply_mock.called
-
-    async def test_skips_message_with_skip_mark(
-        self, caplog, bot: SonglinkBot
-    ):
-        """Skip message if skip mark present."""
-
-        message = make_mock_message(text=f'test message {bot.SKIP_MARK}')
-        await bot._dp.message_handlers.notify(message)
-        assert 'Message is skipped due to skip mark' in caplog.text
-
-    async def test_logs_if_no_song_links_in_message(
-        self, caplog, bot: SonglinkBot
-    ):
-        """Do not reply if message has no song links."""
-
-        message = make_mock_message(text=f'test message without song links')
-        await bot._dp.message_handlers.notify(message)
-        assert 'No songs found in message' in caplog.text
-
-    async def test_extracts_urls(self, bot):
+    async def test_extracts_urls(self, bot: SonglinkBot):
         """Extract platform URLs and positions from message text."""
         text = (
             'Check this out: https://www.deezer.com/track/568497412.\n'
@@ -162,11 +34,50 @@ class TestSonglinkBot:
             'https://soundcloud.com/worakls/nto-trauma-worakls-remix'
         )
 
-    # async def test_parses_songlink_response(self, bot: SonglinkBot):
-    #     """Query Songlink API and validate response."""
-    #     song_url = 'http://platform.com/song'
-    #     url = bot.make_query(song_url)
-    #     with aioresponses() as m:
-    #         m.get(url, payload=TEST_RESPONSE)
-    #         data = await bot.find_song_by_url(song_url)
-    #         assert data
+    async def test_merges_urls_for_same_song(self, bot: SonglinkBot):
+        """Merge SongInfo objects if they point to the same song."""
+        song_infos = (
+            SongInfo(
+                ids={'id1', 'id2'},
+                title='Test title',
+                artist='Test artist',
+                urls={'deezer': 'http://test_deezer_url'},
+                urls_in_text=['http://test_deezer_url'],
+            ),
+            SongInfo(
+                ids={'id2', 'id3'},
+                title='Test title',
+                artist='Test artist',
+                urls={'google': 'http://test_google_url'},
+                urls_in_text=['http://test_google_url'],
+            ),
+            SongInfo(
+                ids={'id3', 'id4'},
+                title='Test title',
+                artist='Test artist',
+                urls={'soundcloud': 'http://test_soundcloud_url'},
+                urls_in_text=['http://test_soundcloud_url'],
+            ),
+            SongInfo(
+                ids={'id5'},
+                title='Not merged',
+                artist='Not merged',
+                urls={'not_merged': 'http://not_merged'},
+                urls_in_text=['http://not_merged'],
+            ),
+        )
+        song_infos_merged = bot._merge_same_songs(song_infos)
+        assert len(song_infos_merged) == 2
+        song_info = song_infos_merged[0]
+        assert song_info.ids == {'id1', 'id2', 'id3', 'id4'}
+        assert song_info.urls == {
+            'deezer': 'http://test_deezer_url',
+            'google': 'http://test_google_url',
+            'soundcloud': 'http://test_soundcloud_url',
+        }
+        assert set(song_info.urls_in_text) == {
+            'http://test_deezer_url',
+            'http://test_google_url',
+            'http://test_soundcloud_url',
+        }
+        assert len(song_info.urls_in_text) == 3
