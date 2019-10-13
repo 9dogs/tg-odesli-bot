@@ -1,13 +1,18 @@
 .PHONY: \
 	fmt \
 	lint \
+	mypy \
+	test \
 	build \
-	test
+	push
 
 all:
 	@echo "fmt                 Format code."
 	@echo "lint                Lint code."
+	@echo "mypy                Check types."
 	@echo "test                Test code."
+	@echo "build               Build Docker image."
+	@echo "push                Push Docker image to DockerHub."
 
 FILES = group_songlink_bot tests
 IMAGE_NAME = 9dogs/group_songlink_bot:latest
@@ -27,6 +32,9 @@ lint:
 	fi
 	pipenv run flake8 $(FILES)
 	pipenv run pydocstyle $(FILES)
+	pipenv run mypy $(FILES)
+
+mypy:
 	pipenv run mypy $(FILES)
 
 build:

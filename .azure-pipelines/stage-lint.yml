@@ -1,9 +1,3 @@
-trigger:
-- master
-
-pool:
-  vmImage: 'ubuntu-latest'
-
 stages:
 - stage: lint
   displayName: 'Lint'
@@ -33,24 +27,3 @@ stages:
     - script: |
         make lint
       displayName: 'Run linters'
-
-- stage: build
-  displayName: 'Build docker image'
-
-  jobs:
-  - job: 'build'
-    pool:
-      vmImage: 'ubuntu-latest'
-
-    steps:
-    - checkout: self
-      clean: true
-
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.7'
-        architecture: 'x64'
-
-    - script: |
-        make build
-      displayName: 'Build docker image'

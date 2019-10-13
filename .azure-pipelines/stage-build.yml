@@ -1,0 +1,16 @@
+stages:
+- stage: build
+  displayName: 'Build Docker image'
+
+  jobs:
+  - job: 'build-docker'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - checkout: self
+      clean: true
+
+    - script: |
+        make build
+      displayName: 'Run build'

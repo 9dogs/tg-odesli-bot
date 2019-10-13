@@ -1,0 +1,12 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- group: codecov
+
+stages:
+- template: stage-lint.yml
+- template: stage-test.yml

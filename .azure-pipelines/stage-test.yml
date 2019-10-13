@@ -1,0 +1,29 @@
+stages:
+- stage: test
+  displayName: 'Test'
+
+  jobs:
+  - job: 'test'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - checkout: self
+      clean: true
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        architecture: 'x64'
+
+    - script: |
+        curl https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python
+      displayName: 'Install pipenv'
+
+    - script: |
+        pipenv install --dev
+      displayName: 'Install deps'
+
+    - script: |
+        make test
+      displayName: 'Run tests'
