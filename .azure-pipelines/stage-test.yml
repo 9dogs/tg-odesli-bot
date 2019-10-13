@@ -33,9 +33,11 @@ stages:
     - task: PublishTestResults@2
       inputs:
         testResultsFiles: 'junit.xml'
+      condition: always()
 
     - script: |
         bash <(curl -s https://codecov.io/bash)
       displayName: 'Upload codecov'
       env:
         CODECOV_TOKEN: $(CODECOV_TOKEN)
+      condition: always()
