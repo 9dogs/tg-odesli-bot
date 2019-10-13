@@ -228,7 +228,9 @@ class SonglinkBot:
         text = self._replace_urls_with_footnotes(message.text, song_infos)
         # Form reply text.  In group chats quote original message
         if message.chat.type != ChatType.PRIVATE:
-            reply_list = [f'@{message.from_user.username} wrote: {text}\n']
+            reply_list = [
+                f'<b>@{message.from_user.username} wrote:</b> {text}\n'
+            ]
         else:
             reply_list = []
         for index, song_info in enumerate(song_infos, start=1):

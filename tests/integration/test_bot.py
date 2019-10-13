@@ -45,8 +45,9 @@ class TestSonglinkBot:
         /start or /help command.
         """
 
-        async def reply_mock_fn(text, parse_mode):
+        async def reply_mock_fn(text, parse_mode, reply):
             assert parse_mode == 'HTML'
+            assert not reply
             assert text == (
                 'Hi!\n'
                 "I'm a SongLink Bot. You can message me a link to a "
@@ -55,7 +56,8 @@ class TestSonglinkBot:
                 'chat I will do the same as well as trying to delete original '
                 'message (you must promote me to admin to enable this '
                 'behavior).\n'
-                'Supported platforms: Deezer | Google Music | SoundCloud.\n'
+                '<b>Supported platforms:</b> Deezer | Google Music | '
+                'SoundCloud.\n'
                 'Powered by great <a href="https://song.link/">SongLink</a> '
                 '(thank you guys!).'
             )
@@ -70,11 +72,12 @@ class TestSonglinkBot:
     async def test_replies_to_group_message(self, bot: SonglinkBot):
         """Send reply to a group message."""
 
-        async def reply_mock_fn(text, parse_mode):
+        async def reply_mock_fn(text, parse_mode, reply):
             """Message.reply method mock."""
             assert parse_mode == 'HTML'
+            assert not reply
             assert text == (
-                '@test_user wrote: checkout this one: [1]\n'
+                '<b>@test_user wrote:</b> checkout this one: [1]\n'
                 '\n'
                 '1. Test Artist - Test Title\n'
                 '<a href="https://www.test.com/test">Deezer</a> | '
@@ -98,9 +101,10 @@ class TestSonglinkBot:
     async def test_replies_to_private_message(self, bot: SonglinkBot):
         """Send reply to a private message."""
 
-        async def reply_mock_fn(text, parse_mode):
+        async def reply_mock_fn(text, parse_mode, reply):
             """Message.reply method mock."""
             assert parse_mode == 'HTML'
+            assert not reply
             assert text == (
                 '1. Test Artist - Test Title\n'
                 '<a href="https://www.test.com/test">Deezer</a> | '
@@ -139,7 +143,7 @@ class TestSonglinkBot:
     ):
         """Log if cannot delete the message."""
 
-        async def reply_mock_fn(text, parse_mode):
+        async def reply_mock_fn(text, parse_mode, reply):
             """Message.reply method mock."""
 
         async def delete_mock_fn():
