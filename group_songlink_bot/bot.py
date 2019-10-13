@@ -136,20 +136,6 @@ class SonglinkBot:
         )
         await message.reply(text=welcome_msg, parse_mode='HTML')
 
-    def _make_query(self, song_url: str, user_country: str = 'RU') -> str:
-        """Make an Songlink API query URL for a given song.
-
-        :param str song_url: song URL in any platform
-        :param user_country: user country (not sure if it matters)
-        :return: Songlink API
-        """
-        params = {'url': song_url, 'userCountry': user_country}
-        if self._config.SONGLINK_API_KEY:
-            params['api_key'] = self._config.SONGLINK_API_KEY
-        url_params = urlencode(params)
-        url = f'{self._config.SONGLINK_API_URL}?{url_params}'
-        return url
-
     def _replace_urls_with_footnotes(
         self, message: str, song_infos: Tuple[SongInfo, ...]
     ) -> str:
@@ -269,8 +255,12 @@ class SonglinkBot:
         :return: SongLink response
         """
         logger = self.logger_var.get()
-        url = self._make_query(song_url.url)
-        async with self.session.get(url) as resp:
+        params = {'url': song_url.url}
+        if self._config.SONGLINK_API_KEY:
+            params['api_key'] = self._config.SONGLINK_API_KEY
+        async with self.session.get(
+            self._config.SONGLINK_API_URL, params=params
+        ) as resp:
             if resp.status != HTTPStatus.OK:
                 if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
                     logger.warning(

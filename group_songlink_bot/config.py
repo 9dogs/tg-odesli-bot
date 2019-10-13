@@ -20,7 +20,7 @@ class Config:
     #: SongLink API URL (required)
     SONGLINK_API_URL = 'https://api.song.link/v1-alpha.1/links'
     #: SongLink API key (optional)
-    SONGLINK_API_KEY = ''
+    SONGLINK_API_KEY: Optional[str] = ''
     #: Sentry DSN (optional)
     SENTRY_DSN: Optional[str] = ''
 
