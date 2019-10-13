@@ -24,6 +24,8 @@ pytest-sugar = "*"
 aioresponses = "*"
 colorama = "*"
 structlog-sentry = "*"
+marshmallow = "*"
+pytest-aiohttp = "*"
 
 [dev-packages]
 pre-commit = "*"
