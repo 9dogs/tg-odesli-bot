@@ -3,6 +3,7 @@
 	lint \
 	mypy \
 	test \
+	test-azure \
 	build \
 	push
 
@@ -55,3 +56,10 @@ test:
         --self-contained-html \
         --junit-xml $(TEST_OUTPUT)/junit.xml \
         $(TEST_OPTS)
+
+test-azure:
+	pipenv run py.test \
+		--cov group_songlink_bot \
+		--cov-report term-missing \
+		--cov-report html \
+		$(TEST_OPTS)

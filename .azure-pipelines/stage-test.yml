@@ -27,7 +27,7 @@ stages:
       displayName: 'Install deps'
 
     - script: |
-        pipenv run pytest
+        make test-azure
       displayName: 'Run tests'
 
     - script: |
