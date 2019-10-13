@@ -33,3 +33,5 @@ stages:
     - script: |
         bash <(curl -s https://codecov.io/bash)
       displayName: 'Upload codecov'
+      env:
+        CODECOV_TOKEN: $(CODECOV_TOKEN)
