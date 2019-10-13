@@ -6,6 +6,8 @@ stages:
   - job: 'test'
     pool:
       vmImage: 'ubuntu-latest'
+    variables:
+      PYTHONPATH: $(Build.SourcesDirectory)
 
     steps:
     - checkout: self
