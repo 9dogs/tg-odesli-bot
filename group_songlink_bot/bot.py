@@ -4,7 +4,7 @@ import contextvars
 from collections import Counter
 from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 from urllib.parse import urlencode
 
 import aiohttp
@@ -41,7 +41,7 @@ class SongInfo:
     """Song metadata."""
 
     #: Ids
-    ids: frozenset
+    ids: set
     #: Title
     title: str
     #: Artist
@@ -134,7 +134,21 @@ class SonglinkBot:
         )
         await message.reply(text=welcome_msg, parse_mode='HTML')
 
-    def _replace_urls(
+    def _make_query(self, song_url: str, user_country: str = 'RU') -> str:
+        """Make an Songlink API query URL for a given song.
+
+        :param str song_url: song URL in any platform
+        :param user_country: user country (not sure if it matters)
+        :return: Songlink API
+        """
+        params = {'url': song_url, 'userCountry': user_country}
+        if self._config.SONGLINK_API_KEY:
+            params['api_key'] = self._config.SONGLINK_API_KEY
+        url_params = urlencode(params)
+        url = f'{self._config.SONGLINK_API_URL}?{url_params}'
+        return url
+
+    def _replace_urls_with_footnotes(
         self, message: str, song_infos: Tuple[SongInfo, ...]
     ) -> str:
         """Replace song URLs in message with footnotes.
@@ -148,13 +162,63 @@ class SonglinkBot:
                 message = message.replace(url, f'[{index}]')
         return message
 
+    def extract_song_urls(self, text: str) -> List[SongUrl]:
+        """Extract song URLs and its positions from text.
+
+        :param text: message text
+        :return: list of platform URLs
+        """
+        urls = []
+        for platform_key, platform in PLATFORMS.items():
+            for match in platform.url_re.finditer(text):
+                platform_url = SongUrl(
+                    platform_key=platform_key,
+                    platform_name=platform.name,
+                    url=match.group(0),
+                )
+                urls.append(platform_url)
+        return urls
+
+    def _merge_same_songs(
+        self, song_infos: Tuple[SongInfo, ...]
+    ) -> Tuple[SongInfo, ...]:
+        """Merge SongInfo objects if two or more links point to the same
+        song.
+
+        :param song_infos: songs found in a message
+        """
+        merged_song_info_indexes: Set[int] = set()
+        for idx1, song_info1 in enumerate(song_infos):
+            if idx1 in merged_song_info_indexes:
+                continue
+            ids1 = song_info1.ids
+            for idx2, song_info2 in enumerate(song_infos):
+                if (
+                    song_info2 is song_info1
+                    or idx2 in merged_song_info_indexes
+                ):
+                    continue
+                if ids1 & song_info2.ids:
+                    song_info1.ids = ids1 | song_info2.ids
+                    song_info1.urls = {**song_info1.urls, **song_info2.urls}
+                    song_info1.urls_in_text = (
+                        song_info1.urls_in_text + song_info2.urls_in_text
+                    )
+                    merged_song_info_indexes.add(idx2)
+        merged_song_infos = tuple(
+            song_info
+            for idx, song_info in enumerate(song_infos)
+            if idx not in merged_song_info_indexes
+        )
+        return merged_song_infos
+
     async def handle_message(self, message: types.Message):
         """Handle incoming message.
 
         :param message: incoming message
         """
         logger = self.logger_var.get()
-        # Check if message should be skipped
+        # Check if message should be handled
         if self.SKIP_MARK in message.text:
             logger.debug('Message is skipped due to skip mark')
             return
@@ -163,12 +227,15 @@ class SonglinkBot:
         if not song_urls:
             logger.debug('No songs found in message')
             return
-        # Do SongLink API requests
+        # Get songs information by its URLs via Songlink service API
         song_infos = await asyncio.gather(
             *[self.find_song_by_url(song_url) for song_url in song_urls]
         )
+        # Combine song infos if different platform links point to
+        # the same song
+        song_infos = self._merge_same_songs(song_infos)
         # Replace original URLs in message with footnotes (like [1], [2] etc)
-        text = self._replace_urls(message.text, song_infos)
+        text = self._replace_urls_with_footnotes(message.text, song_infos)
         # Form reply text.  In group chats quote original message
         if message.chat.type != ChatType.PRIVATE:
             reply_list = [f'@{message.from_user.username} wrote: {text}\n']
@@ -191,37 +258,6 @@ class SonglinkBot:
             except MessageCantBeDeleted as exc:
                 logger.warning('Cannot delete message', exc_info=exc)
 
-    def extract_song_urls(self, text: str) -> List[SongUrl]:
-        """Extract song URLs and its positions from text.
-
-        :param text: message text
-        :return: list of platform URLs
-        """
-        urls = []
-        for platform_key, platform in PLATFORMS.items():
-            for match in platform.url_re.finditer(text):
-                platform_url = SongUrl(
-                    platform_key=platform_key,
-                    platform_name=platform.name,
-                    url=match.group(0),
-                )
-                urls.append(platform_url)
-        return urls
-
-    def make_query(self, song_url: str, user_country: str = 'RU') -> str:
-        """Make an Songlink API query URL for a given song.
-
-        :param str song_url: song URL in any platform
-        :param user_country: user country (not sure if it matters)
-        :return: Songlink API
-        """
-        params = {'url': song_url, 'userCountry': user_country}
-        if self._config.SONGLINK_API_KEY:
-            params['api_key'] = self._config.SONGLINK_API_KEY
-        url_params = urlencode(params)
-        url = f'{self._config.SONGLINK_API_URL}?{url_params}'
-        return url
-
     async def find_song_by_url(self, song_url: SongUrl) -> SongInfo:
         """Make an API call to SongLink service and return song data for
         supported services.
@@ -230,7 +266,7 @@ class SonglinkBot:
         :return: SongLink response
         """
         logger = self.logger_var.get()
-        url = self.make_query(song_url.url)
+        url = self._make_query(song_url.url)
         async with aiohttp.ClientSession() as client:
             async with client.get(url) as resp:
                 if resp.status != HTTPStatus.OK:
@@ -255,7 +291,9 @@ class SonglinkBot:
                 except ValidationError as exc:
                     logger.error('Invalid response data', exc_info=exc)
                 else:
-                    song_info = self.extract_song_info(data, song_url.url)
+                    song_info = self.process_songlink_response(
+                        data, song_url.url
+                    )
                     return song_info
 
     def _filter_platform_urls(self, platform_urls: dict) -> dict:
@@ -282,7 +320,7 @@ class SonglinkBot:
         }
         return platform_urls
 
-    def extract_song_info(self, data: dict, url: str) -> SongInfo:
+    def process_songlink_response(self, data: dict, url: str) -> SongInfo:
         """Extract a song info from SongLink API info.
 
         :param data: deserialized JSON SongLink data
@@ -305,7 +343,7 @@ class SonglinkBot:
         artist_counter = Counter(artists)
         artist = artist_counter.most_common(1)[0][0]
         song_info = SongInfo(
-            ids=frozenset(ids),
+            ids=ids,
             title=title,
             artist=artist,
             urls=platform_urls,
