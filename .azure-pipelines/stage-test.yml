@@ -33,7 +33,6 @@ stages:
     - task: PublishTestResults@2
       inputs:
         testResultsFiles: 'junit.xml'
-        buildPlatform: linux
 
     - script: |
         bash <(curl -s https://codecov.io/bash)
