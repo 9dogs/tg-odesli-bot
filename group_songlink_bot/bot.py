@@ -5,7 +5,6 @@ from collections import Counter
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Dict, List, Set, Tuple
-from urllib.parse import urlencode
 
 import aiohttp
 import structlog
@@ -247,7 +246,7 @@ class SonglinkBot:
             except MessageCantBeDeleted as exc:
                 logger.warning('Cannot delete message', exc_info=exc)
 
-    async def find_song_by_url(self, song_url: SongUrl) -> SongInfo:
+    async def find_song_by_url(self, song_url: SongUrl):
         """Make an API call to SongLink service and return song data for
         supported services.
 
