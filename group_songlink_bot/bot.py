@@ -268,15 +268,11 @@ class SonglinkBot:
             if resp.status != HTTPStatus.OK:
                 if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
                     logger.warning(
-                        'Too many requests',
-                        status_code=resp.status,
+                        'Too many requests', status_code=resp.status
                     )
                     await asyncio.sleep(self.SONGLINK_RETRY_TIME)
                 else:
-                    logger.error(
-                        'SongLink API error',
-                        status_code=resp.status,
-                    )
+                    logger.error('SongLink API error', status_code=resp.status)
             response = await resp.json()
             logger.debug('Got SongLink API response', response=response)
             schema = SongLinkResponseSchema(unknown='EXCLUDE')
