@@ -30,7 +30,7 @@ class DeezerPlatform(PlatformABC):
     """Deezer platform."""
 
     songlink_key = 'deezer'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*deezer\.com/[^\s.]*'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*deezer\.com/[^\s.,]*'
     name = 'Deezer'
     order = 0
 
@@ -39,7 +39,7 @@ class GoogleMusicPlatform(PlatformABC):
     """Google Music platform."""
 
     songlink_key = 'google'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*play\.google\.com/music/[^\s.]*'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*play\.google\.com/music/[^\s.,]*'
     name = 'Google Music'
     order = 1
 
@@ -48,6 +48,6 @@ class SoundCloudPlatform(PlatformABC):
     """SoundCloud platform."""
 
     songlink_key = 'soundcloud'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*soundcloud\.com/[^\s.]*'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*soundcloud\.com/[^\s.,]*'
     name = 'SoundCloud'
     order = 2

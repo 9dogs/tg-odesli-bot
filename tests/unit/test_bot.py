@@ -11,12 +11,11 @@ class TestSonglinkBot:
     async def test_extracts_urls(self, bot: SonglinkBot):
         """Extract platform URLs and positions from message text."""
         text = (
-            'Check this out: https://www.deezer.com/track/568497412.\n'
+            'Check this out: https://www.deezer.com/track/568497412,\n'
             'Check this out: https://play.google.com/music/m/Tdyd5oxivy52cpw'
             '4b2qqbgewdwu.\n'
             'Check this out: https://soundcloud.com/worakls/nto-trauma-worakls'
-            '-remix.\n'
-            'Great songs!'
+            '-remix Great songs!'
         )
         urls = bot.extract_song_urls(text)
         assert len(urls) == 3

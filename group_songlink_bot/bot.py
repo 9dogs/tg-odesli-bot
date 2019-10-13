@@ -261,6 +261,7 @@ class SonglinkBot:
         params = {'url': song_url.url}
         if self._config.SONGLINK_API_KEY:
             params['api_key'] = self._config.SONGLINK_API_KEY
+        logger = logger.bind(url=self._config.SONGLINK_API_URL, params=params)
         async with self.session.get(
             self._config.SONGLINK_API_URL, params=params
         ) as resp:
@@ -269,14 +270,12 @@ class SonglinkBot:
                     logger.warning(
                         'Too many requests',
                         status_code=resp.status,
-                        response=resp.content,
                     )
                     await asyncio.sleep(self.SONGLINK_RETRY_TIME)
                 else:
                     logger.error(
                         'SongLink API error',
                         status_code=resp.status,
-                        response=resp.content,
                     )
             response = await resp.json()
             logger.debug('Got SongLink API response', response=response)
