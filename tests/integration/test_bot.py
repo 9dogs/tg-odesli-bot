@@ -3,6 +3,7 @@ from unittest import mock
 
 from aiogram import types
 from aiogram.types import Chat, ChatType, ContentType, Message, User
+from aiogram.utils.exceptions import MessageCantBeDeleted
 from pytest import mark
 
 from group_songlink_bot.bot import SonglinkBot
@@ -66,9 +67,7 @@ class TestSonglinkBot:
         await bot._dp.message_handlers.notify(message)
         assert reply_mock.called
 
-    async def test_replies_to_group_message(
-        self, bot: SonglinkBot, songlink_api
-    ):
+    async def test_replies_to_group_message(self, bot: SonglinkBot):
         """Send reply to a group message."""
 
         async def reply_mock_fn(text, parse_mode):
@@ -96,9 +95,7 @@ class TestSonglinkBot:
         assert reply_mock.called
         assert delete_mock.called
 
-    async def test_replies_to_private_message(
-        self, bot: SonglinkBot, songlink_api
-    ):
+    async def test_replies_to_private_message(self, bot: SonglinkBot):
         """Send reply to a private message."""
 
         async def reply_mock_fn(text, parse_mode):
@@ -131,8 +128,30 @@ class TestSonglinkBot:
     async def test_logs_if_no_song_links_in_message(
         self, caplog, bot: SonglinkBot
     ):
-        """Do not reply if message has no song links."""
+        """Log and do not reply if message has no song links."""
 
         message = make_mock_message(text=f'test message without song links')
         await bot._dp.message_handlers.notify(message)
         assert 'No songs found in message' in caplog.text
+
+    async def test_logs_if_cannot_delete_message(
+        self, caplog, bot: SonglinkBot
+    ):
+        """Log if cannot delete the message."""
+
+        async def reply_mock_fn(text, parse_mode):
+            """Message.reply method mock."""
+
+        async def delete_mock_fn():
+            """Message.delete method mock."""
+            raise MessageCantBeDeleted(message='Test exception')
+
+        reply_mock = mock.Mock(side_effect=reply_mock_fn)
+        delete_mock = mock.Mock(side_effect=delete_mock_fn)
+        message = make_mock_message(
+            text='checkout this one: https://www.deezer.com/track/65760860',
+            method_mocks={'reply': reply_mock, 'delete': delete_mock},
+        )
+
+        await bot._dp.message_handlers.notify(message)
+        assert 'Cannot delete message' in caplog.text

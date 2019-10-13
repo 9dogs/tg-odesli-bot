@@ -136,7 +136,7 @@ async def bot(test_config):
     await bot.stop()
 
 
-@fixture
+@fixture(autouse=True)
 async def songlink_api(test_config):
     """Songlink API mock."""
     pattern = re.compile(rf'^{re.escape(test_config.SONGLINK_API_URL)}.*$')
