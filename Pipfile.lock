@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0629ae7417192c3ef569aefef14cc7aeb915be784c856594ebce0b73656e451c"
+            "sha256": "15c27877932317fc0687eaa91e55fdd33929dabe6642127a358172ac97a6ddfd"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -384,14 +384,6 @@
             ],
             "index": "pypi",
             "version": "==0.3.0"
-        },
-        "pytest-azurepipelines": {
-            "hashes": [
-                "sha256:38b841a90e88d1966715966d7ea35619ed710386138a6a0b8fb5954c991ca4f1",
-                "sha256:944ae2c0790b792d123aa7312fe307bc35214dd26531728923ae5085a1d1feab"
-            ],
-            "index": "pypi",
-            "version": "==0.8.0"
         },
         "pytest-cov": {
             "hashes": [

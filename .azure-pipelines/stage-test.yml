@@ -27,8 +27,13 @@ stages:
       displayName: 'Install deps'
 
     - script: |
-        make test-azure
+        make test
       displayName: 'Run tests'
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: 'junit.xml'
+      condition: always()
 
     - script: |
         bash <(curl -s https://codecov.io/bash)
