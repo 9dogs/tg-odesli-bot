@@ -29,3 +29,7 @@ stages:
     - script: |
         make test
       displayName: 'Run tests'
+
+    - script: |
+        bash <(curl -s https://codecov.io/bash)
+      displayName: 'Upload codecov'
