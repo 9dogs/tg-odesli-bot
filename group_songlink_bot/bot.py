@@ -1,20 +1,62 @@
+"""Songlink bot."""
+import asyncio
 import contextvars
-import html
+from collections import Counter
+from dataclasses import dataclass
+from http import HTTPStatus
+from typing import Dict, List, Tuple
 from urllib.parse import urlencode
 
 import aiohttp
 import structlog
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.middlewares import BaseMiddleware
+from aiogram.types import ChatType
+from aiogram.utils.exceptions import MessageCantBeDeleted
+from marshmallow import ValidationError
 
 from group_songlink_bot.config import Config
 from group_songlink_bot.platforms import PLATFORMS
+from group_songlink_bot.schemas import SongLinkResponseSchema
+
+
+class BotException(Exception):
+    """Songlink Bot exception."""
+
+
+@dataclass
+class SongUrl:
+    """Song URL found in text."""
+
+    #: Platform key
+    platform_key: str
+    #: Platform name (human-readable)
+    platform_name: str
+    #: URL
+    url: str
+
+
+@dataclass
+class SongInfo:
+    """Song metadata."""
+
+    #: Ids
+    ids: frozenset
+    #: Title
+    title: str
+    #: Artist
+    artist: str
+    #: Platform URLs
+    urls: Dict[str, str]
+    #: URLs in text
+    urls_in_text: List[str]
 
 
 class LoggingMiddleware(BaseMiddleware):
-    """Middleware to bind incoming message meta data to a logger."""
+    """Middleware to bind incoming message metadata to a logger."""
 
     def __init__(self, logger_var):
+        """Init middleware."""
         self.logger_var = logger_var
         super().__init__()
 
@@ -34,26 +76,30 @@ class LoggingMiddleware(BaseMiddleware):
 
 
 class SonglinkBot:
-    """SongLink Telegram Bot."""
+    """Songlink Telegram bot."""
 
-    # If this string is in an incoming message, the message will be skipped
-    # by the bot
+    #: If this string is in an incoming message, the message will be skipped
+    #: by the bot
     SKIP_MARK = '!skip'
+    #: Time to wait before retrying and API call if 429 code was returned
+    RETRY_WAIT_TIME = 5
 
-    def __init__(self):
-        """Initialize the bot."""
+    def __init__(self, config: Config = None):
+        """Initialize the bot.
+
+        :param config: configuration
+        """
         # Load config
-        self._config = Config.load_config()
+        self._config = config or Config.load_config()
         # Create a logger
-        self.logger_var = contextvars.ContextVar('logger')
-        self.logger = structlog.get_logger(self.__class__.__name__)
-        self.logger_var.set(self.logger)
+        self.logger = structlog.get_logger('group_songlink_bot')
+        self.logger_var = contextvars.ContextVar('logger', default=self.logger)
         # Initialize the bot and a dispatcher
         self._bot = Bot(token=self._config.BOT_API_TOKEN)
         self._dp = Dispatcher(self._bot)
         # Setup logging middleware
-        logging_middleware = LoggingMiddleware(self.logger_var)
-        self._dp.middleware.setup(logging_middleware)
+        self._logging_middleware = LoggingMiddleware(self.logger_var)
+        self._dp.middleware.setup(self._logging_middleware)
         # Add handlers
         self._add_handlers()
 
@@ -69,15 +115,38 @@ class SonglinkBot:
         """
         _logger = self.logger_var.get()
         _logger.debug('Sending a welcome message')
-        welcome_msg = (
+        welcome_msg_template = (
             'Hi!\n'
-            "I'm a simple SongLink Bot. If you invite me to a group and "
-            'promote to an admin (for me to be able to read messages) I will '
-            'replace any message containing links to Deezer, Google Music or '
-            'SoundCloud songs with all-services-in-one message!\n'
-            'Powered by <a href="https://song.link/">SongLink</a>.'
+            "I'm a SongLink Bot. You can message me a link to a supported "
+            'music streaming platform and I will respond with links from all '
+            'the platforms. If you invite me to a group chat I will do the '
+            'same as well as trying to delete original message (you must '
+            'promote me to admin to enable this behavior).\n'
+            'Supported platforms: {supported_platforms}.\n'
+            'Powered by great <a href="https://song.link/">SongLink</a> '
+            '(thank you guys!).'
         )
-        await message.reply(welcome_msg, parse_mode='HTML')
+        supported_platforms = []
+        for platform in PLATFORMS.values():
+            supported_platforms.append(platform.name)
+        welcome_msg = welcome_msg_template.format(
+            supported_platforms=' | '.join(supported_platforms)
+        )
+        await message.reply(text=welcome_msg, parse_mode='HTML')
+
+    def _replace_urls(
+        self, message: str, song_infos: Tuple[SongInfo, ...]
+    ) -> str:
+        """Replace song URLs in message with footnotes.
+
+        :param message: original message text
+        :param song_infos: list of SongInfo objects
+        :return: transformed message
+        """
+        for index, song_info in enumerate(song_infos, start=1):
+            for url in song_info.urls_in_text:
+                message = message.replace(url, f'[{index}]')
+        return message
 
     async def handle_message(self, message: types.Message):
         """Handle incoming message.
@@ -85,88 +154,173 @@ class SonglinkBot:
         :param message: incoming message
         """
         logger = self.logger_var.get()
-        # Check if message should be handled
-        text = message.text
-        if self.SKIP_MARK in text:
-            logger.debug('Message is skipped due to SKIP_MARK')
+        # Check if message should be skipped
+        if self.SKIP_MARK in message.text:
+            logger.debug('Message is skipped due to skip mark')
             return
-        songs = []
-        idx = 1
-        for platform in PLATFORMS.values():
-            for match in platform.url_re.finditer(text):
-                text = platform.url_re.sub(html.escape(f'[{idx}]'), text)
-                url = match.group(0)
-                # Do SongLink API request
-                response = await self.find_song_by_url(url)
-                song_info = self.extract_song_info(response, index=idx)
-                songs.append(song_info)
-                idx += 1
-        reply = [f'@{message.from_user.username} wrote:\n{text}\n']
-        if songs:
-            reply_msg = '\n'.join(reply + songs)
-            logger.debug('Reply', reply=reply_msg)
-            await message.reply(reply_msg, reply=False, parse_mode='HTML')
-            await message.delete()
-        else:
+        # Extract song URLs from the message
+        song_urls = self.extract_song_urls(message.text)
+        if not song_urls:
             logger.debug('No songs found in message')
+            return
+        # Do SongLink API requests
+        song_infos = await asyncio.gather(
+            *[self.find_song_by_url(song_url) for song_url in song_urls]
+        )
+        # Replace original URLs in message with footnotes (like [1], [2] etc)
+        text = self._replace_urls(message.text, song_infos)
+        # Form reply text.  In group chats quote original message
+        if message.chat.type != ChatType.PRIVATE:
+            reply_list = [f'@{message.from_user.username} wrote: {text}\n']
+        else:
+            reply_list = []
+        for index, song_info in enumerate(song_infos, start=1):
+            reply_list.append(
+                f'{index}. {song_info.artist} - {song_info.title}'
+            )
+            platform_urls = []
+            for platform_name, url in song_info.urls.items():
+                platform_urls.append(f'<a href="{url}">{platform_name}</a>')
+            reply_list.append(' | '.join(platform_urls))
+        reply_text = '\n'.join(reply_list)
+        await message.reply(text=reply_text, parse_mode='HTML')
+        # Try to delete original message if in group chat
+        if message.chat.type != ChatType.PRIVATE:
+            try:
+                await message.delete()
+            except MessageCantBeDeleted as exc:
+                logger.warning('Cannot delete message', exc_info=exc)
 
-    def find_song_urls(self, message_text):
-        """Find
+    def extract_song_urls(self, text: str) -> List[SongUrl]:
+        """Extract song URLs and its positions from text.
 
-        :param message_text:
-        :return:
+        :param text: message text
+        :return: list of platform URLs
         """
+        urls = []
+        for platform_key, platform in PLATFORMS.items():
+            for match in platform.url_re.finditer(text):
+                platform_url = SongUrl(
+                    platform_key=platform_key,
+                    platform_name=platform.name,
+                    url=match.group(0),
+                )
+                urls.append(platform_url)
+        return urls
 
-    async def find_song_by_url(self, url, user_country='RU') -> dict:
+    def make_query(self, song_url: str, user_country: str = 'RU') -> str:
+        """Make an Songlink API query URL for a given song.
+
+        :param str song_url: song URL in any platform
+        :param user_country: user country (not sure if it matters)
+        :return: Songlink API
+        """
+        params = {'url': song_url, 'userCountry': user_country}
+        if self._config.SONGLINK_API_KEY:
+            params['api_key'] = self._config.SONGLINK_API_KEY
+        url_params = urlencode(params)
+        url = f'{self._config.SONGLINK_API_URL}?{url_params}'
+        return url
+
+    async def find_song_by_url(self, song_url: SongUrl) -> SongInfo:
         """Make an API call to SongLink service and return song data for
         supported services.
 
-        :param url:
-        :param user_country: user country (not sure if it matters)
+        :param str song_url: URL of a song in any supported platform
         :return: SongLink response
         """
         logger = self.logger_var.get()
-        params = urlencode({'url': url, 'userCountry': user_country})
+        url = self.make_query(song_url.url)
         async with aiohttp.ClientSession() as client:
-            url = f'{self._config.SONGLINK_API_URL}?{params}'
             async with client.get(url) as resp:
-                assert resp.status == 200
+                if resp.status != HTTPStatus.OK:
+                    if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
+                        logger.warning(
+                            'Too many requests',
+                            status_code=resp.status,
+                            response=resp.content,
+                        )
+                        await asyncio.sleep(self.RETRY_WAIT_TIME)
+                    else:
+                        logger.error(
+                            'SongLink API error',
+                            status_code=resp.status,
+                            response=resp.content,
+                        )
                 response = await resp.json()
                 logger.debug('Got SongLink API response', response=response)
-        return response
+                schema = SongLinkResponseSchema()
+                try:
+                    data = schema.load(response)
+                except ValidationError as exc:
+                    logger.error('Invalid response data', exc_info=exc)
+                else:
+                    song_info = self.extract_song_info(data, song_url.url)
+                    return song_info
 
-    def extract_song_info(self, data: dict, index: int) -> str:
+    def _filter_platform_urls(self, platform_urls: dict) -> dict:
+        """Filter and reorder platform URLs.
+
+        :param platform_urls: dictionary of platform URLs
+        :return: dictionary of filtered platform URLs in order
+        """
+        logger = self.logger_var.get()
+        logger = logger.bind(data=platform_urls)
+        urls = []
+        for platform_key, platform in PLATFORMS.items():
+            if platform_key not in platform_urls:
+                logger.info(
+                    'No URL for platform in data', platform_key=platform_key
+                )
+                continue
+            urls.append(
+                (platform.order, platform.name, platform_urls[platform_key])
+            )
+        # Reorder platforms URL
+        platform_urls = {
+            name: url for order, name, url in sorted(urls, key=lambda x: x[0])
+        }
+        return platform_urls
+
+    def extract_song_info(self, data: dict, url: str) -> SongInfo:
         """Extract a song info from SongLink API info.
 
-        :param data: JSON SongLink data
-        :param index: index of a song in incoming message text
-        :return: song info string like
-            Whitewildbear, Ambyion - Rue
-            <a href="...">Deezer</a>
-            <a href="...">Google Music</a>
-            <a href="...">SoundCloud</a>
+        :param data: deserialized JSON SongLink data
+        :param url: URL in message text
+        :return: song info object
         """
-        entity_record = list(data['entitiesByUniqueId'].values())[0]
-        artist = entity_record['artistName']
-        title = entity_record['title']
-        song_data = [f'{index}. {artist} - {title}']
-        platform_links_order = []
-        for platform_key, platform_data in data['linksByPlatform'].items():
-            if platform_key in PLATFORMS:
-                platform = PLATFORMS[platform_key]
-                url = platform_data['url']
-                platform_links_order.append(
-                    (f'<a href="{url}">{platform.name}</a>', platform.order)
-                )
-        song_data += [
-            el[0] for el in sorted(platform_links_order, key=lambda x: x[1])
-        ]
-        song_info = '\n'.join(song_data)
+        ids = set()
+        titles, artists = [], []
+        for song_entity in data['songs'].values():
+            ids.add(song_entity['id'])
+            titles.append(song_entity['title'])
+            artists.append(song_entity['artist'])
+        platform_urls = {}
+        for platform_key, link_entity in data['links'].items():
+            platform_urls[platform_key] = link_entity['url']
+        platform_urls = self._filter_platform_urls(platform_urls)
+        # Pick most common title and artist
+        titles_counter = Counter(titles)
+        title = titles_counter.most_common(1)[0][0]
+        artist_counter = Counter(artists)
+        artist = artist_counter.most_common(1)[0][0]
+        song_info = SongInfo(
+            ids=frozenset(ids),
+            title=title,
+            artist=artist,
+            urls=platform_urls,
+            urls_in_text=[url],
+        )
         return song_info
 
     def start(self):
         """Start the bot."""
+        self.logger.info('Starting polling...')
         executor.start_polling(self._dp, skip_updates=True)
+
+    async def stop(self):
+        """Stop the bot."""
+        await self._bot.close()
 
 
 if __name__ == '__main__':
