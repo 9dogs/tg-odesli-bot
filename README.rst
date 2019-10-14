@@ -14,7 +14,7 @@ What is it for?
 ===============
 
 You love to share music with your friends (or be shared with), but you settled
-in different streaming services? With the help of great Odesli_ (former Songlink)
+in different streaming services? With the help of great Odesli_ (former Song.link)
 service you can share any song link to the Bot and get all other links back in
 reply.
 
@@ -35,9 +35,9 @@ Currently these services are supported:
 Privacy considerations
 ======================
 
-The bot have to have access to messages to operate. It does not store nor
+The Bot have to have access to messages to operate. It does not store nor
 transfer messages anywhere. However, the only true way to be sure about that is
-to read through source code in this repository **and** run your copy of the bot
+to read through source code in this repository **and** run your copy of the Bot
 (see section below).
 
 Run your own copy
@@ -46,23 +46,25 @@ Run your own copy
 Prerequisites
 -------------
 
-You need bot token to run your copy of the Bot but don't worry, it's peace of
-cake. Follow instructions_ to create a new bot (you can set a name and an
+You need bot token to run your copy of the Bot but don't worry, it's a peace of
+cake. Follow the instructions_ to create a new bot (you can set a name and a
 username to whatever you want). All you need is a string like
 ``110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw`` - this is your bot token.
 
-Then before starting the Bot you must set ``GROUP_SONGLINK_BOT_BOT_API_TOKEN``
-environment variable either in shell or in ``.env`` file:
+Bot looks for ``GROUP_SONGLINK_BOT_BOT_API_TOKEN`` environment variable so you
+must set it either in shell or via ``.env`` file:
 
 .. code-block:: shell
 
+    GROUP_SONGLINK_BOT_BOT_API_TOKEN=<your_token> <bot_run_command>
+    # OR
     echo "<your_token>" > .env
 
 Run with python
 ---------------
 
-Clone the repo, `install pipenv <https://github.com/pypa/pipenv#installation>`_
-copy ``.env`` file into root directory and run the bot (python 3.7 required):
+Clone the repo, `install pipenv <https://github.com/pypa/pipenv#installation>`_,
+copy ``.env`` file into root directory and run the Bot (python 3.7 required):
 
 .. code-block:: shell
 
@@ -76,12 +78,12 @@ copy ``.env`` file into root directory and run the bot (python 3.7 required):
 Run with Docker
 ---------------
 
-Set ``GROUP_SONGLINK_BOT_BOT_API_TOKEN`` environment variable and run the image:
+Set ``GROUP_SONGLINK_BOT_BOT_API_TOKEN`` environment variable and run the image
+(in order to use ``.env`` file mount it to ``/opt/group_songlink_bot/.env``):
 
 .. code-block:: shell
 
-    echo "<your_token>" > .env
-    docker run --rm -it 9dogs/group_songlink_bot
+    docker run --rm -it -v /path/to/.env:/opt/group_songlink_bot/.env 9dogs/group_songlink_bot
     # OR
     GROUP_SONGLINK_BOT_BOT_API_TOKEN=<your_token> docker run 9dogs/group_songlink_bot
 
