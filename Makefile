@@ -15,7 +15,7 @@ all:
 	@echo "push                Push Docker image to DockerHub."
 
 FILES = tg_odesli_bot tests
-IMAGE_NAME = 9dogs/tg_odesli_bot:latest
+IMAGE_NAME = 9dogs/tg-odesli-bot:latest
 
 fmt:
 	pipenv run black $(FILES)

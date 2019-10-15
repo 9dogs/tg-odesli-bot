@@ -79,13 +79,13 @@ Run with Docker
 ---------------
 
 Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
-(in order to use ``.env`` file mount it to ``/opt/tg_odesli_bot/.env``):
+(in order to use ``.env`` file mount it to ``/opt/tg-odesli-bot/.env``):
 
 .. code-block:: shell
 
-    docker run --rm -it -v /path/to/.env:/opt/tg_odesli_bot/.env 9dogs/tg_odesli_bot
+    docker run --rm -it -v /path/to/.env:/opt/tg-odesli-bot/.env 9dogs/tg-odesli-bot
     # OR
-    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg_odesli_bot
+    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg-odesli-bot
 
 
 .. |azure| image:: https://dev.azure.com/hellishbot/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master
