@@ -79,13 +79,13 @@ Run with Docker
 ---------------
 
 Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
-(in order to use ``.env`` file mount it to ``/opt/group_songlink_bot/.env``):
+(in order to use ``.env`` file mount it to ``/opt/tg_odesli_bot/.env``):
 
 .. code-block:: shell
 
-    docker run --rm -it -v /path/to/.env:/opt/group_songlink_bot/.env 9dogs/group_songlink_bot
+    docker run --rm -it -v /path/to/.env:/opt/tg_odesli_bot/.env 9dogs/tg_odesli_bot
     # OR
-    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/group_songlink_bot
+    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg_odesli_bot
 
 
 .. |azure| image:: https://dev.azure.com/hellishbot/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master
@@ -94,7 +94,7 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
 .. |codecov| image:: https://codecov.io/gh/9dogs/tg-odesli-bot/branch/master/graph/badge.svg?token=3nWZWJ3Bl3
              :target: https://codecov.io/gh/9dogs/tg-odesli-bot
              :alt: codecov.io status for master branch
-.. |docker| image:: https://img.shields.io/docker/automated/9dogs/group_songlink_bot
+.. |docker| image:: https://img.shields.io/docker/automated/9dogs/tg_odesli_bot
             :alt: Docker Automated build
 
 .. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
