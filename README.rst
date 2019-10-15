@@ -68,12 +68,12 @@ copy ``.env`` file into root directory and run the Bot (python 3.7 required):
 
 .. code-block:: shell
 
-    git clone https://github.com/9dogs/group-songlink-bot.git
-    cd group-songlink-bot
+    git clone https://github.com/9dogs/tg-odesli-bot.git
+    cd tg-odesli-bot
     cp /path/to/.env ./
-    pipenv run python group-songlink-bot/bot.py
+    pipenv run python tg-odesli-bot/bot.py
     # OR
-    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run python group-songlink-bot/bot.py
+    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run python tg-odesli-bot/bot.py
 
 Run with Docker
 ---------------
@@ -88,11 +88,11 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
     TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/group_songlink_bot
 
 
-.. |azure| image:: https://dev.azure.com/hellishbot/group-songlink-bot/_apis/build/status/9dogs.group-songlink-bot?branchName=master
-           :target: https://dev.azure.com/hellishbot/group-songlink-bot/
+.. |azure| image:: https://dev.azure.com/hellishbot/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master
+           :target: https://dev.azure.com/hellishbot/tg-odesli-bot/
            :alt: Azure Pipeline status for master branch
-.. |codecov| image:: https://codecov.io/gh/9dogs/group-songlink-bot/branch/master/graph/badge.svg?token=3nWZWJ3Bl3
-             :target: https://codecov.io/gh/9dogs/group-songlink-bot
+.. |codecov| image:: https://codecov.io/gh/9dogs/tg-odesli-bot/branch/master/graph/badge.svg?token=3nWZWJ3Bl3
+             :target: https://codecov.io/gh/9dogs/tg-odesli-bot
              :alt: codecov.io status for master branch
 .. |docker| image:: https://img.shields.io/docker/automated/9dogs/group_songlink_bot
             :alt: Docker Automated build
