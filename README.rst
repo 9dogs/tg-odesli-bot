@@ -1,6 +1,6 @@
-==========
-Odesli Bot
-==========
+===================
+Telegram Odesli Bot
+===================
 
 Send a song link in any (supported) music streaming service and get back a
 message with links in other services.
@@ -14,7 +14,7 @@ What is it for?
 ===============
 
 You love to share music with your friends (or be shared with), but you settled
-in different streaming services? With the help of great Odesli_ (former Song.link)
+in different streaming services? With the help of great Odesli_ (former Songlink)
 service you can share any song link to the Bot and get all other links back in
 reply.
 
@@ -94,7 +94,7 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
 .. |codecov| image:: https://codecov.io/gh/9dogs/tg-odesli-bot/branch/master/graph/badge.svg?token=3nWZWJ3Bl3
              :target: https://codecov.io/gh/9dogs/tg-odesli-bot
              :alt: codecov.io status for master branch
-.. |docker| image:: https://img.shields.io/docker/automated/9dogs/tg_odesli_bot
+.. |docker| image:: https://img.shields.io/docker/automated/9dogs/tg-odesli-bot
             :alt: Docker Automated build
 
 .. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
