@@ -16,11 +16,11 @@ class Config:
     #: Logging level
     DEBUG = False
     #: Telegram bot API key (required)
-    BOT_API_TOKEN = ''
-    #: SongLink API URL (required)
-    SONGLINK_API_URL = 'https://api.song.link/v1-alpha.1/links'
-    #: SongLink API key (optional)
-    SONGLINK_API_KEY: Optional[str] = ''
+    TG_API_TOKEN = ''
+    #: Odesli API URL (required)
+    ODESLI_API_URL = 'https://api.song.link/v1-alpha.1/links'
+    #: Odesli API key (optional)
+    ODESLI_API_KEY: Optional[str] = ''
     #: Sentry DSN (optional)
     SENTRY_DSN: Optional[str] = ''
 
@@ -52,10 +52,7 @@ class Config:
             },
         },
         'loggers': {
-            'group_songlink_bot': {
-                'handlers': ['stdout_json'],
-                'level': 'INFO',
-            },
+            'tg_odesli_bot': {'handlers': ['stdout_json'], 'level': 'INFO'},
             # asyncio warnings
             'asyncio': {'handlers': ['stdout'], 'level': 'WARNING'},
         },
@@ -66,7 +63,7 @@ class Config:
     def init_logging(self):
         """Init logging."""
         if self.DEBUG:
-            self.LOG_CONFIG['loggers']['group_songlink_bot']['level'] = 'DEBUG'
+            self.LOG_CONFIG['loggers']['tg_odesli_bot']['level'] = 'DEBUG'
             if not isinstance(
                 self.LOG_RENDERER, structlog.dev.ConsoleRenderer
             ):
@@ -90,7 +87,7 @@ class Config:
         )
 
     @classmethod
-    def load_config(cls, env_prefix: str = 'GROUP_SONGLINK_BOT_'):
+    def load_config(cls, env_prefix: str = 'TG_ODESLI_BOT_'):
         """Load config merging default variables and variables from the
         environment.
 
@@ -125,6 +122,6 @@ class TestConfig(Config):
     #: Set DEBUG logging level
     DEBUG = True
     #: Do not query Telegram API
-    BOT_API_TOKEN = 'invalid'
+    TG_API_TOKEN = 'invalid'
     #: Do not send errors to Sentry
     SENTRY_DSN = None

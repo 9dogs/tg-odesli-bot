@@ -1,5 +1,5 @@
 """Tests for configuration."""
-from group_songlink_bot.config import Config, TestConfig
+from tg_odesli_bot.config import Config, TestConfig
 
 
 class TestConfiguration:
@@ -14,9 +14,9 @@ class TestConfiguration:
         """Load config with variables from .env file."""
         config = Config.load_config()
         assert config
-        assert config.BOT_API_TOKEN == 'test_token'
+        assert config.TG_API_TOKEN == 'test_token'
 
     def test_does_not_override_in_test_mode(self, test_dotenv):
         """Do not override config variables in test mode."""
         config = TestConfig.load_config()
-        assert config.BOT_API_TOKEN == 'invalid'
+        assert config.TG_API_TOKEN == 'invalid'

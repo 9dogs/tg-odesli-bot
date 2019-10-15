@@ -1,4 +1,4 @@
-"""Songlink API schemas."""
+"""Odesli API schemas."""
 from marshmallow import Schema, fields
 
 
@@ -24,8 +24,8 @@ class PlatformLink(Schema):
     url = fields.URL(required=True)
 
 
-class SongLinkResponseSchema(Schema):
-    """SongLink API response schema."""
+class ApiResponseSchema(Schema):
+    """Odesli API response schema."""
 
     #: Dictionary of entity_id -> SongSchema
     songs = fields.Dict(

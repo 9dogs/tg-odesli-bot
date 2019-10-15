@@ -14,8 +14,8 @@ all:
 	@echo "build               Build Docker image."
 	@echo "push                Push Docker image to DockerHub."
 
-FILES = group_songlink_bot tests
-IMAGE_NAME = 9dogs/group_songlink_bot:latest
+FILES = tg_odesli_bot tests
+IMAGE_NAME = 9dogs/tg_odesli_bot:latest
 
 fmt:
 	pipenv run black $(FILES)
@@ -47,7 +47,7 @@ TEST_OPTS ?= tests -r R
 TEST_OUTPUT ?= .
 test:
 	pipenv run py.test \
-        --cov group_songlink_bot \
+        --cov tg_odesli_bot \
         --cov-report term-missing \
         --cov-report html:$(TEST_OUTPUT)/htmlcov \
         --cov-report xml:$(TEST_OUTPUT)/coverage.xml \

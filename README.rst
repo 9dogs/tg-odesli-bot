@@ -7,7 +7,7 @@ message with links in other services.
 
 It's useful but still work in progress. Some turbulence is expected.
 
-|azure| |codecov| |docker|
+|azure| |codecov| |docker| |license|
 
 
 What is it for?
@@ -51,12 +51,12 @@ cake. Follow the instructions_ to create a new bot (you can set a name and a
 username to whatever you want). All you need is a string like
 ``110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw`` - this is your bot token.
 
-Bot looks for ``GROUP_SONGLINK_BOT_BOT_API_TOKEN`` environment variable so you
+Bot looks for ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable so you
 must set it either in shell or via ``.env`` file:
 
 .. code-block:: shell
 
-    GROUP_SONGLINK_BOT_BOT_API_TOKEN=<your_token> <bot_run_command>
+    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> <bot_run_command>
     # OR
     echo "<your_token>" > .env
 
@@ -73,19 +73,19 @@ copy ``.env`` file into root directory and run the Bot (python 3.7 required):
     cp /path/to/.env ./
     pipenv run python group-songlink-bot/bot.py
     # OR
-    GROUP_SONGLINK_BOT_BOT_API_TOKEN=<your_token> pipenv run python group-songlink-bot/bot.py
+    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run python group-songlink-bot/bot.py
 
 Run with Docker
 ---------------
 
-Set ``GROUP_SONGLINK_BOT_BOT_API_TOKEN`` environment variable and run the image
+Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
 (in order to use ``.env`` file mount it to ``/opt/group_songlink_bot/.env``):
 
 .. code-block:: shell
 
     docker run --rm -it -v /path/to/.env:/opt/group_songlink_bot/.env 9dogs/group_songlink_bot
     # OR
-    GROUP_SONGLINK_BOT_BOT_API_TOKEN=<your_token> docker run 9dogs/group_songlink_bot
+    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/group_songlink_bot
 
 
 .. |azure| image:: https://dev.azure.com/hellishbot/group-songlink-bot/_apis/build/status/9dogs.group-songlink-bot?branchName=master
@@ -96,6 +96,11 @@ Set ``GROUP_SONGLINK_BOT_BOT_API_TOKEN`` environment variable and run the image
              :alt: codecov.io status for master branch
 .. |docker| image:: https://img.shields.io/docker/automated/9dogs/group_songlink_bot
             :alt: Docker Automated build
+
+.. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
+             :target: https://www.gnu.org/licenses/gpl-3.0
+             :alt: License: GPL v3
+
 
 .. _instructions: https://core.telegram.org/bots#6-botfather
 .. _Odesli: https://odesli.co/

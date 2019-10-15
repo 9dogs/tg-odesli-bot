@@ -1,14 +1,14 @@
-"""Unit tests for Songlink bot."""
+"""Unit tests for Odesli bot."""
 from pytest import mark
 
-from group_songlink_bot.bot import SongInfo, SonglinkBot
+from tg_odesli_bot.bot import OdesliBot, SongInfo
 
 
 @mark.usefixtures('loop')
-class TestSonglinkBot:
-    """Unit tests for Songlink bot."""
+class TestOdesliBot:
+    """Unit tests for Odesli bot."""
 
-    async def test_extracts_urls(self, bot: SonglinkBot):
+    async def test_extracts_urls(self, bot: OdesliBot):
         """Extract platform URLs and positions from message text."""
         text = (
             'Check this out: https://www.deezer.com/track/568497412,\n'
@@ -33,7 +33,7 @@ class TestSonglinkBot:
             'https://soundcloud.com/worakls/nto-trauma-worakls-remix'
         )
 
-    async def test_merges_urls_for_same_song(self, bot: SonglinkBot):
+    async def test_merges_urls_for_same_song(self, bot: OdesliBot):
         """Merge SongInfo objects if they point to the same song."""
         song_infos = (
             SongInfo(

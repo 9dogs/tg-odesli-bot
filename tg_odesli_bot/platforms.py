@@ -10,8 +10,8 @@ PLATFORMS = {}
 class PlatformABC(ABC):
     """Platform data holder."""
 
-    # Platform's SongLink name
-    songlink_key: str
+    # Platform's Odesli name
+    key: str
     # RegEx to find platform's URL in a message text
     url_re: Union[str, Pattern]
     # Human readable name which will appear in bot message
@@ -23,13 +23,13 @@ class PlatformABC(ABC):
         """Compile regex and add platform to a platform registry."""
         super().__init_subclass__()
         cls.url_re = re.compile(cls.url_re)
-        PLATFORMS[cls.songlink_key] = cls()
+        PLATFORMS[cls.key] = cls()
 
 
 class DeezerPlatform(PlatformABC):
     """Deezer platform."""
 
-    songlink_key = 'deezer'
+    key = 'deezer'
     url_re = r'https?://([a-zA-Z\d-]+\.)*deezer\.com/[^\s.,]*'
     name = 'Deezer'
     order = 0
@@ -38,7 +38,7 @@ class DeezerPlatform(PlatformABC):
 class GoogleMusicPlatform(PlatformABC):
     """Google Music platform."""
 
-    songlink_key = 'google'
+    key = 'google'
     url_re = r'https?://([a-zA-Z\d-]+\.)*play\.google\.com/music/[^\s.,]*'
     name = 'Google Music'
     order = 1
@@ -47,7 +47,7 @@ class GoogleMusicPlatform(PlatformABC):
 class SoundCloudPlatform(PlatformABC):
     """SoundCloud platform."""
 
-    songlink_key = 'soundcloud'
+    key = 'soundcloud'
     url_re = r'https?://([a-zA-Z\d-]+\.)*soundcloud\.com/[^\s.,]*'
     name = 'SoundCloud'
     order = 2

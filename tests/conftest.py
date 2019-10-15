@@ -8,12 +8,12 @@ import dotenv
 from aioresponses import aioresponses
 from pytest import fixture
 
-from group_songlink_bot.bot import SonglinkBot
-from group_songlink_bot.config import TestConfig
+from tg_odesli_bot.bot import OdesliBot
+from tg_odesli_bot.config import TestConfig
 
 #: Tests base dir
 BASE_DIR = Path(__file__).resolve().parent
-#: Songlink API test response
+#: Odesli API test response
 TEST_RESPONSE = {
     'entityUniqueId': 'GOOGLE_SONG::G1',
     'userCountry': 'US',
@@ -134,7 +134,7 @@ def test_dotenv():
         override=True,
     )
     with mock.patch(
-        'group_songlink_bot.config.dotenv.load_dotenv', load_test_dotenv
+        'tg_odesli_bot.config.dotenv.load_dotenv', load_test_dotenv
     ):
         yield
 
@@ -154,15 +154,15 @@ async def bot(test_config):
         return True
 
     with mock.patch('aiogram.bot.api.check_token', mock_check_token):
-        bot = SonglinkBot(config=test_config)
+        bot = OdesliBot(config=test_config)
         yield bot
     await bot.stop()
 
 
 @fixture
-async def songlink_api(test_config):
-    """Songlink API mock."""
-    pattern = re.compile(rf'^{re.escape(test_config.SONGLINK_API_URL)}.*$')
+async def odesli_api(test_config):
+    """Odesli API mock."""
+    pattern = re.compile(rf'^{re.escape(test_config.ODESLI_API_URL)}.*$')
     with aioresponses() as m:
         m.get(pattern, status=200, payload=TEST_RESPONSE)
         yield m

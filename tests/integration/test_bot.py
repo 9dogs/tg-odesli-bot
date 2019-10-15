@@ -1,4 +1,4 @@
-"""Integration tests for Songlink bot."""
+"""Integration tests for Odesli bot."""
 from unittest import mock
 
 from aiogram import types
@@ -6,7 +6,7 @@ from aiogram.types import Chat, ChatType, ContentType, Message, User
 from aiogram.utils.exceptions import MessageCantBeDeleted
 from pytest import mark
 
-from group_songlink_bot.bot import SonglinkBot
+from tg_odesli_bot.bot import OdesliBot
 
 
 def make_mock_message(
@@ -36,11 +36,11 @@ def make_mock_message(
 
 
 @mark.usefixtures('loop')
-class TestSonglinkBot:
-    """Integration tests for Songlink bot."""
+class TestOdesliBot:
+    """Integration tests for Odesli bot."""
 
     @mark.parametrize('text', ['/start', '/help'])
-    async def test_sends_welcome_message(self, bot: SonglinkBot, text):
+    async def test_sends_welcome_message(self, bot: OdesliBot, text):
         """Send a welcome message with supported platforms list in reply to
         /start or /help command.
         """
@@ -50,7 +50,7 @@ class TestSonglinkBot:
             assert not reply
             assert text == (
                 'Hi!\n'
-                "I'm a SongLink Bot. You can message me a link to a "
+                "I'm a Odesli Bot. You can message me a link to a "
                 'supported music streaming platform and I will respond with '
                 'links from all the platforms. If you invite me to a group '
                 'chat I will do the same as well as trying to delete original '
@@ -58,7 +58,7 @@ class TestSonglinkBot:
                 'behavior).\n'
                 '<b>Supported platforms:</b> Deezer | Google Music | '
                 'SoundCloud.\n'
-                'Powered by great <a href="https://song.link/">SongLink</a> '
+                'Powered by great <a href="https://odesli.co/">Odesli</a> '
                 '(thank you guys!).'
             )
 
@@ -69,9 +69,7 @@ class TestSonglinkBot:
         await bot._dp.message_handlers.notify(message)
         assert reply_mock.called
 
-    async def test_replies_to_group_message(
-        self, bot: SonglinkBot, songlink_api
-    ):
+    async def test_replies_to_group_message(self, bot: OdesliBot, odesli_api):
         """Send reply to a group message."""
 
         async def reply_mock_fn(text, parse_mode, reply):
@@ -101,7 +99,7 @@ class TestSonglinkBot:
         assert delete_mock.called
 
     async def test_replies_to_private_message(
-        self, bot: SonglinkBot, songlink_api
+        self, bot: OdesliBot, odesli_api
     ):
         """Send reply to a private message."""
 
@@ -124,9 +122,7 @@ class TestSonglinkBot:
         await bot._dp.message_handlers.notify(message)
         assert reply_mock.called
 
-    async def test_skips_message_with_skip_mark(
-        self, caplog, bot: SonglinkBot
-    ):
+    async def test_skips_message_with_skip_mark(self, caplog, bot: OdesliBot):
         """Skip message if skip mark present."""
 
         message = make_mock_message(text=f'test message {bot.SKIP_MARK}')
@@ -134,7 +130,7 @@ class TestSonglinkBot:
         assert 'Message is skipped due to skip mark' in caplog.text
 
     async def test_logs_if_no_song_links_in_message(
-        self, caplog, bot: SonglinkBot
+        self, caplog, bot: OdesliBot
     ):
         """Log and do not reply if message has no song links."""
 
@@ -143,7 +139,7 @@ class TestSonglinkBot:
         assert 'No songs found in message' in caplog.text
 
     async def test_logs_if_cannot_delete_message(
-        self, caplog, bot: SonglinkBot, songlink_api
+        self, caplog, bot: OdesliBot, odesli_api
     ):
         """Log if cannot delete the message."""
 

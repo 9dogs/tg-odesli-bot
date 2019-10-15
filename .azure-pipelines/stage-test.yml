@@ -39,7 +39,7 @@ stages:
       inputs:
         codeCoverageTool: 'cobertura'
         summaryFileLocation: 'coverage.xml'
-        pathToSources: 'group_songlink_bot'
+        pathToSources: 'tg_odesli_bot'
         reportDirectory: 'htmlcov'
       condition: always()
 

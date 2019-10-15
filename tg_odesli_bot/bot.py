@@ -1,4 +1,4 @@
-"""Songlink bot."""
+"""Odesli bot."""
 import asyncio
 import contextvars
 from collections import Counter
@@ -14,13 +14,13 @@ from aiogram.types import ChatType
 from aiogram.utils.exceptions import MessageCantBeDeleted
 from marshmallow import ValidationError
 
-from group_songlink_bot.config import Config
-from group_songlink_bot.platforms import PLATFORMS
-from group_songlink_bot.schemas import SongLinkResponseSchema
+from tg_odesli_bot.config import Config
+from tg_odesli_bot.platforms import PLATFORMS
+from tg_odesli_bot.schemas import ApiResponseSchema
 
 
 class BotException(Exception):
-    """Songlink Bot exception."""
+    """Odesli Bot exception."""
 
 
 @dataclass
@@ -74,14 +74,14 @@ class LoggingMiddleware(BaseMiddleware):
         self.logger_var.set(_logger)
 
 
-class SonglinkBot:
-    """Songlink Telegram bot."""
+class OdesliBot:
+    """Odesli Telegram bot."""
 
     #: If this string is in an incoming message, the message will be skipped
     #: by the bot
     SKIP_MARK = '!skip'
     #: Time to wait before retrying and API call if 429 code was returned
-    SONGLINK_RETRY_TIME = 5
+    API_RETRY_TIME = 5
 
     def __init__(self, config: Config = None):
         """Initialize the bot.
@@ -91,12 +91,12 @@ class SonglinkBot:
         # Load config
         self._config = config or Config.load_config()
         # Create a logger
-        self.logger = structlog.get_logger('group_songlink_bot')
+        self.logger = structlog.get_logger('tg_odesli_bot')
         self.logger_var = contextvars.ContextVar('logger', default=self.logger)
         # Create an HTTP session
         self.session = aiohttp.ClientSession()
         # Initialize the bot and a dispatcher
-        self._bot = Bot(token=self._config.BOT_API_TOKEN)
+        self._bot = Bot(token=self._config.TG_API_TOKEN)
         self._dp = Dispatcher(self._bot)
         # Setup logging middleware
         self._logging_middleware = LoggingMiddleware(self.logger_var)
@@ -118,13 +118,13 @@ class SonglinkBot:
         _logger.debug('Sending a welcome message')
         welcome_msg_template = (
             'Hi!\n'
-            "I'm a SongLink Bot. You can message me a link to a supported "
+            "I'm a Odesli Bot. You can message me a link to a supported "
             'music streaming platform and I will respond with links from all '
             'the platforms. If you invite me to a group chat I will do the '
             'same as well as trying to delete original message (you must '
             'promote me to admin to enable this behavior).\n'
             '<b>Supported platforms:</b> {supported_platforms}.\n'
-            'Powered by great <a href="https://song.link/">SongLink</a> '
+            'Powered by great <a href="https://odesli.co/">Odesli</a> '
             '(thank you guys!).'
         )
         supported_platforms = []
@@ -215,7 +215,7 @@ class SonglinkBot:
         if not song_urls:
             logger.debug('No songs found in message')
             return
-        # Get songs information by its URLs via Songlink service API
+        # Get songs information by its URLs via Odesli service API
         song_infos = await asyncio.gather(
             *[self.find_song_by_url(song_url) for song_url in song_urls]
         )
@@ -251,37 +251,37 @@ class SonglinkBot:
                 logger.warning('Cannot delete message', exc_info=exc)
 
     async def find_song_by_url(self, song_url: SongUrl):
-        """Make an API call to SongLink service and return song data for
+        """Make an API call to Odesli service and return song data for
         supported services.
 
         :param str song_url: URL of a song in any supported platform
-        :return: SongLink response
+        :return: Odesli response
         """
         logger = self.logger_var.get()
         params = {'url': song_url.url}
-        if self._config.SONGLINK_API_KEY:
-            params['api_key'] = self._config.SONGLINK_API_KEY
-        logger = logger.bind(url=self._config.SONGLINK_API_URL, params=params)
+        if self._config.ODESLI_API_KEY:
+            params['api_key'] = self._config.ODESLI_API_KEY
+        logger = logger.bind(url=self._config.ODESLI_API_URL, params=params)
         async with self.session.get(
-            self._config.SONGLINK_API_URL, params=params
+            self._config.ODESLI_API_URL, params=params
         ) as resp:
             if resp.status != HTTPStatus.OK:
                 if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
                     logger.warning(
                         'Too many requests', status_code=resp.status
                     )
-                    await asyncio.sleep(self.SONGLINK_RETRY_TIME)
+                    await asyncio.sleep(self.API_RETRY_TIME)
                 else:
-                    logger.error('SongLink API error', status_code=resp.status)
+                    logger.error('Odesli API error', status_code=resp.status)
             response = await resp.json()
-            logger.debug('Got SongLink API response', response=response)
-            schema = SongLinkResponseSchema(unknown='EXCLUDE')
+            logger.debug('Got Odesli API response', response=response)
+            schema = ApiResponseSchema(unknown='EXCLUDE')
             try:
                 data = schema.load(response)
             except ValidationError as exc:
                 logger.error('Invalid response data', exc_info=exc)
             else:
-                song_info = self.process_songlink_response(data, song_url.url)
+                song_info = self.process_api_response(data, song_url.url)
                 return song_info
 
     def _filter_platform_urls(self, platform_urls: dict) -> dict:
@@ -308,10 +308,10 @@ class SonglinkBot:
         }
         return platform_urls
 
-    def process_songlink_response(self, data: dict, url: str) -> SongInfo:
-        """Extract a song info from SongLink API info.
+    def process_api_response(self, data: dict, url: str) -> SongInfo:
+        """Extract a song info from Odesli API info.
 
-        :param data: deserialized JSON SongLink data
+        :param data: deserialized JSON Odesli data
         :param url: URL in message text
         :return: song info object
         """
@@ -351,5 +351,5 @@ class SonglinkBot:
 
 
 if __name__ == '__main__':
-    bot = SonglinkBot()
+    bot = OdesliBot()
     bot.start()
