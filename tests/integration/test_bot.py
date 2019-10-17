@@ -57,7 +57,7 @@ class TestOdesliBot:
                 'message (you must promote me to admin to enable this '
                 'behavior).\n'
                 '<b>Supported platforms:</b> Deezer | Google Music | '
-                'SoundCloud.\n'
+                'SoundCloud | Yandex Music | Spotify.\n'
                 'Powered by great <a href="https://odesli.co/">Odesli</a> '
                 '(thank you guys!).'
             )
@@ -80,8 +80,10 @@ class TestOdesliBot:
                 '<b>@test_user wrote:</b> checkout this one: [1]\n'
                 '\n'
                 '1. Test Artist - Test Title\n'
-                '<a href="https://www.test.com/test">Deezer</a> | '
-                '<a href="https://www.test.com/test">Google Music</a>'
+                '<a href="https://www.test.com/d">Deezer</a> | '
+                '<a href="https://www.test.com/g">Google Music</a> | '
+                '<a href="https://www.test.com/yn">Yandex Music</a> | '
+                '<a href="https://www.test.com/s">Spotify</a>'
             )
 
         async def delete_mock_fn():
@@ -109,8 +111,10 @@ class TestOdesliBot:
             assert not reply
             assert text == (
                 '1. Test Artist - Test Title\n'
-                '<a href="https://www.test.com/test">Deezer</a> | '
-                '<a href="https://www.test.com/test">Google Music</a>'
+                '<a href="https://www.test.com/d">Deezer</a> | '
+                '<a href="https://www.test.com/g">Google Music</a> | '
+                '<a href="https://www.test.com/yn">Yandex Music</a> | '
+                '<a href="https://www.test.com/s">Spotify</a>'
             )
 
         reply_mock = mock.Mock(side_effect=reply_mock_fn)

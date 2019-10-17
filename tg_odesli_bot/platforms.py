@@ -19,9 +19,9 @@ class PlatformABC(ABC):
     # Order of platform link in bot message
     order: int
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls, **kwargs):
         """Compile regex and add platform to a platform registry."""
-        super().__init_subclass__()
+        super().__init_subclass__(**kwargs)
         cls.url_re = re.compile(cls.url_re)
         PLATFORMS[cls.key] = cls()
 
@@ -51,3 +51,21 @@ class SoundCloudPlatform(PlatformABC):
     url_re = r'https?://([a-zA-Z\d-]+\.)*soundcloud\.com/[^\s.,]*'
     name = 'SoundCloud'
     order = 2
+
+
+class YandexMusicPlatform(PlatformABC):
+    """Yandex Music platform."""
+
+    key = 'yandex'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*music\.yandex\.(com|ru)/[^\s.,]*'
+    name = 'Yandex Music'
+    order = 3
+
+
+class SpotifyPlatform(PlatformABC):
+    """Spotify platform."""
+
+    key = 'spotify'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*spotify\.com/[^\s.,]*'
+    name = 'Spotify'
+    order = 4

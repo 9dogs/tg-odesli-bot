@@ -69,56 +69,56 @@ TEST_RESPONSE = {
     },
     'linksByPlatform': {
         'deezer': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/d',
             'entityUniqueId': 'DEEZER_SONG::D1',
         },
         'appleMusic': {
-            'url': 'https://www.test.com/test',
-            'entityUniqueId': 'ITUNES_SONG::IT1',
+            'url': 'https://www.test.com/am',
+            'entityUniqueId': 'ITUNES_SONG::AM1',
         },
         'spotify': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/s',
             'entityUniqueId': 'SPOTIFY_SONG::S1',
         },
         'youtube': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/y',
             'entityUniqueId': 'YOUTUBE_VIDEO::Y1',
         },
         'youtubeMusic': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/ym',
             'entityUniqueId': 'YOUTUBE_VIDEO::YM1',
         },
         'google': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/g',
             'entityUniqueId': 'GOOGLE_SONG::G1',
         },
         'amazonMusic': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/a',
             'entityUniqueId': 'AMAZON_SONG::A1',
         },
         'tidal': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/t',
             'entityUniqueId': 'TIDAL_SONG::T1',
         },
         'napster': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/n',
             'entityUniqueId': 'NAPSTER_SONG::N1',
         },
         'yandex': {
-            'url': 'https://www.test.com/test',
-            'entityUniqueId': 'YANDEX_SONG::Y1',
+            'url': 'https://www.test.com/yn',
+            'entityUniqueId': 'YANDEX_SONG::YN1',
         },
         'itunes': {
-            'url': 'https://www.test.com/test',
+            'url': 'https://www.test.com/it',
             'entityUniqueId': 'ITUNES_SONG::IT1',
         },
         'googleStore': {
-            'url': 'https://www.test.com/test',
-            'entityUniqueId': 'GOOGLE_SONG::G1',
+            'url': 'https://www.test.com/gs',
+            'entityUniqueId': 'GOOGLE_SONG::GS1',
         },
         'amazonStore': {
-            'url': 'https://www.test.com/test',
-            'entityUniqueId': 'AMAZON_SONG::A1',
+            'url': 'https://www.test.com/az',
+            'entityUniqueId': 'AMAZON_SONG::AZ1',
         },
     },
 }

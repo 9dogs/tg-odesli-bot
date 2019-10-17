@@ -9,16 +9,17 @@ class TestOdesliBot:
     """Unit tests for Odesli bot."""
 
     async def test_extracts_urls(self, bot: OdesliBot):
-        """Extract platform URLs and positions from message text."""
+        """Extract platform URLs from message text."""
         text = (
-            'Check this out: https://www.deezer.com/track/568497412,\n'
-            'Check this out: https://play.google.com/music/m/Tdyd5oxivy52cpw'
-            '4b2qqbgewdwu.\n'
-            'Check this out: https://soundcloud.com/worakls/nto-trauma-worakls'
-            '-remix Great songs!'
+            '1 https://www.deezer.com/track/568497412,\n'
+            '2 https://play.google.com/music/m/Tdyd5oxivy52cpw4b2qqbgewdwu.\n'
+            '3 https://soundcloud.com/worakls/nto-trauma-worakls-remix \n'
+            '4 https://music.yandex.com/album/50197/track/120711 no_link\n'
+            '5 https://music.yandex.ru/album/6004920/track/44769475\n'
+            '6 https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 3
+        assert len(urls) == 6
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -31,6 +32,21 @@ class TestOdesliBot:
         assert soundcloud_url.platform_key == 'soundcloud'
         assert soundcloud_url.url == (
             'https://soundcloud.com/worakls/nto-trauma-worakls-remix'
+        )
+        yandex_com = urls[3]
+        assert yandex_com.platform_key == 'yandex'
+        assert yandex_com.url == (
+            'https://music.yandex.com/album/50197/track/120711'
+        )
+        yandex_ru = urls[4]
+        assert yandex_ru.platform_key == 'yandex'
+        assert yandex_ru.url == (
+            'https://music.yandex.ru/album/6004920/track/44769475'
+        )
+        spotify = urls[5]
+        assert spotify.platform_key == 'spotify'
+        assert spotify.url == (
+            'https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh'
         )
 
     async def test_merges_urls_for_same_song(self, bot: OdesliBot):
