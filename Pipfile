@@ -26,7 +26,6 @@ colorama = "*"
 structlog-sentry = "*"
 marshmallow = "*"
 pytest-aiohttp = "*"
-idna-ssl = "*"
 
 [dev-packages]
 pre-commit = "*"

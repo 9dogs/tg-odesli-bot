@@ -10,8 +10,6 @@ stages:
       PYTHONPATH: $(Build.SourcesDirectory)
     strategy:
       matrix:
-        Python_36:
-          python.version: '3.6'
         Python_37:
           python.version: '3.7'
 
