@@ -30,6 +30,3 @@ pytest-aiohttp = "*"
 [dev-packages]
 pre-commit = "*"
 pygments = "*"
-
-[requires]
-python_version = "3.7"
