@@ -8,6 +8,16 @@ stages:
       vmImage: 'ubuntu-latest'
     variables:
       PYTHONPATH: $(Build.SourcesDirectory)
+    strategy:
+      matrix:
+        Python_35:
+          python.version: '3.5'
+        Python_36:
+          python.version: '3.6'
+        Python_37:
+          python.version: '3.7'
+        Python_38:
+          python.version: '3.8'
 
     steps:
     - checkout: self
@@ -15,7 +25,7 @@ stages:
 
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.7'
+        versionSpec: '$(python.version)'
         architecture: 'x64'
 
     - script: |
