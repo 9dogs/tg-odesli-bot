@@ -3,7 +3,7 @@ stages:
   displayName: 'Test'
 
   jobs:
-  - job: 'test'
+  - job: 'Test'
     pool:
       vmImage: 'ubuntu-latest'
     variables:
@@ -14,8 +14,6 @@ stages:
           python.version: '3.6'
         Python_37:
           python.version: '3.7'
-        Python_38:
-          python.version: '3.8'
 
     steps:
     - checkout: self
