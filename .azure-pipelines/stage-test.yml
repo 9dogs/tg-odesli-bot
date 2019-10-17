@@ -41,15 +41,16 @@ stages:
     - task: PublishTestResults@2
       inputs:
         testResultsFiles: 'junit.xml'
-      condition: always()
+        testRunTitle: 'Publish test results for Python $(python.version)'
+      condition: succeededOrFailed()
 
     - task: PublishCodeCoverageResults@1
       inputs:
         codeCoverageTool: 'cobertura'
-        summaryFileLocation: 'coverage.xml'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+        reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
         pathToSources: 'tg_odesli_bot'
-        reportDirectory: 'htmlcov'
-      condition: always()
+      condition: succeededOrFailed()
 
     - script: |
         bash <(curl -s https://codecov.io/bash)

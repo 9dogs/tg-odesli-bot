@@ -3,8 +3,7 @@
 	lint \
 	mypy \
 	test \
-	build \
-	push
+	build
 
 all:
 	@echo "fmt                 Format code."
@@ -12,7 +11,6 @@ all:
 	@echo "mypy                Check types."
 	@echo "test                Test code."
 	@echo "build               Build Docker image."
-	@echo "push                Push Docker image to DockerHub."
 
 FILES = tg_odesli_bot tests
 IMAGE_NAME = 9dogs/tg-odesli-bot:latest
@@ -39,9 +37,6 @@ mypy:
 
 build:
 	docker build -t $(IMAGE_NAME) .
-
-push:
-	docker push $(IMAGE_NAME)
 
 TEST_OPTS ?= tests -r R
 TEST_OUTPUT ?= .
