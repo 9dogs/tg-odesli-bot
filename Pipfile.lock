@@ -174,11 +174,11 @@
         },
         "flake8-debugger": {
             "hashes": [
-                "sha256:103d86d2ecb95f8aab90f90603446f4e2bb60e01f1593e4fec410074dedabac6",
-                "sha256:6101a7ca3b5afee7ff43b26dffc6d15ffa36cc77030b62cebfd1cb7b636e5b6e"
+                "sha256:08d80b7e90f6c11d72e77d2717b90c29b144c87e5698ffd1b5a1e42acb3ecfd9",
+                "sha256:6e662f7e75a3ed729d3be7c92e72bde385ab08ec26e7808bf3dfc63445c87857"
             ],
             "index": "pypi",
-            "version": "==3.1.1"
+            "version": "==3.2.0"
         },
         "flake8-polyfill": {
             "hashes": [
@@ -455,11 +455,11 @@
         },
         "structlog": {
             "hashes": [
-                "sha256:5feae03167620824d3ae3e8915ea8589fc28d1ad6f3edf3cc90ed7c7cb33fab5",
-                "sha256:db441b81c65b0f104a7ce5d86c5432be099956b98b8a2c8be0b3fb3a7a0b1536"
+                "sha256:4287058cf4ce1a59bc5dea290d6386d37f29a37529c9a51cdf7387e51710152b",
+                "sha256:6640e6690fc31d5949bc614c1a630464d3aaa625284aeb7c6e486c3010d73e12"
             ],
             "index": "pypi",
-            "version": "==19.1.0"
+            "version": "==19.2.0"
         },
         "structlog-sentry": {
             "hashes": [
@@ -640,10 +640,10 @@
         },
         "virtualenv": {
             "hashes": [
-                "sha256:680af46846662bb38c5504b78bad9ed9e4f3ba2d54f54ba42494fdf94337fe30",
-                "sha256:f78d81b62d3147396ac33fc9d77579ddc42cc2a98dd9ea38886f616b33bc7fb2"
+                "sha256:3e3597e89c73df9313f5566e8fc582bd7037938d15b05329c232ec57a11a7ad5",
+                "sha256:5d370508bf32e522d79096e8cbea3499d47e624ac7e11e9089f9397a0b3318df"
             ],
-            "version": "==16.7.5"
+            "version": "==16.7.6"
         },
         "zipp": {
             "hashes": [
