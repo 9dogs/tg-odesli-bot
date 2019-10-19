@@ -26,19 +26,23 @@ not clutter up the chat.
 Supported services
 ==================
 
-Currently these services are supported:
+Currently the following services are supported:
 
 - Deezer
 - Google Music
 - SoundCloud
+- Yandex Music
+- Spotify
 
 Privacy considerations
 ======================
 
-The Bot have to have access to messages to operate. It does not store nor
-transfer messages anywhere. However, the only true way to be sure about that is
-to read through source code in this repository **and** run your copy of the Bot
-(see section below).
+The Bot have to have access to messages in group chats to operate (that is, it
+operates with disabled `privacy mode <https://core.telegram.org/bots#privacy-mode>`_).
+It does not store nor transfer messages anywhere. However, the only true way to be
+sure about that is to read through source code in this repository **and** run
+your copy of the Bot (see section below). Alternatively, create a special group
+only for music sharing and do not post any sensitive information.
 
 Run your own copy
 =================
@@ -50,6 +54,9 @@ You need bot token to run your copy of the Bot but don't worry, it's a peace of
 cake. Follow the instructions_ to create a new bot (you can set a name and a
 username to whatever you want). All you need is a string like
 ``110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw`` - this is your bot token.
+
+Additionally, disable privacy mode bot your bot in dialog with @BotFather:
+"Group Privacy" - "Turn off".
 
 Bot looks for ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable so you
 must set it either in shell or via ``.env`` file:
@@ -88,8 +95,9 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
     TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg-odesli-bot
 
 
-.. |azure| image:: https://dev.azure.com/hellishbot/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master
-           :target: https://dev.azure.com/hellishbot/tg-odesli-bot/
+
+.. |azure| image:: https://dev.azure.com/9dogs/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master
+           :target: https://dev.azure.com/9dogs/tg-odesli-bot/
            :alt: Azure Pipeline status for master branch
 .. |codecov| image:: https://codecov.io/gh/9dogs/tg-odesli-bot/branch/master/graph/badge.svg?token=3nWZWJ3Bl3
              :target: https://codecov.io/gh/9dogs/tg-odesli-bot

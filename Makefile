@@ -1,14 +1,12 @@
 .PHONY: \
 	fmt \
 	lint \
-	mypy \
 	test \
 	build
 
 all:
 	@echo "fmt                 Format code."
 	@echo "lint                Lint code."
-	@echo "mypy                Check types."
 	@echo "test                Test code."
 	@echo "build               Build Docker image."
 
@@ -32,9 +30,6 @@ lint:
 	pipenv run pydocstyle $(FILES)
 	pipenv run mypy $(FILES)
 
-mypy:
-	pipenv run mypy $(FILES)
-
 build:
 	docker build -t $(IMAGE_NAME) .
 
@@ -46,7 +41,5 @@ test:
         --cov-report term-missing \
         --cov-report html:$(TEST_OUTPUT)/htmlcov \
         --cov-report xml:$(TEST_OUTPUT)/coverage.xml \
-        --html=$(TEST_OUTPUT)/report.html \
-        --self-contained-html \
         --junit-xml $(TEST_OUTPUT)/junit.xml \
         $(TEST_OPTS)
