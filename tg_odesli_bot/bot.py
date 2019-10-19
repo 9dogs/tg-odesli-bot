@@ -200,7 +200,11 @@ class OdesliBot:
                 ids2 = song_info2.ids
                 if ids1 & ids2:
                     song_info1.ids = ids1 | ids2
-                    song_info1.urls = {**song_info1.urls, **song_info2.urls}
+                    if song_info1.urls and song_info2.urls:
+                        song_info1.urls = {
+                            **song_info1.urls,
+                            **song_info2.urls,
+                        }
                     song_info1.urls_in_text = (
                         song_info1.urls_in_text + song_info2.urls_in_text
                     )
@@ -229,7 +233,7 @@ class OdesliBot:
             return
         # Get songs information by its URLs via Odesli service API
         song_infos = await asyncio.gather(
-            *[self.find_song_by_url(song_url) for song_url in song_urls],
+            *[self.find_song_by_url(song_url) for song_url in song_urls]
         )
         # Do not reply to the message if all song infos are empty
         if all(not song_info.ids for song_info in song_infos):

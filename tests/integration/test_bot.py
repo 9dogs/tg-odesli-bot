@@ -11,7 +11,6 @@ from aioresponses import aioresponses
 from pytest import mark
 
 from tests.conftest import TEST_RESPONSE
-from tg_odesli_bot.bot import OdesliBot
 
 
 def make_mock_message(
