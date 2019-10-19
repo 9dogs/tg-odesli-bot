@@ -5,12 +5,13 @@ from unittest import mock
 
 from aiogram import types
 from aiogram.types import Chat, ChatType, ContentType, Message, User
-from aiogram.utils.exceptions import MessageCantBeDeleted
+from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
 from aiohttp import ClientConnectionError
 from aioresponses import aioresponses
 from pytest import mark
 
 from tests.conftest import TEST_RESPONSE
+from tg_odesli_bot.bot import OdesliBot
 
 
 def make_mock_message(
@@ -222,7 +223,7 @@ class TestOdesliBot:
                 ),
             ]
             await asyncio.sleep(1)
-            assert 'Too many requests, will retry' in caplog.text
+            assert 'Too many requests, retrying' in caplog.text
             assert 'Waiting for the API' in caplog.text
             await asyncio.gather(*tasks)
 
@@ -276,4 +277,17 @@ class TestOdesliBot:
         )
         bot.session.get = mock.MagicMock(side_effect=ClientConnectionError)
         await bot.dispatcher.message_handlers.notify(message)
-        assert 'Connection error, will retry' in caplog.text
+        assert 'Connection error, retrying' in caplog.text
+
+    def test_retries_if_telegram_connection_error(self, caplog, monkeypatch):
+        """Bot retries to connect if Telegram API connection error."""
+        bot = OdesliBot()
+        bot.TG_RETRY_TIME = 1
+        bot.TG_MAX_RETRIES = 1
+        monkeypatch.setattr(
+            bot.dispatcher,
+            'start_polling',
+            mock.MagicMock(side_effect=NetworkError),
+        )
+        bot.start()
+        assert 'Connection error, retrying' in caplog.text

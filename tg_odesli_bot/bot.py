@@ -1,6 +1,7 @@
 """Odesli bot."""
 import asyncio
 import contextvars
+import signal
 from collections import Counter
 from dataclasses import dataclass
 from http import HTTPStatus
@@ -8,10 +9,10 @@ from typing import Dict, List, Optional, Set, Tuple
 
 import aiohttp
 import structlog
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types import ChatType
-from aiogram.utils.exceptions import MessageCantBeDeleted
+from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
 from aiohttp import ClientConnectionError
 from marshmallow import ValidationError
 
@@ -85,22 +86,33 @@ class OdesliBot:
     API_RETRY_TIME = 5
     #: Max retries count
     API_MAX_RETRIES = 5
+    #: Telegram API retry time
+    TG_RETRY_TIME = 1
+    #: Max reties count in case of Telegram API connection error (None is
+    #: unlimited)
+    TG_MAX_RETRIES = None
 
-    def __init__(self, config: Config = None):
+    def __init__(self, config: Config = None, *, loop=None):
         """Initialize the bot.
 
         :param config: configuration
+        :param loop: event loop
         """
         # Config
         self.config = config or Config.load()
         # Logger
         self.logger = structlog.get_logger('tg_odesli_bot')
         self.logger_var = contextvars.ContextVar('logger', default=self.logger)
+        self._loop = loop or asyncio.get_event_loop()
         # HTTP session
         self.session = aiohttp.ClientSession()
+        try:
+            self._loop.add_signal_handler(signal.SIGINT, self.stop)
+        except NotImplementedError:  # Windows
+            pass
         # Bot and dispatcher
-        self._bot = Bot(token=self.config.TG_API_TOKEN)
-        self.dispatcher = Dispatcher(self._bot)
+        self.bot = Bot(token=self.config.TG_API_TOKEN)
+        self.dispatcher = Dispatcher(self.bot)
         # API ready event (used for requests throttling)
         self._api_ready = asyncio.Event()
         self._api_ready.set()
@@ -298,8 +310,8 @@ class OdesliBot:
                         # Throttle requests and retry
                         if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
                             logger.warning(
-                                'Too many requests, will retry',
-                                retry_time=self.API_RETRY_TIME,
+                                'Too many requests, retrying in %d sec',
+                                self.API_RETRY_TIME,
                             )
                             # Stop all requests and wait before retry
                             self._api_ready.clear()
@@ -324,14 +336,14 @@ class OdesliBot:
                     finally:
                         break
             except ClientConnectionError as exc:
+                _retries += 1
                 logger.error(
-                    'Connection error, will retry',
+                    'Connection error, retrying in %d sec',
+                    self.API_RETRY_TIME,
                     exc_info=exc,
-                    retry_time=self.API_RETRY_TIME,
                     retries=_retries,
                 )
                 await asyncio.sleep(self.API_RETRY_TIME)
-                _retries += 1
         return song_info
 
     def _filter_platform_urls(self, platform_urls: dict) -> dict:
@@ -389,15 +401,48 @@ class OdesliBot:
         )
         return song_info
 
+    async def _start(self):
+        """Start polling.  Retry if cannot connect to Telegram servers."""
+        _retries = 0
+        try:
+            await self.dispatcher.skip_updates()
+            self._loop.create_task(self.dispatcher.start_polling())
+        except (
+            ConnectionResetError,
+            NetworkError,
+            ClientConnectionError,
+        ) as exc:
+            _retries += 1
+            self.logger.info(
+                'Connection error, retrying in %d sec',
+                self.TG_RETRY_TIME,
+                exc_info=exc,
+                retries=_retries,
+            )
+            if self.TG_MAX_RETRIES is None or _retries < self.TG_MAX_RETRIES:
+                await asyncio.sleep(self.TG_RETRY_TIME)
+                asyncio.create_task(self._start())
+            else:
+                self.logger.info('Max retries count reached, exiting')
+                await self.stop()
+                self._loop.stop()
+        else:
+            self.logger.info('Bot started')
+
     def start(self):
         """Start the bot."""
         self.logger.info('Starting polling...')
-        executor.start_polling(self.dispatcher, skip_updates=True)
+        self._loop.create_task(self._start())
+        try:
+            self._loop.run_forever()
+        except KeyboardInterrupt:
+            self._loop.create_task(self.stop())
 
     async def stop(self):
         """Stop the bot."""
+        self.logger.info('Stopping...')
         await self.session.close()
-        await self._bot.close()
+        await self.bot.close()
 
 
 if __name__ == '__main__':
