@@ -87,7 +87,7 @@ class Config:
         )
 
     @classmethod
-    def load_config(cls, env_prefix: str = 'TG_ODESLI_BOT_'):
+    def load(cls, env_prefix: str = 'TG_ODESLI_BOT_'):
         """Load config merging default variables and variables from the
         environment.
 

@@ -1,6 +1,7 @@
 """Helpers and fixtures for pytest."""
 import re
 from functools import partial
+from http import HTTPStatus
 from pathlib import Path
 from unittest import mock
 
@@ -142,7 +143,7 @@ def test_dotenv():
 @fixture
 def test_config():
     """Test config fixture."""
-    config = TestConfig.load_config()
+    config = TestConfig.load()
     return config
 
 
@@ -164,5 +165,5 @@ async def odesli_api(test_config):
     """Odesli API mock."""
     pattern = re.compile(rf'^{re.escape(test_config.ODESLI_API_URL)}.*$')
     with aioresponses() as m:
-        m.get(pattern, status=200, payload=TEST_RESPONSE)
+        m.get(pattern, status=HTTPStatus.OK, payload=TEST_RESPONSE)
         yield m

@@ -7,16 +7,16 @@ class TestConfiguration:
 
     def test_loads_config(self):
         """Load config."""
-        config = Config.load_config()
+        config = Config.load()
         assert config
 
     def test_loads_config_with_dotenv_file(self, test_dotenv):
         """Load config with variables from .env file."""
-        config = Config.load_config()
+        config = Config.load()
         assert config
         assert config.TG_API_TOKEN == 'test_token'
 
     def test_does_not_override_in_test_mode(self, test_dotenv):
         """Do not override config variables in test mode."""
-        config = TestConfig.load_config()
+        config = TestConfig.load()
         assert config.TG_API_TOKEN == 'invalid'
