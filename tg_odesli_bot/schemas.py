@@ -32,10 +32,12 @@ class ApiResponseSchema(Schema):
         keys=fields.Str(),
         values=fields.Nested(SongSchema, unknown='EXCLUDE'),
         data_key='entitiesByUniqueId',
+        required=True,
     )
     #: Dictionary of platform -> LinkSchema
     links = fields.Dict(
         keys=fields.Str(),
         values=fields.Nested(PlatformLink, unknown='EXCLUDE'),
         data_key='linksByPlatform',
+        required=True,
     )

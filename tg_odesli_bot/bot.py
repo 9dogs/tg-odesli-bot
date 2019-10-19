@@ -4,7 +4,7 @@ import contextvars
 from collections import Counter
 from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import aiohttp
 import structlog
@@ -12,6 +12,7 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types import ChatType
 from aiogram.utils.exceptions import MessageCantBeDeleted
+from aiohttp import ClientConnectionError
 from marshmallow import ValidationError
 
 from tg_odesli_bot.config import Config
@@ -42,11 +43,11 @@ class SongInfo:
     #: Ids
     ids: set
     #: Title
-    title: str
+    title: Optional[str]
     #: Artist
-    artist: str
+    artist: Optional[str]
     #: Platform URLs
-    urls: Dict[str, str]
+    urls: Optional[Dict[str, str]]
     #: URLs in text
     urls_in_text: List[str]
 
@@ -82,32 +83,39 @@ class OdesliBot:
     SKIP_MARK = '!skip'
     #: Time to wait before retrying and API call if 429 code was returned
     API_RETRY_TIME = 5
+    #: Max retries count
+    API_MAX_RETRIES = 5
 
     def __init__(self, config: Config = None):
         """Initialize the bot.
 
         :param config: configuration
         """
-        # Load config
-        self._config = config or Config.load_config()
-        # Create a logger
+        # Config
+        self.config = config or Config.load()
+        # Logger
         self.logger = structlog.get_logger('tg_odesli_bot')
         self.logger_var = contextvars.ContextVar('logger', default=self.logger)
-        # Create an HTTP session
+        # HTTP session
         self.session = aiohttp.ClientSession()
-        # Initialize the bot and a dispatcher
-        self._bot = Bot(token=self._config.TG_API_TOKEN)
-        self._dp = Dispatcher(self._bot)
+        # Bot and dispatcher
+        self._bot = Bot(token=self.config.TG_API_TOKEN)
+        self.dispatcher = Dispatcher(self._bot)
+        # API ready event (used for requests throttling)
+        self._api_ready = asyncio.Event()
+        self._api_ready.set()
         # Setup logging middleware
         self._logging_middleware = LoggingMiddleware(self.logger_var)
-        self._dp.middleware.setup(self._logging_middleware)
+        self.dispatcher.middleware.setup(self._logging_middleware)
         # Add handlers
         self._add_handlers()
 
     def _add_handlers(self):
         """Add messages and commands handlers."""
-        self._dp.message_handler(commands=['start', 'help'])(self.send_welcome)
-        self._dp.message_handler()(self.handle_message)
+        self.dispatcher.message_handler(commands=['start', 'help'])(
+            self.send_welcome
+        )
+        self.dispatcher.message_handler()(self.handle_message)
 
     async def send_welcome(self, message: types.Message):
         """Send a welcome message.
@@ -176,6 +184,9 @@ class OdesliBot:
         """
         merged_song_info_indexes: Set[int] = set()
         for idx1, song_info1 in enumerate(song_infos):
+            # Skip empty SongInfos
+            if not song_info1.ids:
+                continue
             if idx1 in merged_song_info_indexes:
                 continue
             ids1 = song_info1.ids
@@ -183,6 +194,7 @@ class OdesliBot:
                 if (
                     song_info2 is song_info1
                     or idx2 in merged_song_info_indexes
+                    or not song_info2.ids
                 ):
                     continue
                 ids2 = song_info2.ids
@@ -217,16 +229,17 @@ class OdesliBot:
             return
         # Get songs information by its URLs via Odesli service API
         song_infos = await asyncio.gather(
-            *[self.find_song_by_url(song_url) for song_url in song_urls]
+            *[self.find_song_by_url(song_url) for song_url in song_urls],
         )
-        if not song_infos:
+        # Do not reply to the message if all song infos are empty
+        if all(not song_info.ids for song_info in song_infos):
+            logger.error('API returned errors for all URLs')
             return
-        # Combine song infos if different platform links point to
-        # the same song
+        # Combine song infos if different platform links point to the same song
         song_infos = self._merge_same_songs(song_infos)
         # Replace original URLs in message with footnotes (like [1], [2] etc)
         text = self._replace_urls_with_footnotes(message.text, song_infos)
-        # Form reply text.  In group chats quote original message
+        # Form a reply text.  In group chats quote the original message
         if message.chat.type != ChatType.PRIVATE:
             reply_list = [
                 f'<b>@{message.from_user.username} wrote:</b> {text}\n'
@@ -234,6 +247,9 @@ class OdesliBot:
         else:
             reply_list = []
         for index, song_info in enumerate(song_infos, start=1):
+            if not song_info.ids:
+                reply_list.append(f'{index}. {song_info.urls_in_text[0]}')
+                continue
             reply_list.append(
                 f'{index}. {song_info.artist} - {song_info.title}'
             )
@@ -259,30 +275,60 @@ class OdesliBot:
         """
         logger = self.logger_var.get()
         params = {'url': song_url.url}
-        if self._config.ODESLI_API_KEY:
-            params['api_key'] = self._config.ODESLI_API_KEY
-        logger = logger.bind(url=self._config.ODESLI_API_URL, params=params)
-        async with self.session.get(
-            self._config.ODESLI_API_URL, params=params
-        ) as resp:
-            if resp.status != HTTPStatus.OK:
-                if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
-                    logger.warning(
-                        'Too many requests', status_code=resp.status
-                    )
-                    await asyncio.sleep(self.API_RETRY_TIME)
-                else:
-                    logger.error('Odesli API error', status_code=resp.status)
-            response = await resp.json()
-            logger.debug('Got Odesli API response', response=response)
-            schema = ApiResponseSchema(unknown='EXCLUDE')
+        if self.config.ODESLI_API_KEY:
+            params['api_key'] = self.config.ODESLI_API_KEY
+        logger = logger.bind(url=self.config.ODESLI_API_URL, params=params)
+        # Create empty SongInfo in case of API error
+        song_info = SongInfo(set(), None, None, None, [song_url.url])
+        _retries = 0
+        while _retries < self.API_MAX_RETRIES:
             try:
-                data = schema.load(response)
-            except ValidationError as exc:
-                logger.error('Invalid response data', exc_info=exc)
-            else:
-                song_info = self.process_api_response(data, song_url.url)
-                return song_info
+                # Wait if requests are being throttled
+                if not self._api_ready.is_set():
+                    logger.info('Waiting for the API')
+                    await self._api_ready.wait()
+                async with self.session.get(
+                    self.config.ODESLI_API_URL, params=params
+                ) as resp:
+                    if resp.status != HTTPStatus.OK:
+                        # Throttle requests and retry
+                        if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
+                            logger.warning(
+                                'Too many requests, will retry',
+                                retry_time=self.API_RETRY_TIME,
+                            )
+                            # Stop all requests and wait before retry
+                            self._api_ready.clear()
+                            await asyncio.sleep(self.API_RETRY_TIME)
+                            self._api_ready.set()
+                            continue
+                        # Return empty response if API error
+                        else:
+                            logger.error('API error', status_code=resp.status)
+                            break
+                    response = await resp.json()
+                    logger.debug('Got Odesli API response', response=response)
+                    schema = ApiResponseSchema(unknown='EXCLUDE')
+                    try:
+                        data = schema.load(response)
+                    except ValidationError as exc:
+                        logger.error('Invalid response data', exc_info=exc)
+                    else:
+                        song_info = self.process_api_response(
+                            data, song_url.url
+                        )
+                    finally:
+                        break
+            except ClientConnectionError as exc:
+                logger.error(
+                    'Connection error, will retry',
+                    exc_info=exc,
+                    retry_time=self.API_RETRY_TIME,
+                    retries=_retries,
+                )
+                await asyncio.sleep(self.API_RETRY_TIME)
+                _retries += 1
+        return song_info
 
     def _filter_platform_urls(self, platform_urls: dict) -> dict:
         """Filter and reorder platform URLs.
@@ -342,7 +388,7 @@ class OdesliBot:
     def start(self):
         """Start the bot."""
         self.logger.info('Starting polling...')
-        executor.start_polling(self._dp, skip_updates=True)
+        executor.start_polling(self.dispatcher, skip_updates=True)
 
     async def stop(self):
         """Stop the bot."""
