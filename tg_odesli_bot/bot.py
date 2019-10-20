@@ -116,10 +116,6 @@ class OdesliBot:
         """Initialize the bot (async part)."""
         # HTTP session
         self.session = aiohttp.ClientSession(connector=TCPConnector(limit=10))
-        try:
-            self._loop.add_signal_handler(signal.SIGINT, self.stop)
-        except NotImplementedError:  # Windows
-            pass
         # Bot and dispatcher
         self.bot = Bot(token=self.config.TG_API_TOKEN)
         self.dispatcher = Dispatcher(self.bot)
