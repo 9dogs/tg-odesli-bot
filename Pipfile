@@ -1,9 +1,17 @@
 [packages]
+aiocache = "*"
 aiogram = "*"
-ujson = "*"
-sentry-sdk = "*"
+marshmallow = "*"
 python-dotenv = "*"
+sentry-sdk = "*"
 structlog = "*"
+structlog-sentry = "*"
+aiohttp = "*"
+ujson = "*"
+
+[dev-packages]
+aioresponses = "*"
+colorama = "*"
 black = {git = "https://github.com/psf/black.git",ref = "19.3b0"}
 isort = "*"
 flake8 = "*"
@@ -21,14 +29,9 @@ pytest = "*"
 pytest-cov = "*"
 pytest-html = "*"
 pytest-sugar = "*"
-aioresponses = "*"
-colorama = "*"
-structlog-sentry = "*"
-marshmallow = "*"
 pytest-aiohttp = "*"
 pytest-timeout = "*"
-aiocache = "*"
-
-[dev-packages]
-pre-commit = "*"
 pygments = "*"
+
+[scripts]
+bot = "python -m tg_odesli_bot"
