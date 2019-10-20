@@ -1,7 +1,6 @@
 """Odesli bot."""
 import asyncio
 import contextvars
-import signal
 from collections import Counter
 from dataclasses import dataclass
 from http import HTTPStatus
