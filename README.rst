@@ -33,6 +33,7 @@ Currently the following services are supported:
 - SoundCloud
 - Yandex Music
 - Spotify
+- Youtube Music
 
 Privacy considerations
 ======================

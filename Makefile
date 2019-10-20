@@ -33,7 +33,7 @@ lint:
 build:
 	docker build -t $(IMAGE_NAME) .
 
-TEST_OPTS ?= tests -r R
+TEST_OPTS ?= tests -r R --timeout=10
 TEST_OUTPUT ?= .
 test:
 	pipenv run py.test \
