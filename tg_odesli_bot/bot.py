@@ -107,6 +107,10 @@ class OdesliBot:
         self.logger_var = contextvars.ContextVar('logger', default=self.logger)
         # Loop
         self._loop = loop or asyncio.get_event_loop()
+        try:
+            self._loop.add_signal_handler(signal.SIGINT, self.stop)
+        except NotImplementedError:  # Windows
+            pass
         # Cache
         self.cache = caches.get('default')
         # Telegram connect retries count
