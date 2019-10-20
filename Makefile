@@ -18,14 +18,8 @@ fmt:
 	pipenv run isort --recursive $(FILES)
 
 lint:
-	@if ! pipenv run black --check $(FILES); then \
-		echo "Run 'make fmt' to fix"; \
-		false; \
-	fi
-	@if ! pipenv run isort --check-only --recursive $(FILES); then \
-		echo "Run 'make fmt' to fix"; \
-		false; \
-	fi
+	pipenv run black --check $(FILES)
+	pipenv run isort --check-only --recursive $(FILES)
 	pipenv run flake8 $(FILES)
 	pipenv run pydocstyle $(FILES)
 	pipenv run mypy $(FILES)
