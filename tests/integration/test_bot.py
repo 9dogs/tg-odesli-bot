@@ -83,7 +83,7 @@ class TestOdesliBot:
             'message (you must promote me to admin to enable this '
             'behavior).\n'
             '<b>Supported platforms:</b> Deezer | Google Music | '
-            'SoundCloud | Yandex Music | Spotify.\n'
+            'SoundCloud | Yandex Music | Spotify | Youtube Music.\n'
             'Powered by great <a href="https://odesli.co/">Odesli</a> '
             '(thank you guys!).'
         )
@@ -103,7 +103,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
-            '<a href="https://www.test.com/s">Spotify</a>'
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
         reply_mock = make_reply_mock(reply_text)
         delete_mock = make_delete_mock()
@@ -160,7 +161,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
-            '<a href="https://www.test.com/s">Spotify</a>'
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
         reply_mock = make_reply_mock(reply_text)
         message = make_mock_message(
@@ -211,7 +213,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
-            '<a href="https://www.test.com/s">Spotify</a>'
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
         reply_mock = make_reply_mock(reply_text)
         delete_mock = make_delete_mock()
@@ -238,7 +241,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
-            '<a href="https://www.test.com/s">Spotify</a>'
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
         reply_mock = make_reply_mock(reply_text)
         message1 = make_mock_message(
