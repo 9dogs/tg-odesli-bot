@@ -45,8 +45,8 @@ sure about that is to read through source code in this repository **and** run
 your copy of the Bot (see section below). Alternatively, create a special group
 only for music sharing and do not post any sensitive information.
 
-Run your own copy
-=================
+Running your own copy
+=====================
 
 Prerequisites
 -------------
@@ -56,17 +56,20 @@ cake. Follow the instructions_ to create a new bot (you can set a name and a
 username to whatever you want). All you need is a string like
 ``110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw`` - this is your bot token.
 
-Additionally, disable privacy mode bot your bot in dialog with @BotFather:
-"Group Privacy" - "Turn off".
+Additionally, disable privacy mode for your bot in dialog with @BotFather:
+"Group Privacy" - "Turn off" (that is for the bot to be able to read group
+messages).
 
-Bot looks for ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable so you
-must set it either in shell or via ``.env`` file:
+On start Bot looks for ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable so
+you must set it either in shell or via ``.env`` file:
 
 .. code-block:: shell
 
     TG_ODESLI_BOT_TG_API_TOKEN=<your_token> <bot_run_command>
     # OR
     echo "<your_token>" > .env
+
+One you obtain Telegram token, you can run bot using either pure Python or Docker.
 
 Run with python
 ---------------
@@ -79,9 +82,9 @@ copy ``.env`` file into root directory and run the Bot (python 3.7 required):
     git clone https://github.com/9dogs/tg-odesli-bot.git
     cd tg-odesli-bot
     cp /path/to/.env ./
-    pipenv run python tg-odesli-bot/bot.py
+    PYTHONPATH=. pipenv run python tg_odesli_bot/bot.py
     # OR
-    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run python tg-odesli-bot/bot.py
+    PYTHONPATH=. TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run python tg_odesli_bot/bot.py
 
 Run with Docker
 ---------------
