@@ -6,6 +6,7 @@ from typing import Optional
 import dotenv
 import sentry_sdk
 import structlog
+from aiocache import caches
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from structlog_sentry import SentryJsonProcessor
 
@@ -59,6 +60,19 @@ class Config:
     }
     #: Log renderer
     LOG_RENDERER = structlog.processors.JSONRenderer()
+
+    # Cache config
+    caches.set_config(
+        {
+            'default': {
+                'ttl': 6000,  # 100 min
+                'cache': 'aiocache.SimpleMemoryCache',
+                'serializer': {
+                    'class': 'aiocache.serializers.PickleSerializer'
+                },
+            }
+        }
+    )
 
     def init_logging(self):
         """Init logging."""

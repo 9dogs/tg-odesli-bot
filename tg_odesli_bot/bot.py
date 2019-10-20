@@ -6,14 +6,16 @@ from collections import Counter
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Dict, List, Optional, Set, Tuple
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import aiohttp
 import structlog
+from aiocache import caches
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types import ChatType
 from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
-from aiohttp import ClientConnectionError
+from aiohttp import ClientConnectionError, TCPConnector
 from marshmallow import ValidationError
 
 from tg_odesli_bot.config import Config
@@ -25,7 +27,7 @@ class BotException(Exception):
     """Odesli Bot exception."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class SongUrl:
     """Song URL found in text."""
 
@@ -50,7 +52,7 @@ class SongInfo:
     #: Platform URLs
     urls: Optional[Dict[str, str]]
     #: URLs in text
-    urls_in_text: List[str]
+    urls_in_text: Set[str]
 
 
 class LoggingMiddleware(BaseMiddleware):
@@ -103,9 +105,17 @@ class OdesliBot:
         # Logger
         self.logger = structlog.get_logger('tg_odesli_bot')
         self.logger_var = contextvars.ContextVar('logger', default=self.logger)
+        # Loop
         self._loop = loop or asyncio.get_event_loop()
+        # Cache
+        self.cache = caches.get('default')
+        # Telegram connect retries count
+        self._tg_retries = 0
+
+    async def init(self):
+        """Initialize the bot (async part)."""
         # HTTP session
-        self.session = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession(connector=TCPConnector(limit=10))
         try:
             self._loop.add_signal_handler(signal.SIGINT, self.stop)
         except NotImplementedError:  # Windows
@@ -178,10 +188,11 @@ class OdesliBot:
         urls = []
         for platform_key, platform in PLATFORMS.items():
             for match in platform.url_re.finditer(text):
+                url = self.normalize_url(match.group(0))
                 platform_url = SongUrl(
                     platform_key=platform_key,
                     platform_name=platform.name,
-                    url=match.group(0),
+                    url=url,
                 )
                 urls.append(platform_url)
         return urls
@@ -192,7 +203,7 @@ class OdesliBot:
         """Merge SongInfo objects if two or more links point to the same
         song.
 
-        :param song_infos: songs found in a message
+        :param song_infos: tuple of songs found in a message
         """
         merged_song_info_indexes: Set[int] = set()
         for idx1, song_info1 in enumerate(song_infos):
@@ -218,7 +229,7 @@ class OdesliBot:
                             **song_info2.urls,
                         }
                     song_info1.urls_in_text = (
-                        song_info1.urls_in_text + song_info2.urls_in_text
+                        song_info1.urls_in_text | song_info2.urls_in_text
                     )
                     merged_song_info_indexes.add(idx2)
         merged_song_infos = tuple(
@@ -248,11 +259,11 @@ class OdesliBot:
             *[self.find_song_by_url(song_url) for song_url in song_urls]
         )
         # Do not reply to the message if all song infos are empty
-        if all(not song_info.ids for song_info in song_infos):
+        if not any(song_info.ids for song_info in song_infos):
             logger.error('API returned errors for all URLs')
             return
         # Combine song infos if different platform links point to the same song
-        song_infos = self._merge_same_songs(song_infos)
+        song_infos = self._merge_same_songs(tuple(song_infos))
         # Replace original URLs in message with footnotes (like [1], [2] etc)
         text = self._replace_urls_with_footnotes(message.text, song_infos)
         # Form a reply text.  In group chats quote the original message
@@ -264,7 +275,8 @@ class OdesliBot:
             reply_list = []
         for index, song_info in enumerate(song_infos, start=1):
             if not song_info.ids:
-                reply_list.append(f'{index}. {song_info.urls_in_text[0]}')
+                urls_in_text = song_info.urls_in_text.pop()
+                reply_list.append(f'{index}. {urls_in_text}')
                 continue
             reply_list.append(
                 f'{index}. {song_info.artist} - {song_info.title}'
@@ -282,6 +294,30 @@ class OdesliBot:
             except MessageCantBeDeleted as exc:
                 logger.warning('Cannot delete message', exc_info=exc)
 
+    @staticmethod
+    def normalize_url(url):
+        """Strip "utm_" parameters from URL.
+
+        :param url: url
+        :return: normalized URL
+        """
+        parsed = urlparse(url)
+        query_dict = parse_qs(parsed.query, keep_blank_values=True)
+        filtered_params = {
+            k: v for k, v in query_dict.items() if not k.startswith('utm_')
+        }
+        normalized_url = urlunparse(
+            [
+                parsed.scheme,
+                parsed.netloc,
+                parsed.path,
+                parsed.params,
+                urlencode(filtered_params, doseq=True),
+                parsed.fragment,
+            ]
+        )
+        return normalized_url
+
     async def find_song_by_url(self, song_url: SongUrl):
         """Make an API call to Odesli service and return song data for
         supported services.
@@ -295,9 +331,15 @@ class OdesliBot:
             params['api_key'] = self.config.ODESLI_API_KEY
         logger = logger.bind(url=self.config.ODESLI_API_URL, params=params)
         # Create empty SongInfo in case of API error
-        song_info = SongInfo(set(), None, None, None, [song_url.url])
+        song_info = SongInfo(set(), None, None, None, {song_url.url})
         _retries = 0
         while _retries < self.API_MAX_RETRIES:
+            # Try to get data from cache.  Do it inside a loop in case other
+            # task retrieves the data and sets cache
+            cached = await self.cache.get(song_url.url)
+            if cached:
+                logger.debug('Returning data from cache')
+                return cached
             try:
                 # Wait if requests are being throttled
                 if not self._api_ready.is_set():
@@ -333,6 +375,8 @@ class OdesliBot:
                         song_info = self.process_api_response(
                             data, song_url.url
                         )
+                        # Cache response data
+                        await self.cache.set(song_url.url, song_info)
                     finally:
                         break
             except ClientConnectionError as exc:
@@ -397,13 +441,13 @@ class OdesliBot:
             title=title,
             artist=artist,
             urls=platform_urls,
-            urls_in_text=[url],
+            urls_in_text={url},
         )
         return song_info
 
     async def _start(self):
         """Start polling.  Retry if cannot connect to Telegram servers."""
-        _retries = 0
+        await self.init()
         try:
             await self.dispatcher.skip_updates()
             self._loop.create_task(self.dispatcher.start_polling())
@@ -412,14 +456,17 @@ class OdesliBot:
             NetworkError,
             ClientConnectionError,
         ) as exc:
-            _retries += 1
             self.logger.info(
                 'Connection error, retrying in %d sec',
                 self.TG_RETRY_TIME,
                 exc_info=exc,
-                retries=_retries,
+                retries=self._tg_retries,
             )
-            if self.TG_MAX_RETRIES is None or _retries < self.TG_MAX_RETRIES:
+            if (
+                self.TG_MAX_RETRIES is None
+                or self._tg_retries < self.TG_MAX_RETRIES
+            ):
+                self._tg_retries += 1
                 await asyncio.sleep(self.TG_RETRY_TIME)
                 asyncio.create_task(self._start())
             else:
@@ -441,6 +488,7 @@ class OdesliBot:
     async def stop(self):
         """Stop the bot."""
         self.logger.info('Stopping...')
+        await self.cache.clear()
         await self.session.close()
         await self.bot.close()
 

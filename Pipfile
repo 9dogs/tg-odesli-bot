@@ -26,6 +26,8 @@ colorama = "*"
 structlog-sentry = "*"
 marshmallow = "*"
 pytest-aiohttp = "*"
+pytest-timeout = "*"
+aiocache = "*"
 
 [dev-packages]
 pre-commit = "*"
