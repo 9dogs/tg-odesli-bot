@@ -183,11 +183,10 @@ class OdesliBot:
         urls = []
         for platform_key, platform in PLATFORMS.items():
             for match in platform.url_re.finditer(text):
-                url = self.normalize_url(match.group(0))
                 platform_url = SongUrl(
                     platform_key=platform_key,
                     platform_name=platform.name,
-                    url=url,
+                    url=match.group(0),
                 )
                 urls.append(platform_url)
         return urls
@@ -321,7 +320,8 @@ class OdesliBot:
         :return: Odesli response
         """
         logger = self.logger_var.get()
-        params = {'url': song_url.url}
+        normalized_url = self.normalize_url(song_url.url)
+        params = {'url': normalized_url}
         if self.config.ODESLI_API_KEY:
             params['api_key'] = self.config.ODESLI_API_KEY
         logger = logger.bind(url=self.config.ODESLI_API_URL, params=params)
@@ -331,7 +331,7 @@ class OdesliBot:
         while _retries < self.API_MAX_RETRIES:
             # Try to get data from cache.  Do it inside a loop in case other
             # task retrieves the data and sets cache
-            cached = await self.cache.get(song_url.url)
+            cached = await self.cache.get(normalized_url)
             if cached:
                 logger.debug('Returning data from cache')
                 return cached
@@ -371,7 +371,7 @@ class OdesliBot:
                             data, song_url.url
                         )
                         # Cache response data
-                        await self.cache.set(song_url.url, song_info)
+                        await self.cache.set(normalized_url, song_info)
                     finally:
                         break
             except ClientConnectionError as exc:
