@@ -495,6 +495,11 @@ class OdesliBot:
         await self.bot.close()
 
 
-if __name__ == '__main__':
+def main():
+    """Run the Bot."""
     bot = OdesliBot()
     bot.start()
+
+
+if __name__ == '__main__':
+    main()
