@@ -65,39 +65,40 @@ you must set it either in shell or via ``.env`` file:
 
 .. code-block:: shell
 
-    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> <bot_run_command>
-    # OR
     echo "<your_token>" > .env
+    # OR
+    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> <bot_run_command>
 
 One you obtain Telegram token, you can run bot using either pure Python or Docker.
 
-Run with python
+Run with Python
 ---------------
 
 Clone the repo, `install pipenv <https://github.com/pypa/pipenv#installation>`_,
-copy ``.env`` file into root directory and run the Bot (python 3.7 required):
+copy ``.env`` file into the project's root directory and run the Bot
+(Python 3.7 required):
 
 .. code-block:: shell
 
     git clone https://github.com/9dogs/tg-odesli-bot.git
     cd tg-odesli-bot
+    # If you have token in .env file
     cp /path/to/.env ./
-    PYTHONPATH=. pipenv run python tg_odesli_bot/bot.py
-    # OR
-    PYTHONPATH=. TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run python tg_odesli_bot/bot.py
+    PYTHONPATH=. pipenv run python -m tg_odesli_bot
+    # If you specify token via shell env var
+    PYTHONPATH=. TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run python -m tg_odesli_bot
 
 Run with Docker
 ---------------
 
 Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
-(in order to use ``.env`` file mount it to ``/opt/tg-odesli-bot/.env``):
+(in order to use ``.env`` file, mount it to ``/opt/tg-odesli-bot/.env``):
 
 .. code-block:: shell
 
     docker run --rm -it -v /path/to/.env:/opt/tg-odesli-bot/.env 9dogs/tg-odesli-bot
     # OR
     TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg-odesli-bot
-
 
 
 .. |azure| image:: https://dev.azure.com/9dogs/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master
@@ -112,7 +113,6 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
 .. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
              :target: https://www.gnu.org/licenses/gpl-3.0
              :alt: License: GPL v3
-
 
 .. _instructions: https://core.telegram.org/bots#6-botfather
 .. _Odesli: https://odesli.co/
