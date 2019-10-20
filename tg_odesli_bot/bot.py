@@ -334,7 +334,14 @@ class OdesliBot:
             cached = await self.cache.get(normalized_url)
             if cached:
                 logger.debug('Returning data from cache')
-                return cached
+                song_info = SongInfo(
+                    ids=cached.ids,
+                    title=cached.title,
+                    artist=cached.artist,
+                    urls=cached.urls,
+                    urls_in_text={song_url.url},
+                )
+                return song_info
             try:
                 # Wait if requests are being throttled
                 if not self._api_ready.is_set():
