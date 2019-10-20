@@ -156,6 +156,7 @@ async def bot(test_config):
 
     with mock.patch('aiogram.bot.api.check_token', mock_check_token):
         bot = OdesliBot(config=test_config)
+        await bot.init()
         yield bot
     await bot.stop()
 

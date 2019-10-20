@@ -11,7 +11,7 @@ from aioresponses import aioresponses
 from pytest import mark
 
 from tests.conftest import TEST_RESPONSE
-from tg_odesli_bot.bot import OdesliBot
+from tg_odesli_bot.bot import SongInfo
 
 
 def make_mock_message(
@@ -115,6 +115,44 @@ class TestOdesliBot:
         assert reply_mock.called
         assert delete_mock.called
 
+    async def test_returns_song_info_from_cache(self, bot, caplog, odesli_api):
+        """Bot retrieves song info from cache."""
+        url = 'https://www.deezer.com/track/1'
+        song_info = SongInfo(
+            ids={1},
+            title='Cached',
+            artist='Cached',
+            urls={'soundcloud': 'test'},
+            urls_in_text={url},
+        )
+        await bot.cache.set(url, song_info)
+        reply_mock = make_reply_mock(
+            expected_text=(
+                '<b>@test_user wrote:</b> check this one: [1]\n'
+                '\n'
+                '1. Cached - Cached\n'
+                '<a href="test">soundcloud</a>'
+            )
+        )
+        delete_mock = make_delete_mock()
+        message = make_mock_message(
+            text=f'check this one: {url}',
+            method_mocks={'reply': reply_mock, 'delete': delete_mock},
+        )
+        await bot.dispatcher.message_handlers.notify(message)
+        assert 'Returning data from cache' in caplog.text
+
+    async def test_caches_song_info(self, bot, odesli_api):
+        """Bot caches retrieved song info."""
+        reply_mock = make_reply_mock()
+        message = make_mock_message(
+            text='check this one: https://www.deezer.com/track/1',
+            method_mocks={'reply': reply_mock},
+            chat_type=ChatType.PRIVATE,
+        )
+        await bot.dispatcher.message_handlers.notify(message)
+        await bot.cache.get('https://www.deezer.com/track/1')
+
     async def test_replies_to_private_message(self, bot, odesli_api):
         """Send reply to a private message."""
         reply_text = (
@@ -203,29 +241,35 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a>'
         )
         reply_mock = make_reply_mock(reply_text)
-        message = make_mock_message(
+        message1 = make_mock_message(
             text='check this one: https://deezer.com/track/1',
             method_mocks={'reply': reply_mock},
             chat_type=ChatType.PRIVATE,
         )
-        url = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
+        message2 = make_mock_message(
+            text='check this one: https://deezer.com/track/2',
+            method_mocks={'reply': reply_mock},
+            chat_type=ChatType.PRIVATE,
+        )
+        url1 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
+        url2 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/2'
         with aioresponses() as m:
-            m.get(url, status=HTTPStatus.TOO_MANY_REQUESTS)
-            m.get(
-                url, status=HTTPStatus.OK, payload=TEST_RESPONSE, repeat=True
-            )
+            m.get(url1, status=HTTPStatus.TOO_MANY_REQUESTS)
+            m.get(url1, status=HTTPStatus.OK, payload=TEST_RESPONSE)
+            m.get(url2, status=HTTPStatus.OK, payload=TEST_RESPONSE)
             tasks = [
                 asyncio.create_task(
-                    bot.dispatcher.message_handlers.notify(message)
+                    bot.dispatcher.message_handlers.notify(message1)
                 ),
                 asyncio.create_task(
-                    bot.dispatcher.message_handlers.notify(message)
+                    bot.dispatcher.message_handlers.notify(message2)
                 ),
             ]
             await asyncio.sleep(1)
             assert 'Too many requests, retrying' in caplog.text
             assert 'Waiting for the API' in caplog.text
             await asyncio.gather(*tasks)
+            assert reply_mock.called
 
     @mark.parametrize('error_code', [400, 500])
     async def test_do_not_reply_if_api_errors_for_all_songs(
@@ -279,15 +323,13 @@ class TestOdesliBot:
         await bot.dispatcher.message_handlers.notify(message)
         assert 'Connection error, retrying' in caplog.text
 
-    def test_retries_if_telegram_connection_error(self, caplog, monkeypatch):
+    @mock.patch(
+        'aiogram.dispatcher.Dispatcher.skip_updates',
+        mock.MagicMock(side_effect=NetworkError('Test error')),
+    )
+    def test_retries_if_telegram_connection_error(self, bot, caplog):
         """Bot retries to connect if Telegram API connection error."""
-        bot = OdesliBot()
         bot.TG_RETRY_TIME = 1
         bot.TG_MAX_RETRIES = 1
-        monkeypatch.setattr(
-            bot.dispatcher,
-            'start_polling',
-            mock.MagicMock(side_effect=NetworkError),
-        )
         bot.start()
         assert 'Connection error, retrying' in caplog.text

@@ -57,28 +57,28 @@ class TestOdesliBot:
                 title='Test title',
                 artist='Test artist',
                 urls={'deezer': 'http://test_deezer_url'},
-                urls_in_text=['http://test_deezer_url'],
+                urls_in_text={'http://test_deezer_url'},
             ),
             SongInfo(
                 ids={'id2', 'id3'},
                 title='Test title',
                 artist='Test artist',
                 urls={'google': 'http://test_google_url'},
-                urls_in_text=['http://test_google_url'],
+                urls_in_text={'http://test_google_url'},
             ),
             SongInfo(
                 ids={'id3', 'id4'},
                 title='Test title',
                 artist='Test artist',
                 urls={'soundcloud': 'http://test_soundcloud_url'},
-                urls_in_text=['http://test_soundcloud_url'],
+                urls_in_text={'http://test_soundcloud_url'},
             ),
             SongInfo(
                 ids={'id5'},
                 title='Not merged',
                 artist='Not merged',
                 urls={'not_merged': 'http://not_merged'},
-                urls_in_text=['http://not_merged'],
+                urls_in_text={'http://not_merged'},
             ),
         )
         song_infos_merged = bot._merge_same_songs(song_infos)
