@@ -7,7 +7,7 @@ message with links in other services.
 
 It's useful but still work in progress. Some turbulence is expected.
 
-|azure| |codecov| |docker| |license|
+|azure| |codecov| |docker| |license| |black|
 
 
 What is it for?
@@ -63,11 +63,11 @@ messages).
 On start Bot looks for ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable so
 you must set it either in shell or via ``.env`` file:
 
-.. code-block:: shell
+.. code-block:: console
 
-    echo "<your_token>" > .env
+    $ echo "<your_token>" > .env
     # OR
-    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> <bot_run_command>
+    $ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> <bot_run_command>
 
 One you obtain Telegram token, you can run bot using either pure Python or Docker.
 
@@ -78,15 +78,15 @@ Clone the repo, `install pipenv <https://github.com/pypa/pipenv#installation>`_,
 copy ``.env`` file into the project's root directory and run the Bot
 (Python 3.7 required):
 
-.. code-block:: shell
+.. code-block:: console
 
-    git clone https://github.com/9dogs/tg-odesli-bot.git
-    cd tg-odesli-bot
+    $ git clone https://github.com/9dogs/tg-odesli-bot.git
+    $ cd tg-odesli-bot
     # If you have token in .env file
-    cp /path/to/.env ./
-    PYTHONPATH=. pipenv run python -m tg_odesli_bot
+    $ cp /path/to/.env ./
+    $ PYTHONPATH=. pipenv run bot
     # If you specify token via shell env var
-    PYTHONPATH=. TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run python -m tg_odesli_bot
+    $ PYTHONPATH=. TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run bot
 
 Run with Docker
 ---------------
@@ -94,11 +94,11 @@ Run with Docker
 Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
 (in order to use ``.env`` file, mount it to ``/opt/tg-odesli-bot/.env``):
 
-.. code-block:: shell
+.. code-block:: console
 
-    docker run --rm -it -v /path/to/.env:/opt/tg-odesli-bot/.env 9dogs/tg-odesli-bot
+    $ docker run --rm -it -v /path/to/.env:/opt/tg-odesli-bot/.env 9dogs/tg-odesli-bot
     # OR
-    TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg-odesli-bot
+    $ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg-odesli-bot
 
 
 .. |azure| image:: https://dev.azure.com/9dogs/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master
@@ -113,6 +113,10 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image
 .. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
              :target: https://www.gnu.org/licenses/gpl-3.0
              :alt: License: GPL v3
+
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+           :target: https://github.com/psf/black
+           :alt: Codestyle Black
 
 .. _instructions: https://core.telegram.org/bots#6-botfather
 .. _Odesli: https://odesli.co/
