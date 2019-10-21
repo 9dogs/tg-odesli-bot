@@ -34,4 +34,4 @@ COPY --from=builder --chown=bot:bot /opt/tg-odesli-bot /opt/tg-odesli-bot
 ENV PYTHONPATH "${PYTHONPATH}:/opt/tg-odesli-bot"
 
 WORKDIR /opt/tg-odesli-bot
-CMD ["/opt/tg-odesli-bot/.venv/bin/python", "tg_odesli_bot"]
+CMD ["/opt/tg-odesli-bot/.venv/bin/python", "tg_odesli_bot/bot.py"]

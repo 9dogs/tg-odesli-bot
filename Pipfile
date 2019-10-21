@@ -34,4 +34,4 @@ pytest-timeout = "*"
 pygments = "*"
 
 [scripts]
-bot = "python -m tg_odesli_bot"
+bot = "python ./tg_odesli_bot/bot.py"
