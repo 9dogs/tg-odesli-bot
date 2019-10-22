@@ -92,6 +92,20 @@ class OdesliBot:
     #: Max reties count in case of Telegram API connection error (None is
     #: unlimited)
     TG_MAX_RETRIES = None
+    #: Welcome message template
+    WELCOME_MSG_TEMPLATE = (
+        "I'm an (unofficial) Odesli Bot. You can send me a link to a song on "
+        'any supported music streaming platform and I will reply with links '
+        'from all the other platforms. I work in group chats as well. In a '
+        'group chat I will also try to delete original message so that the'
+        ' chat remains tidy (you must promote me to admin to enable this).\n'
+        '\n'
+        '<b>Supported platforms:</b> {supported_platforms}.\n'
+        '\n'
+        'The bot is open source. More info on '
+        '<a href="https://github.com/9dogs/tg-odesli-bot">GitHub</a>.\n'
+        'Powered by a great <a href="https://odesli.co/">Odesli</a> service.'
+    )
 
     def __init__(self, config: Config = None, *, loop=None):
         """Initialize the bot.
@@ -141,21 +155,10 @@ class OdesliBot:
         """
         _logger = self.logger_var.get()
         _logger.debug('Sending a welcome message')
-        welcome_msg_template = (
-            'Hi!\n'
-            "I'm a Odesli Bot. You can message me a link to a supported "
-            'music streaming platform and I will respond with links from all '
-            'the platforms. If you invite me to a group chat I will do the '
-            'same as well as trying to delete original message (you must '
-            'promote me to admin to enable this behavior).\n'
-            '<b>Supported platforms:</b> {supported_platforms}.\n'
-            'Powered by great <a href="https://odesli.co/">Odesli</a> '
-            '(thank you guys!).'
-        )
         supported_platforms = []
         for platform in PLATFORMS.values():
             supported_platforms.append(platform.name)
-        welcome_msg = welcome_msg_template.format(
+        welcome_msg = self.WELCOME_MSG_TEMPLATE.format(
             supported_platforms=' | '.join(supported_platforms)
         )
         await message.reply(text=welcome_msg, parse_mode='HTML', reply=False)
@@ -266,7 +269,7 @@ class OdesliBot:
                 f'<b>@{message.from_user.username} wrote:</b> {text}\n'
             ]
         else:
-            reply_list = []
+            reply_list = [f'{text}\n']
         for index, song_info in enumerate(song_infos, start=1):
             if not song_info.ids:
                 urls_in_text = song_info.urls_in_text.pop()
