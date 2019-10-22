@@ -71,7 +71,7 @@ on start, thus you must set it either in shell or via ``.env`` file:
 .. code-block:: console
 
     $ echo "<your_token>" > .env
-    # OR
+    $ # OR
     $ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> <bot_run_command (see below)>
 
 One you obtain a Telegram bot token, you can run bot using either Python or Docker.
@@ -86,10 +86,10 @@ copy ``.env`` file into the project's root directory and run the bot (Python 3.7
 
     $ git clone https://github.com/9dogs/tg-odesli-bot.git
     $ cd tg-odesli-bot
-    # If you have token in .env file
+    $ # If you have token in .env file
     $ cp /path/to/.env ./
     $ PYTHONPATH=. pipenv run bot
-    # If you specify token via shell env var
+    $ # If you specify token via shell env var
     $ PYTHONPATH=. TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run bot
 
 Run with Docker
@@ -101,7 +101,7 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image ``9dog
 .. code-block:: console
 
     $ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg-odesli-bot
-    # OR
+    $ # OR
     $ docker run --rm -it -v /path/to/.env:/opt/tg-odesli-bot/.env 9dogs/tg-odesli-bot
 
 
@@ -111,7 +111,7 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image ``9dog
 .. |codecov| image:: https://codecov.io/gh/9dogs/tg-odesli-bot/branch/master/graph/badge.svg?token=3nWZWJ3Bl3
              :target: https://codecov.io/gh/9dogs/tg-odesli-bot
              :alt: codecov.io status for master branch
-.. |docker| image:: https://img.shields.io/docker/automated/9dogs/tg-odesli-bot
+.. |docker| image:: https://img.shields.io/docker/cloud/automated/9dogs/tg-odesli-bot
             :target: https://hub.docker.com/r/9dogs/tg-odesli-bot
             :alt: Docker Automated build
 
@@ -125,11 +125,11 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image ``9dog
 
 .. |before_pic| raw:: html
 
-                <img src="https://user-images.githubusercontent.com/432235/67324149-0a2b2580-f51c-11e9-8ce2-033cdf2d6628.png" height="200px">
+                <img title="before" src="https://user-images.githubusercontent.com/432235/67324149-0a2b2580-f51c-11e9-8ce2-033cdf2d6628.png" height="200px">
 
 .. |after_pic| raw:: html
 
-                <img src="https://user-images.githubusercontent.com/432235/67324159-0dbeac80-f51c-11e9-834a-7d4831a661d8.png" height="200px">
+                <img title="after" src="https://user-images.githubusercontent.com/432235/67324159-0dbeac80-f51c-11e9-834a-7d4831a661d8.png" height="200px">
 
 
 .. _instructions: https://core.telegram.org/bots#6-botfather
