@@ -112,6 +112,7 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image ``9dog
              :target: https://codecov.io/gh/9dogs/tg-odesli-bot
              :alt: codecov.io status for master branch
 .. |docker| image:: https://img.shields.io/docker/automated/9dogs/tg-odesli-bot
+            :target: https://hub.docker.com/r/9dogs/tg-odesli-bot
             :alt: Docker Automated build
 
 .. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
@@ -122,14 +123,13 @@ Set ``TG_ODESLI_BOT_TG_API_TOKEN`` environment variable and run the image ``9dog
            :target: https://github.com/psf/black
            :alt: Codestyle Black
 
-.. |before_pic| image:: https://user-images.githubusercontent.com/432235/67324149-0a2b2580-f51c-11e9-8ce2-033cdf2d6628.png
-                :width: 550px
-                :height: 305px
-                :scale: 50%
-.. |after_pic| image:: https://user-images.githubusercontent.com/432235/67324159-0dbeac80-f51c-11e9-834a-7d4831a661d8.png
-               :width: 550px
-               :height: 305px
-               :scale: 50%
+.. |before_pic| raw:: html
+
+                <img src="https://user-images.githubusercontent.com/432235/67324149-0a2b2580-f51c-11e9-8ce2-033cdf2d6628.png" height="200px">
+
+.. |after_pic| raw:: html
+
+                <img src="https://user-images.githubusercontent.com/432235/67324159-0dbeac80-f51c-11e9-834a-7d4831a661d8.png" height="200px">
 
 
 .. _instructions: https://core.telegram.org/bots#6-botfather
