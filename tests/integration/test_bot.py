@@ -15,14 +15,15 @@ from tg_odesli_bot.bot import SongInfo
 
 
 def make_mock_message(
-    text: str, method_mocks: dict = None, chat_type: ChatType = ChatType.GROUP
+    text: str,
+    chat_type: ChatType = ChatType.GROUP,
+    raise_on_delete: bool = False,
 ) -> mock.Mock:
     """Make a mock message with given text.
 
     :param text: text of the message
-    :param method_mocks: dict of message's method mocks if needed
-        {'reply': reply_mock, 'delete': delete_mock, ...}
     :param chat_type: chat type.  See `aiogram.types.ChatType` enum
+    :param raise_on_delete: raise exception on message delete
     :return: mock message
     """
     message = mock.Mock(spec=Message)
@@ -34,35 +35,25 @@ def make_mock_message(
     message.chat.type = chat_type
     types.User.set_current(message.from_user)
     types.Chat.set_current(message.chat)
-    if method_mocks:
-        for method_name, callback in method_mocks.items():
-            setattr(message, method_name, callback)
-    return message
-
-
-def make_reply_mock(expected_text=None):
-    """Make `Message.reply` method mock with expected text."""
 
     async def reply_mock_fn(text, parse_mode, reply):
         """Reply mock."""
         assert parse_mode == 'HTML'
         assert not reply
-        if expected_text is not None:
-            assert text == expected_text
+        # Save text argument for assertion
+        reply_mock.called_with_text = text
 
     reply_mock = mock.Mock(side_effect=reply_mock_fn)
-    return reply_mock
-
-
-def make_delete_mock():
-    """Make `Message.delete` method mock."""
+    message.reply = reply_mock
 
     async def delete_mock_fn():
         """Delete mock."""
-        pass
+        if raise_on_delete:
+            raise MessageCantBeDeleted(message='Test exception')
 
     delete_mock = mock.Mock(side_effect=delete_mock_fn)
-    return delete_mock
+    message.delete = delete_mock
+    return message
 
 
 @mark.usefixtures('loop')
@@ -74,28 +65,23 @@ class TestOdesliBot:
         """Send a welcome message with supported platforms list in reply to
         /start or /help command.
         """
-        reply_text = (
-            'Hi!\n'
-            "I'm a Odesli Bot. You can message me a link to a "
-            'supported music streaming platform and I will respond with '
-            'links from all the platforms. If you invite me to a group '
-            'chat I will do the same as well as trying to delete original '
-            'message (you must promote me to admin to enable this '
-            'behavior).\n'
-            '<b>Supported platforms:</b> Deezer | Google Music | '
-            'SoundCloud | Yandex Music | Spotify | Youtube Music.\n'
-            'Powered by great <a href="https://odesli.co/">Odesli</a> '
-            '(thank you guys!).'
+        supported_platforms = (
+            'Deezer | Google Music | SoundCloud | Yandex Music | Spotify | '
+            'Youtube Music'
         )
-        reply_mock = make_reply_mock(reply_text)
-        message = make_mock_message(
-            text=text, method_mocks={'reply': reply_mock}
+        message = make_mock_message(text=text)
+        reply_text = bot.WELCOME_MSG_TEMPLATE.format(
+            supported_platforms=supported_platforms
         )
         await bot.dispatcher.message_handlers.notify(message)
-        assert reply_mock.called
+        assert message.reply.called
+        assert message.reply.called_with_text == reply_text
 
     async def test_replies_to_group_message(self, bot, odesli_api):
         """Send reply to a group message."""
+        message = make_mock_message(
+            text='check this one: https://www.deezer.com/track/65760860'
+        )
         reply_text = (
             '<b>@test_user wrote:</b> check this one: [1]\n'
             '\n'
@@ -106,15 +92,10 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
-        reply_mock = make_reply_mock(reply_text)
-        delete_mock = make_delete_mock()
-        message = make_mock_message(
-            text='check this one: https://www.deezer.com/track/65760860',
-            method_mocks={'reply': reply_mock, 'delete': delete_mock},
-        )
         await bot.dispatcher.message_handlers.notify(message)
-        assert reply_mock.called
-        assert delete_mock.called
+        assert message.reply.called
+        assert message.delete.called
+        assert message.reply.called_with_text == reply_text
 
     async def test_returns_song_info_from_cache(self, bot, caplog, odesli_api):
         """Bot retrieves song info from cache."""
@@ -127,28 +108,21 @@ class TestOdesliBot:
             urls_in_text={url},
         )
         await bot.cache.set(url, song_info)
-        reply_mock = make_reply_mock(
-            expected_text=(
-                '<b>@test_user wrote:</b> check this one: [1]\n'
-                '\n'
-                '1. Cached - Cached\n'
-                '<a href="test">soundcloud</a>'
-            )
-        )
-        delete_mock = make_delete_mock()
-        message = make_mock_message(
-            text=f'check this one: {url}',
-            method_mocks={'reply': reply_mock, 'delete': delete_mock},
+        message = make_mock_message(text=f'check this one: {url}')
+        reply_text = (
+            '<b>@test_user wrote:</b> check this one: [1]\n'
+            '\n'
+            '1. Cached - Cached\n'
+            '<a href="test">soundcloud</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
         assert 'Returning data from cache' in caplog.text
+        assert message.reply.called_with_text == reply_text
 
     async def test_caches_song_info(self, bot, odesli_api):
         """Bot caches retrieved song info."""
-        reply_mock = make_reply_mock()
         message = make_mock_message(
             text='check this one: https://www.deezer.com/track/1',
-            method_mocks={'reply': reply_mock},
             chat_type=ChatType.PRIVATE,
         )
         await bot.dispatcher.message_handlers.notify(message)
@@ -156,7 +130,13 @@ class TestOdesliBot:
 
     async def test_replies_to_private_message(self, bot, odesli_api):
         """Send reply to a private message."""
+        message = make_mock_message(
+            text='check this one: https://www.deezer.com/track/65760860',
+            chat_type=ChatType.PRIVATE,
+        )
         reply_text = (
+            'check this one: [1]\n'
+            '\n'
             '1. Test Artist - Test Title\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
@@ -164,14 +144,9 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
-        reply_mock = make_reply_mock(reply_text)
-        message = make_mock_message(
-            text='check this one: https://www.deezer.com/track/65760860',
-            method_mocks={'reply': reply_mock},
-            chat_type=ChatType.PRIVATE,
-        )
         await bot.dispatcher.message_handlers.notify(message)
-        assert reply_mock.called
+        assert message.reply.called
+        assert message.reply.called_with_text == reply_text
 
     async def test_skips_message_with_skip_mark(self, caplog, bot):
         """Skip message if skip mark present."""
@@ -190,21 +165,20 @@ class TestOdesliBot:
     ):
         """Log if cannot delete the message."""
 
-        async def delete_mock_fn():
-            """Message.delete method mock."""
-            raise MessageCantBeDeleted(message='Test exception')
-
-        reply_mock = make_reply_mock()
-        delete_mock = mock.Mock(side_effect=delete_mock_fn)
         message = make_mock_message(
             text='check this one: https://www.deezer.com/track/65760860',
-            method_mocks={'reply': reply_mock, 'delete': delete_mock},
+            raise_on_delete=True,
         )
         await bot.dispatcher.message_handlers.notify(message)
         assert 'Cannot delete message' in caplog.text
 
     async def test_returns_original_url_if_one_song_404(self, bot):
         """Return original URL if one of the songs not found."""
+        url1 = 'https://deezer.com/track/1'
+        url2 = 'https://deezer.com/track/2'
+        message = make_mock_message(
+            text=f'check these: {url1} and {url2}', chat_type=ChatType.GROUP
+        )
         reply_text = (
             '<b>@test_user wrote:</b> check these: [1] and [2]\n'
             '\n'
@@ -216,44 +190,35 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
-        reply_mock = make_reply_mock(reply_text)
-        delete_mock = make_delete_mock()
-        url1 = 'https://deezer.com/track/1'
-        url2 = 'https://deezer.com/track/2'
-        message = make_mock_message(
-            text=f'check these: {url1} and {url2}',
-            method_mocks={'reply': reply_mock, 'delete': delete_mock},
-            chat_type=ChatType.GROUP,
-        )
         api_url1 = f'{bot.config.ODESLI_API_URL}?url={url1}'
         api_url2 = f'{bot.config.ODESLI_API_URL}?url={url2}'
         with aioresponses() as m:
             m.get(api_url1, status=HTTPStatus.NOT_FOUND)
             m.get(api_url2, status=HTTPStatus.OK, payload=TEST_RESPONSE)
             await bot.dispatcher.message_handlers.notify(message)
-            assert reply_mock.called
+            assert message.reply.called
+            assert message.reply.called_with_text == reply_text
 
     async def test_throttles_requests_if_429(self, caplog, bot):
         """Bot throttles requests if API returns 429 TOO_MANY_REQUESTS."""
         bot.API_RETRY_TIME = 1
+        message1 = make_mock_message(
+            text='check this one: https://deezer.com/track/1',
+            chat_type=ChatType.PRIVATE,
+        )
+        message2 = make_mock_message(
+            text='check this one: https://deezer.com/track/2',
+            chat_type=ChatType.PRIVATE,
+        )
         reply_text = (
+            'check this one: [1]\n'
+            '\n'
             '1. Test Artist - Test Title\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">Youtube Music</a>'
-        )
-        reply_mock = make_reply_mock(reply_text)
-        message1 = make_mock_message(
-            text='check this one: https://deezer.com/track/1',
-            method_mocks={'reply': reply_mock},
-            chat_type=ChatType.PRIVATE,
-        )
-        message2 = make_mock_message(
-            text='check this one: https://deezer.com/track/2',
-            method_mocks={'reply': reply_mock},
-            chat_type=ChatType.PRIVATE,
         )
         url1 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
         url2 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/2'
@@ -273,20 +238,21 @@ class TestOdesliBot:
             assert 'Too many requests, retrying' in caplog.text
             assert 'Waiting for the API' in caplog.text
             await asyncio.gather(*tasks)
-            assert reply_mock.called
+            assert message1.reply.called
+            assert message1.reply.called_with_text == reply_text
+            assert message2.reply.called
+            assert message2.reply.called_with_text == reply_text
 
     @mark.parametrize('error_code', [400, 500])
     async def test_do_not_reply_if_api_errors_for_all_songs(
         self, caplog, bot, error_code
     ):
         """Do not reply if API error returns for all songs."""
-        reply_mock = make_reply_mock()
         message = make_mock_message(
             text=(
                 'check this one: https://deezer.com/track/1, '
                 'https://deezer.com/track/2'
             ),
-            method_mocks={'reply': reply_mock},
             chat_type=ChatType.PRIVATE,
         )
         url1 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
@@ -296,14 +262,12 @@ class TestOdesliBot:
             m.get(url2, status=error_code, repeat=True)
             await bot.dispatcher.message_handlers.notify(message)
             assert 'API returned errors for all URLs' in caplog.text
-            assert not reply_mock.called
+            assert not message.reply.called
 
     async def test_do_not_reply_if_validation_error(self, caplog, bot):
         """Do not reply if API response validation error."""
-        reply_mock = make_reply_mock()
         message = make_mock_message(
             text='check this one: https://deezer.com/track/1',
-            method_mocks={'reply': reply_mock},
             chat_type=ChatType.PRIVATE,
         )
         url1 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
@@ -311,16 +275,14 @@ class TestOdesliBot:
             m.get(url1, status=HTTPStatus.OK, payload={'invalid': 'invalid'})
             await bot.dispatcher.message_handlers.notify(message)
             assert 'Invalid response data' in caplog.text
-            assert not reply_mock.called
+            assert not message.reply.called
 
     async def test_retries_if_api_connection_error(self, caplog, bot):
         """Bot retries to connect if API HTTP connection error."""
         bot.API_RETRY_TIME = 1
         bot.API_MAX_RETRIES = 1
-        reply_mock = make_reply_mock()
         message = make_mock_message(
             text='check this one: https://deezer.com/track/1',
-            method_mocks={'reply': reply_mock},
             chat_type=ChatType.PRIVATE,
         )
         bot.session.get = mock.MagicMock(side_effect=ClientConnectionError)
