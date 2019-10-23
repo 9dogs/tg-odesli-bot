@@ -1,8 +1,11 @@
 """Helpers and fixtures for pytest."""
+import json
 import re
+import string
 from functools import partial
 from http import HTTPStatus
 from pathlib import Path
+from typing import Union
 from unittest import mock
 
 import dotenv
@@ -14,115 +17,137 @@ from tg_odesli_bot.config import TestConfig
 
 #: Tests base dir
 BASE_DIR = Path(__file__).resolve().parent
-#: Odesli API test response
-TEST_RESPONSE = {
-    'entityUniqueId': 'GOOGLE_SONG::G1',
+#: Odesli API test response template
+TEST_RESPONSE_TEMPLATE = {
+    'entityUniqueId': 'GOOGLE_SONG::G${id}',
     'userCountry': 'US',
     'entitiesByUniqueId': {
-        'DEEZER_SONG::D1': {
-            'id': 'D1',
-            'title': 'Test Title',
-            'artistName': 'Test Artist',
+        'DEEZER_SONG::D${id}': {
+            'id': 'D${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
             'apiProvider': 'deezer',
         },
-        'ITUNES_SONG::IT1': {
-            'id': 'IT1',
-            'title': 'Test Title',
-            'artistName': 'Test Artist',
+        'ITUNES_SONG::IT${id}': {
+            'id': 'IT${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
             'apiProvider': 'itunes',
         },
-        'SPOTIFY_SONG::S1': {
-            'id': 'S1',
-            'title': 'Test Title',
-            'artistName': 'Test Artist',
+        'SPOTIFY_SONG::S${id}': {
+            'id': 'S${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
             'apiProvider': 'spotify',
         },
-        'GOOGLE_SONG::G1': {
-            'id': 'G1',
-            'title': 'Test Title',
-            'artistName': 'Test Artist',
+        'GOOGLE_SONG::${id}': {
+            'id': 'G${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
             'apiProvider': 'google',
         },
-        'AMAZON_SONG::A1': {
-            'id': 'A1',
-            'title': 'Test Title',
-            'artistName': 'Test Artist',
+        'AMAZON_SONG::A${id}': {
+            'id': 'A${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
             'apiProvider': 'amazon',
         },
-        'TIDAL_SONG::T1': {
-            'id': 'T1',
-            'title': 'Test Title',
-            'artistName': 'Test Artist',
+        'TIDAL_SONG::T${id}': {
+            'id': 'T${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
             'apiProvider': 'tidal',
         },
-        'NAPSTER_SONG::N1': {
-            'id': 'N1',
-            'title': 'Test Title',
-            'artistName': 'Test Artist',
+        'NAPSTER_SONG::N${id}': {
+            'id': 'N${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
             'apiProvider': 'napster',
         },
-        'YANDEX_SONG::Y1': {
-            'id': 'Y1',
-            'title': 'Test Title',
-            'artistName': 'Test Artist',
+        'SOUNDCLOUD_SONG::SC${id}': {
+            'id': 'SC${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
+            'apiProvider': 'soundcloud',
+        },
+        'YANDEX_SONG::Y${id}': {
+            'id': 'Y${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
             'apiProvider': 'yandex',
         },
     },
     'linksByPlatform': {
         'deezer': {
             'url': 'https://www.test.com/d',
-            'entityUniqueId': 'DEEZER_SONG::D1',
+            'entityUniqueId': 'DEEZER_SONG::D${id}',
         },
         'appleMusic': {
             'url': 'https://www.test.com/am',
-            'entityUniqueId': 'ITUNES_SONG::AM1',
+            'entityUniqueId': 'ITUNES_SONG::AM${id}',
         },
         'spotify': {
             'url': 'https://www.test.com/s',
-            'entityUniqueId': 'SPOTIFY_SONG::S1',
+            'entityUniqueId': 'SPOTIFY_SONG::S${id}',
         },
         'youtube': {
             'url': 'https://www.test.com/y',
-            'entityUniqueId': 'YOUTUBE_VIDEO::Y1',
+            'entityUniqueId': 'YOUTUBE_VIDEO::Y${id}',
         },
         'youtubeMusic': {
             'url': 'https://www.test.com/ym',
-            'entityUniqueId': 'YOUTUBE_VIDEO::YM1',
+            'entityUniqueId': 'YOUTUBE_VIDEO::YM${id}',
         },
         'google': {
             'url': 'https://www.test.com/g',
-            'entityUniqueId': 'GOOGLE_SONG::G1',
+            'entityUniqueId': 'GOOGLE_SONG::G${id}',
         },
         'amazonMusic': {
             'url': 'https://www.test.com/a',
-            'entityUniqueId': 'AMAZON_SONG::A1',
+            'entityUniqueId': 'AMAZON_SONG::A${id}',
         },
         'tidal': {
             'url': 'https://www.test.com/t',
-            'entityUniqueId': 'TIDAL_SONG::T1',
+            'entityUniqueId': 'TIDAL_SONG::T${id}',
         },
         'napster': {
             'url': 'https://www.test.com/n',
-            'entityUniqueId': 'NAPSTER_SONG::N1',
+            'entityUniqueId': 'NAPSTER_SONG::N${id}',
         },
         'yandex': {
             'url': 'https://www.test.com/yn',
-            'entityUniqueId': 'YANDEX_SONG::YN1',
+            'entityUniqueId': 'YANDEX_SONG::YN${id}',
         },
         'itunes': {
             'url': 'https://www.test.com/it',
-            'entityUniqueId': 'ITUNES_SONG::IT1',
+            'entityUniqueId': 'ITUNES_SONG::IT${id}',
         },
         'googleStore': {
             'url': 'https://www.test.com/gs',
-            'entityUniqueId': 'GOOGLE_SONG::GS1',
+            'entityUniqueId': 'GOOGLE_SONG::GS${id}',
         },
         'amazonStore': {
             'url': 'https://www.test.com/az',
-            'entityUniqueId': 'AMAZON_SONG::AZ1',
+            'entityUniqueId': 'AMAZON_SONG::AZ${id}',
+        },
+        'soundcloud': {
+            'url': 'https://www.test.com/sc',
+            'entityUniqueId': 'SOUNDCLOUD_SONG::SC${id}',
         },
     },
 }
+
+
+def make_response(id: Union[str, int] = 1) -> dict:
+    """Prepare Odesli API test response with given song id.
+
+    :param id: substitution for a song identifier
+    :return: response dict
+    """
+    response_template = string.Template(json.dumps(TEST_RESPONSE_TEMPLATE))
+    response = response_template.substitute(id=str(id))
+    payload = json.loads(response)
+    return payload
 
 
 @fixture
@@ -165,6 +190,7 @@ async def bot(test_config):
 async def odesli_api(test_config):
     """Odesli API mock."""
     pattern = re.compile(rf'^{re.escape(test_config.ODESLI_API_URL)}.*$')
+    payload = make_response(id=1)
     with aioresponses() as m:
-        m.get(pattern, status=HTTPStatus.OK, payload=TEST_RESPONSE)
+        m.get(pattern, status=HTTPStatus.OK, payload=payload)
         yield m

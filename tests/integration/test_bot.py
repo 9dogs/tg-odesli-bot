@@ -10,7 +10,7 @@ from aiohttp import ClientConnectionError
 from aioresponses import aioresponses
 from pytest import mark
 
-from tests.conftest import TEST_RESPONSE
+from tests.conftest import make_response
 from tg_odesli_bot.bot import SongInfo
 
 
@@ -80,14 +80,15 @@ class TestOdesliBot:
     async def test_replies_to_group_message(self, bot, odesli_api):
         """Send reply to a group message."""
         message = make_mock_message(
-            text='check this one: https://www.deezer.com/track/65760860'
+            text='check this one: https://www.deezer.com/track/1'
         )
         reply_text = (
             '<b>@test_user wrote:</b> check this one: [1]\n'
             '\n'
-            '1. Test Artist - Test Title\n'
+            '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">Youtube Music</a>'
@@ -131,15 +132,16 @@ class TestOdesliBot:
     async def test_replies_to_private_message(self, bot, odesli_api):
         """Send reply to a private message."""
         message = make_mock_message(
-            text='check this one: https://www.deezer.com/track/65760860',
+            text='check this one: https://www.deezer.com/track/1',
             chat_type=ChatType.PRIVATE,
         )
         reply_text = (
             'check this one: [1]\n'
             '\n'
-            '1. Test Artist - Test Title\n'
+            '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">Youtube Music</a>'
@@ -147,6 +149,70 @@ class TestOdesliBot:
         await bot.dispatcher.message_handlers.notify(message)
         assert message.reply.called
         assert message.reply.called_with_text == reply_text
+
+    async def test_replies_if_some_urls_not_found(self, bot):
+        """Send reply to a private message if song not found in some
+        platforms.
+        """
+        url = 'https://www.deezer.com/track/1'
+        message = make_mock_message(
+            text=f'check this one: {url}', chat_type=ChatType.PRIVATE
+        )
+        reply_text = (
+            'check this one: [1]\n'
+            '\n'
+            '1. Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">Youtube Music</a>'
+        )
+        api_url = f'{bot.config.ODESLI_API_URL}?url={url}'
+        payload = make_response(id=1)
+        # Remove Deezer data from the payload
+        del payload['linksByPlatform']['deezer']
+        with aioresponses() as m:
+            m.get(api_url, status=HTTPStatus.OK, payload=payload)
+            await bot.dispatcher.message_handlers.notify(message)
+            assert message.reply.called
+            assert message.reply.called_with_text == reply_text
+
+    async def test_replies_to_private_message_if_only_urls(self, bot):
+        """Send reply to a private message without text if message consists of
+        song URLs only.
+        """
+        url1 = 'https://www.deezer.com/track/1'
+        url2 = 'https://soundcloud.com/2'
+        message = make_mock_message(
+            text=f'{url1}\n{url2}', chat_type=ChatType.PRIVATE
+        )
+        reply_text = (
+            '1. Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">Youtube Music</a>\n'
+            '2. Test Artist 2 - Test Title 2\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">Youtube Music</a>'
+        )
+        api_url1 = f'{bot.config.ODESLI_API_URL}?url={url1}'
+        api_url2 = f'{bot.config.ODESLI_API_URL}?url={url2}'
+        payload1 = make_response(id=1)
+        payload2 = make_response(id=2)
+        with aioresponses() as m:
+            m.get(api_url1, status=HTTPStatus.OK, payload=payload1)
+            m.get(api_url2, status=HTTPStatus.OK, payload=payload2)
+            await bot.dispatcher.message_handlers.notify(message)
+            assert message.reply.called
+            assert message.reply.called_with_text == reply_text
 
     async def test_skips_message_with_skip_mark(self, caplog, bot):
         """Skip message if skip mark present."""
@@ -166,7 +232,7 @@ class TestOdesliBot:
         """Log if cannot delete the message."""
 
         message = make_mock_message(
-            text='check this one: https://www.deezer.com/track/65760860',
+            text='check this one: https://www.deezer.com/track/1',
             raise_on_delete=True,
         )
         await bot.dispatcher.message_handlers.notify(message)
@@ -183,18 +249,20 @@ class TestOdesliBot:
             '<b>@test_user wrote:</b> check these: [1] and [2]\n'
             '\n'
             '1. https://deezer.com/track/1\n'
-            '2. Test Artist - Test Title\n'
+            '2. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
         api_url1 = f'{bot.config.ODESLI_API_URL}?url={url1}'
         api_url2 = f'{bot.config.ODESLI_API_URL}?url={url2}'
+        payload = make_response()
         with aioresponses() as m:
             m.get(api_url1, status=HTTPStatus.NOT_FOUND)
-            m.get(api_url2, status=HTTPStatus.OK, payload=TEST_RESPONSE)
+            m.get(api_url2, status=HTTPStatus.OK, payload=payload)
             await bot.dispatcher.message_handlers.notify(message)
             assert message.reply.called
             assert message.reply.called_with_text == reply_text
@@ -213,19 +281,21 @@ class TestOdesliBot:
         reply_text = (
             'check this one: [1]\n'
             '\n'
-            '1. Test Artist - Test Title\n'
+            '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">Youtube Music</a>'
         )
         url1 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
         url2 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/2'
+        payload = make_response()
         with aioresponses() as m:
             m.get(url1, status=HTTPStatus.TOO_MANY_REQUESTS)
-            m.get(url1, status=HTTPStatus.OK, payload=TEST_RESPONSE)
-            m.get(url2, status=HTTPStatus.OK, payload=TEST_RESPONSE)
+            m.get(url1, status=HTTPStatus.OK, payload=payload)
+            m.get(url2, status=HTTPStatus.OK, payload=payload)
             tasks = [
                 asyncio.create_task(
                     bot.dispatcher.message_handlers.notify(message1)
