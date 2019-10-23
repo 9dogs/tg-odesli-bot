@@ -92,5 +92,20 @@ into the project's root directory and run the bot (Python 3.7 required):
 $ git clone https://github.com/9dogs/tg-odesli-bot.git
 $ cd tg-odesli-bot
 $ # If you have token in .env file
-$ cp
+$ cp /path/to/.env ./
+$ PYTHONPATH=. pipenv run bot
+$ # If you specify token via shell env var
+$ PYTHONPATH=. TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run bot
+```
+
+### Run with Docker
+
+Set `TG_ODESLI_BOT_TG_API_TOKEN` environment variable and run the image 
+`9dogs/tg-odesli-bot` (in order to use the `.env` file, mount it to 
+`/opt/tg-odesli-bot/.env`):
+
+```console
+$ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg-odesli-bot
+$ # OR
+$ docker run --rm -it -v /path/to/.env:/opt/tg-odesli-bot/.env 9dogs/tg-odesli-bot
 ```
