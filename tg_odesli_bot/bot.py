@@ -172,6 +172,15 @@ class OdesliBot:
         :param song_infos: list of SongInfo objects
         :return: transformed message
         """
+        # Check if message consists only of song URL and return empty string
+        # if so
+        _test_message = message
+        for song_info in song_infos:
+            for url in song_info.urls_in_text:
+                _test_message = _test_message.replace(url, '')
+        if not _test_message.strip():
+            return ''
+        # Else replace song URLs with [1], [2] etc
         for index, song_info in enumerate(song_infos, start=1):
             for url in song_info.urls_in_text:
                 message = message.replace(url, f'[{index}]')
@@ -263,13 +272,15 @@ class OdesliBot:
         song_infos = self._merge_same_songs(tuple(song_infos))
         # Replace original URLs in message with footnotes (like [1], [2] etc)
         text = self._replace_urls_with_footnotes(message.text, song_infos)
+        if text:
+            text += '\n'
         # Form a reply text.  In group chats quote the original message
         if message.chat.type != ChatType.PRIVATE:
             reply_list = [
-                f'<b>@{message.from_user.username} wrote:</b> {text}\n'
+                f'<b>@{message.from_user.username} wrote:</b> {text}'
             ]
         else:
-            reply_list = [f'{text}\n']
+            reply_list = [text]
         for index, song_info in enumerate(song_infos, start=1):
             if not song_info.ids:
                 urls_in_text = song_info.urls_in_text.pop()
@@ -282,7 +293,7 @@ class OdesliBot:
             for platform_name, url in song_info.urls.items():
                 platform_urls.append(f'<a href="{url}">{platform_name}</a>')
             reply_list.append(' | '.join(platform_urls))
-        reply_text = '\n'.join(reply_list)
+        reply_text = '\n'.join(reply_list).strip()
         await message.reply(text=reply_text, parse_mode='HTML', reply=False)
         # Try to delete original message if in group chat
         if message.chat.type != ChatType.PRIVATE:
