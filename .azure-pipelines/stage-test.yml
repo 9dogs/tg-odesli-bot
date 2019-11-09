@@ -12,6 +12,8 @@ stages:
       matrix:
         Python_37:
           python.version: '3.7'
+        Python_38:
+          python.version: '3.8'
 
     steps:
     - checkout: self
