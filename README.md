@@ -10,6 +10,7 @@ It's useful but still work in progress. Some turbulence is expected.
 [![Azure build status](https://dev.azure.com/9dogs/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master)](https://github.com/9dogs/tg-odesli-bot)
 [![Code coverage](https://codecov.io/gh/9dogs/tg-odesli-bot/branch/master/graph/badge.svg?token=3nWZWJ3Bl3)](https://codecov.io/gh/9dogs/tg-odesli-bot)
 [![Docker build](https://img.shields.io/docker/cloud/automated/9dogs/tg-odesli-bot)](https://hub.docker.com/r/9dogs/tg-odesli-bot) 
+[![Supported versions](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)](https://github.com/9dogs/tg-odesli-bot)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Codestyle: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -86,7 +87,7 @@ or Docker.
 
 Clone this repository, [install 
 pipenv](https://github.com/pypa/pipenv#installation), copy `.env` file
-into the project's root directory and run the bot (Python 3.7 required):
+into the project's root directory and run the bot (Python 3.7 or 3.8 required):
 
 ```console
 $ git clone https://github.com/9dogs/tg-odesli-bot.git
