@@ -9,6 +9,7 @@ stages:
     variables:
       PYTHONPATH: $(Build.SourcesDirectory)
     strategy:
+      maxParallel: 2
       matrix:
         Python_37:
           python.version: '3.7'
