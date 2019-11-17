@@ -1,4 +1,4 @@
-"""App configuration."""
+"""Bot configuration."""
 import logging.config
 import os
 from typing import Optional
@@ -12,9 +12,9 @@ from structlog_sentry import SentryJsonProcessor
 
 
 class Config:
-    """Configuration."""
+    """Bot configuration."""
 
-    #: Logging level
+    #: Debug
     DEBUG = False
     #: Telegram bot API key (required)
     TG_API_TOKEN = ''
@@ -102,10 +102,9 @@ class Config:
 
     @classmethod
     def load(cls, env_prefix: str = 'TG_ODESLI_BOT_'):
-        """Load config merging default variables and variables from the
-        environment.
+        """Load config merging default variables and environment variables.
 
-        :param env_prefix: prefix of environment variables
+        :param env_prefix: prefix for environment variables
         :return: filled config object
         """
         config = cls()
@@ -133,9 +132,9 @@ class TestConfig(Config):
 
     #: Testing mode
     TESTING = True
-    #: Set DEBUG logging level
+    #: Debug
     DEBUG = True
-    #: Do not query Telegram API
+    #: Telegram bot API key
     TG_API_TOKEN = 'invalid'
-    #: Do not send errors to Sentry
+    #: Sentry DSN
     SENTRY_DSN = None

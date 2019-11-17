@@ -3,24 +3,24 @@ import re
 from abc import ABC
 from typing import Pattern, Union
 
-#: Supported platforms
+#: Supported platforms registry
 PLATFORMS = {}
 
 
 class PlatformABC(ABC):
-    """Platform data holder."""
+    """Platform data ABC."""
 
     # Platform's Odesli name
     key: str
     # RegEx to find platform's URL in a message text
     url_re: Union[str, Pattern]
-    # Human readable name which will appear in bot message
+    # Human readable name which will appear in a bot's message
     name: str
-    # Order of platform link in bot message
+    # Order of platform's link in a bot's message
     order: int
 
     def __init_subclass__(cls, **kwargs):
-        """Compile regex and add platform to a platform registry."""
+        """Compile regex and add platform to `PLATFORM` registry."""
         super().__init_subclass__(**kwargs)
         cls.url_re = re.compile(cls.url_re)
         PLATFORMS[cls.key] = cls()

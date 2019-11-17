@@ -16,7 +16,7 @@ class SongSchema(Schema):
 
 
 class PlatformLink(Schema):
-    """Platform URL schema."""
+    """Platform link schema."""
 
     #: Identifier
     id = fields.Str(required=True, data_key='entityUniqueId')

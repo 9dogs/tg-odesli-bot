@@ -1,4 +1,4 @@
-"""Odesli bot."""
+"""Telegram Odesli bot."""
 import asyncio
 import contextvars
 from collections import Counter
@@ -23,7 +23,7 @@ from tg_odesli_bot.schemas import ApiResponseSchema
 
 
 class BotException(Exception):
-    """Odesli Bot exception."""
+    """Odesli bot exception."""
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ class SongUrl:
 class SongInfo:
     """Song metadata."""
 
-    #: Ids
+    #: Set of Odesli identifiers
     ids: set
     #: Title
     title: Optional[str]
@@ -66,7 +66,7 @@ class LoggingMiddleware(BaseMiddleware):
         """Bind message metadata to a logger.
 
         :param message: incoming message
-        :param data: data
+        :param data: additional data
         """
         logger = self.logger_var.get()
         _logger = logger.bind(
@@ -80,8 +80,7 @@ class LoggingMiddleware(BaseMiddleware):
 class OdesliBot:
     """Odesli Telegram bot."""
 
-    #: If this string is in an incoming message, the message will be skipped
-    #: by the bot
+    #: If this string is in an incoming message, the message won't be processed
     SKIP_MARK = '!skip'
     #: Time to wait before retrying and API call if 429 code was returned
     API_RETRY_TIME = 5
@@ -97,8 +96,8 @@ class OdesliBot:
         "I'm an (unofficial) Odesli Bot. You can send me a link to a song on "
         'any supported music streaming platform and I will reply with links '
         'from all the other platforms. I work in group chats as well. In a '
-        'group chat I will also try to delete original message so that the'
-        ' chat remains tidy (you must promote me to admin to enable this).\n'
+        'group chat I will also try to delete original message so that the '
+        'chat remains tidy (you must promote me to admin to enable this).\n'
         '\n'
         '<b>Supported platforms:</b> {supported_platforms}.\n'
         '\n'
@@ -113,26 +112,27 @@ class OdesliBot:
         :param config: configuration
         :param loop: event loop
         """
-        # Config
+        #: Configuration
         self.config = config or Config.load()
-        # Logger
+        #: Logger
         self.logger = structlog.get_logger('tg_odesli_bot')
         self.logger_var = contextvars.ContextVar('logger', default=self.logger)
-        # Loop
+        #: Event loop
         self._loop = loop or asyncio.get_event_loop()
-        # Cache
+        #: Cache
         self.cache = caches.get('default')
-        # Telegram connect retries count
+        #: Telegram connect retries count
         self._tg_retries = 0
 
     async def init(self):
         """Initialize the bot (async part)."""
-        # HTTP session
+        #: HTTP session
         self.session = aiohttp.ClientSession(connector=TCPConnector(limit=10))
-        # Bot and dispatcher
+        #: aiogram bot instance
         self.bot = Bot(token=self.config.TG_API_TOKEN)
+        #: Bot's dispatcher
         self.dispatcher = Dispatcher(self.bot)
-        # API ready event (used for requests throttling)
+        #: API ready event (used for requests throttling)
         self._api_ready = asyncio.Event()
         self._api_ready.set()
         # Setup logging middleware
@@ -168,8 +168,11 @@ class OdesliBot:
     ) -> str:
         """Replace song URLs in message with footnotes.
 
+        E.g. "this song is awesome <link>" will be transformed to "this song
+        is awesome [1]".
+
         :param message: original message text
-        :param song_infos: list of SongInfo objects
+        :param song_infos: list of SongInfo metadata objects
         :return: transformed message
         """
         # Check if message consists only of song URL and return empty string
@@ -187,10 +190,10 @@ class OdesliBot:
         return message
 
     def extract_song_urls(self, text: str) -> List[SongUrl]:
-        """Extract song URLs and its positions from text.
+        """Extract song URLs from text for each registered platform.
 
         :param text: message text
-        :return: list of platform URLs
+        :return: list of SongURLs
         """
         urls = []
         for platform_key, platform in PLATFORMS.items():
@@ -209,7 +212,11 @@ class OdesliBot:
         """Merge SongInfo objects if two or more links point to the same
         song.
 
-        :param song_infos: tuple of songs found in a message
+        Use identifiers provided by Odesli API to find identical song even
+        though they can be linked from different platforms.
+
+        :param song_infos: tuple of SongInfo objects found in a message
+        :return: Tuple of merged SongInfo objects
         """
         merged_song_info_indexes: Set[int] = set()
         for idx1, song_info1 in enumerate(song_infos):
@@ -251,7 +258,7 @@ class OdesliBot:
         :param message: incoming message
         """
         logger = self.logger_var.get()
-        # Check if message should be handled
+        # Check if message should be processed
         if self.SKIP_MARK in message.text:
             logger.debug('Message is skipped due to skip mark')
             return
@@ -266,11 +273,11 @@ class OdesliBot:
         )
         # Do not reply to the message if all song infos are empty
         if not any(song_info.ids for song_info in song_infos):
-            logger.error('API returned errors for all URLs')
+            logger.error('API returned errors for every URL')
             return
-        # Combine song infos if different platform links point to the same song
+        # Merge song infos if different platform links point to the same song
         song_infos = self._merge_same_songs(tuple(song_infos))
-        # Replace original URLs in message with footnotes (like [1], [2] etc)
+        # Replace original URLs in message with footnotes (e.g. [1], [2], ...)
         text = self._replace_urls_with_footnotes(message.text, song_infos)
         if text:
             text += '\n'
@@ -282,6 +289,7 @@ class OdesliBot:
         else:
             reply_list = [text]
         for index, song_info in enumerate(song_infos, start=1):
+            # Use original URL if we failed to find that song via Odesli API
             if not song_info.ids:
                 urls_in_text = song_info.urls_in_text.pop()
                 reply_list.append(f'{index}. {urls_in_text}')
@@ -295,7 +303,7 @@ class OdesliBot:
             reply_list.append(' | '.join(platform_urls))
         reply_text = '\n'.join(reply_list).strip()
         await message.reply(text=reply_text, parse_mode='HTML', reply=False)
-        # Try to delete original message if in group chat
+        # In group chat try to delete original message
         if message.chat.type != ChatType.PRIVATE:
             try:
                 await message.delete()
@@ -305,6 +313,8 @@ class OdesliBot:
     @staticmethod
     def normalize_url(url):
         """Strip "utm_" parameters from URL.
+
+        Used in caching to increase cache density.
 
         :param url: url
         :return: normalized URL
@@ -330,16 +340,17 @@ class OdesliBot:
         """Make an API call to Odesli service and return song data for
         supported services.
 
-        :param str song_url: URL of a song in any supported platform
+        :param song_url: SongURL object
         :return: Odesli response
         """
         logger = self.logger_var.get()
+        # Normalize URL for cache querying
         normalized_url = self.normalize_url(song_url.url)
         params = {'url': normalized_url}
         if self.config.ODESLI_API_KEY:
             params['api_key'] = self.config.ODESLI_API_KEY
         logger = logger.bind(url=self.config.ODESLI_API_URL, params=params)
-        # Create empty SongInfo in case of API error
+        # Create empty SongInfo to use in case of API error
         song_info = SongInfo(set(), None, None, None, {song_url.url})
         _retries = 0
         while _retries < self.API_MAX_RETRIES:
@@ -361,11 +372,12 @@ class OdesliBot:
                 if not self._api_ready.is_set():
                     logger.info('Waiting for the API')
                     await self._api_ready.wait()
+                # Query the API
                 async with self.session.get(
                     self.config.ODESLI_API_URL, params=params
                 ) as resp:
                     if resp.status != HTTPStatus.OK:
-                        # Throttle requests and retry
+                        # Throttle requests and retry if 429
                         if resp.status == HTTPStatus.TOO_MANY_REQUESTS:
                             logger.warning(
                                 'Too many requests, retrying in %d sec',
@@ -391,7 +403,7 @@ class OdesliBot:
                         song_info = self.process_api_response(
                             data, song_url.url
                         )
-                        # Cache response data
+                        # Cache processed data
                         await self.cache.set(normalized_url, song_info)
                     finally:
                         break
@@ -407,10 +419,10 @@ class OdesliBot:
         return song_info
 
     def _filter_platform_urls(self, platform_urls: dict) -> dict:
-        """Filter and reorder platform URLs.
+        """Filter and reorder platform URLs according to `PLATFORMS` registry.
 
-        :param platform_urls: dictionary of platform URLs
-        :return: dictionary of filtered platform URLs in order
+        :param platform_urls: dictionary of {platform_key: platform_urls}
+        :return: dictionary of filtered and ordered platform URLs
         """
         logger = self.logger_var.get()
         logger = logger.bind(data=platform_urls)
@@ -424,19 +436,20 @@ class OdesliBot:
             urls.append(
                 (platform.order, platform.name, platform_urls[platform_key])
             )
-        # Reorder platforms URL
+        # Reorder platform URLs
         platform_urls = {
             name: url for order, name, url in sorted(urls, key=lambda x: x[0])
         }
         return platform_urls
 
     def process_api_response(self, data: dict, url: str) -> SongInfo:
-        """Extract a song info from Odesli API info.
+        """Process Odesli API data creating SongInfo metadata object.
 
-        :param data: deserialized JSON Odesli data
-        :param url: URL in message text
+        :param data: deserialized Odesli data
+        :param url: original URL in message text
         :return: song info object
         """
+        #: Set of song identifiers
         ids = set()
         titles, artists = [], []
         for song_entity in data['songs'].values():
@@ -462,7 +475,10 @@ class OdesliBot:
         return song_info
 
     async def _start(self):
-        """Start polling.  Retry if cannot connect to Telegram servers."""
+        """Start polling.  Retry if cannot connect to Telegram servers.
+
+        Mimics `aiogram.executor.start_polling` functionality.
+        """
         await self.init()
         try:
             await self.dispatcher.skip_updates()
@@ -510,7 +526,7 @@ class OdesliBot:
 
 
 def main():
-    """Run the Bot."""
+    """Run the bot."""
     bot = OdesliBot()
     bot.start()
 
