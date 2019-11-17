@@ -12,7 +12,7 @@ ujson = "*"
 [dev-packages]
 aioresponses = "*"
 colorama = "*"
-black = {git = "https://github.com/psf/black.git",ref = "19.3b0"}
+black = {git = "https://github.com/psf/black.git",ref = "19.10b0"}
 isort = "*"
 flake8 = "*"
 flake8-bugbear = "*"
