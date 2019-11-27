@@ -1,4 +1,4 @@
-FROM python:3.7-stretch AS builder
+FROM python:3.7.5-stretch AS builder
 
 ARG pipenv_install_args="--deploy"
 
@@ -19,7 +19,7 @@ RUN find -L /opt/tg-odesli-bot -type d -name __pycache__ -prune -exec rm -rf {} 
             ! -name '.venv' \
         -exec rm -rf {} \;
 
-FROM python:3.7-slim-stretch
+FROM python:3.7.5-slim-stretch
 
 ARG UID=997
 ARG GID=997
