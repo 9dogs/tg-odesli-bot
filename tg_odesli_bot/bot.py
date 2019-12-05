@@ -273,7 +273,6 @@ class OdesliBot:
         )
         # Do not reply to the message if all song infos are empty
         if not any(song_info.ids for song_info in song_infos):
-            logger.error('API returned errors for every URL')
             return
         # Merge song infos if different platform links point to the same song
         song_infos = self._merge_same_songs(tuple(song_infos))
