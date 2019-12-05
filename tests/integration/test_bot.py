@@ -331,7 +331,7 @@ class TestOdesliBot:
             m.get(url1, status=error_code, repeat=True)
             m.get(url2, status=error_code, repeat=True)
             await bot.dispatcher.message_handlers.notify(message)
-            assert 'API returned errors for every URL' in caplog.text
+            assert 'API error' in caplog.text
             assert not message.reply.called
 
     async def test_do_not_reply_if_validation_error(self, caplog, bot):
