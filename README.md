@@ -41,7 +41,8 @@ Currently the following services are supported:
   - SoundCloud
   - Yandex Music
   - Spotify
-  - Youtube Music
+  - YouTube Music
+  - YouTube
 
 ## Privacy considerations
 
