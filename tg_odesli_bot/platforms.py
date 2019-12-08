@@ -71,10 +71,19 @@ class SpotifyPlatform(PlatformABC):
     order = 4
 
 
-class YoutubeMusicPlatform(PlatformABC):
-    """Youtube Music platform."""
+class YouTubeMusicPlatform(PlatformABC):
+    """YouTube Music platform."""
 
     key = 'youtubeMusic'
     url_re = r'https?://([a-zA-Z\d-]+\.)*music\.youtube\.com/[^\s.,]*'
-    name = 'Youtube Music'
+    name = 'YouTube Music'
     order = 5
+
+
+class YouTubePlatform(PlatformABC):
+    """YouTube platform."""
+
+    key = 'youtube'
+    url_re = r'https?://(www\.)?youtube\.com/[^\s.,]*'
+    name = 'YouTube'
+    order = 6

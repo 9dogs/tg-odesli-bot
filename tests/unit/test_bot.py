@@ -16,10 +16,12 @@ class TestOdesliBot:
             '3 https://soundcloud.com/worakls/nto-trauma-worakls-remix \n'
             '4 https://music.yandex.com/album/50197/track/120711 no_link\n'
             '5 https://music.yandex.ru/album/6004920/track/44769475\n'
-            '6 https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh'
+            '6 https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh\n'
+            '7 https://music.youtube.com/watch?v=eVTXPUF4Oz4\n'
+            '8 https://www.youtube.com/watch?v=eVTXPUF4Oz4'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 6
+        assert len(urls) == 8
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -47,6 +49,16 @@ class TestOdesliBot:
         assert spotify.platform_key == 'spotify'
         assert spotify.url == (
             'https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh'
+        )
+        youtube_music = urls[6]
+        assert youtube_music.platform_key == 'youtubeMusic'
+        assert youtube_music.url == (
+            'https://music.youtube.com/watch?v=eVTXPUF4Oz4'
+        )
+        youtube = urls[7]
+        assert youtube.platform_key == 'youtube'
+        assert youtube.url == (
+            'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
         )
 
     async def test_merges_urls_for_same_song(self, bot: OdesliBot):
