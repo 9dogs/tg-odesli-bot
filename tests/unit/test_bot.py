@@ -57,9 +57,7 @@ class TestOdesliBot:
         )
         youtube = urls[7]
         assert youtube.platform_key == 'youtube'
-        assert youtube.url == (
-            'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
-        )
+        assert youtube.url == 'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
 
     async def test_merges_urls_for_same_song(self, bot: OdesliBot):
         """Merge SongInfo objects if they point to the same song."""
