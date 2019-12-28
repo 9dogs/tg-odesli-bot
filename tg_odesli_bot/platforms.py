@@ -87,3 +87,12 @@ class YouTubePlatform(PlatformABC):
     url_re = r'https?://(www\.)?youtube\.com/[^\s.,]*'
     name = 'YouTube'
     order = 6
+
+
+class AppleMusicPlatform(PlatformABC):
+    """Apple Music platform."""
+
+    key = 'appleMusic'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*music\.apple\.com/[^\s.,]*'
+    name = 'Apple Music'
+    order = 7
