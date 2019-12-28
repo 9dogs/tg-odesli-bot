@@ -18,10 +18,11 @@ class TestOdesliBot:
             '5 https://music.yandex.ru/album/6004920/track/44769475\n'
             '6 https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh\n'
             '7 https://music.youtube.com/watch?v=eVTXPUF4Oz4\n'
-            '8 https://www.youtube.com/watch?v=eVTXPUF4Oz4'
+            '8 https://www.youtube.com/watch?v=eVTXPUF4Oz4\n'
+            '9 https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 8
+        assert len(urls) == 9
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -58,6 +59,11 @@ class TestOdesliBot:
         youtube = urls[7]
         assert youtube.platform_key == 'youtube'
         assert youtube.url == 'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
+        apple_music = urls[8]
+        assert apple_music.platform_key == 'appleMusic'
+        assert apple_music.url == (
+            'https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
+        )
 
     async def test_merges_urls_for_same_song(self, bot: OdesliBot):
         """Merge SongInfo objects if they point to the same song."""
