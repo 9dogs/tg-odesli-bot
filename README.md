@@ -43,6 +43,7 @@ Currently the following services are supported:
   - Spotify
   - YouTube Music
   - YouTube
+  - Apple Music
 
 ## Privacy considerations
 
