@@ -404,8 +404,7 @@ class OdesliBot:
                         )
                         # Cache processed data
                         await self.cache.set(normalized_url, song_info)
-                    finally:
-                        break
+                    break
             except ClientConnectionError as exc:
                 _retries += 1
                 logger.error(
