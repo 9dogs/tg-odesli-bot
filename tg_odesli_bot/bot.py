@@ -12,7 +12,7 @@ import structlog
 from aiocache import caches
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher.middlewares import BaseMiddleware
-from aiogram.types import ChatType
+from aiogram.types import ChatType, Message
 from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
 from aiohttp import ClientConnectionError, TCPConnector
 from marshmallow import ValidationError
@@ -175,7 +175,7 @@ class OdesliBot:
         :param song_infos: list of SongInfo metadata objects
         :return: transformed message
         """
-        # Check if message consists only of song URL and return empty string
+        # Check if message consists only of a song URL and return empty string
         # if so
         _test_message = message
         for song_info in song_infos:
@@ -216,7 +216,7 @@ class OdesliBot:
         though they can be linked from different platforms.
 
         :param song_infos: tuple of SongInfo objects found in a message
-        :return: Tuple of merged SongInfo objects
+        :return: tuple of merged SongInfo objects
         """
         merged_song_info_indexes: Set[int] = set()
         for idx1, song_info1 in enumerate(song_infos):
@@ -252,6 +252,56 @@ class OdesliBot:
         )
         return merged_song_infos
 
+    def _compose_reply(
+        self,
+        song_infos: Tuple[SongInfo, ...],
+        message_text: str,
+        message: Message,
+        append_index: bool,
+    ) -> str:
+        """Compose a reply.  For group chats original message is included in
+        reply with song URLs replaces with its indexes.  If original message
+        consists only of a single link the index is omitted.
+
+        <b>@test_user wrote:</b> check this one [1]
+        1. Artist - Song
+        <a href="url1">Deezer</a>
+        ...
+
+        :param song_infos: list of songs metadata
+        :param message: incoming message
+        :param message_text: incoming message text with song URLs replaced
+            with its indexes
+        :param append_index: append index
+        :return: reply text
+        """
+        # Quote the original message for group chats
+        if message.chat.type != ChatType.PRIVATE:
+            reply_list = [
+                f'<b>@{message.from_user.username} wrote:</b> {message_text}'
+            ]
+        else:
+            reply_list = [message_text]
+        for index, song_info in enumerate(song_infos, start=1):
+            # Use original URL if we failed to find that song via Odesli API
+            if not song_info.ids:
+                urls_in_text = song_info.urls_in_text.pop()
+                reply_list.append(f'{index}. {urls_in_text}')
+                continue
+            if append_index:
+                reply_list.append(
+                    f'{index}. {song_info.artist} - {song_info.title}'
+                )
+            else:
+                reply_list.append(f'{song_info.artist} - {song_info.title}')
+            platform_urls = song_info.urls or {}
+            reply_urls = []
+            for platform_name, url in platform_urls.items():
+                reply_urls.append(f'<a href="{url}">{platform_name}</a>')
+            reply_list.append(' | '.join(reply_urls))
+        reply = '\n'.join(reply_list).strip()
+        return reply
+
     async def handle_message(self, message: types.Message):
         """Handle incoming message.
 
@@ -277,30 +327,19 @@ class OdesliBot:
         # Merge song infos if different platform links point to the same song
         song_infos = self._merge_same_songs(tuple(song_infos))
         # Replace original URLs in message with footnotes (e.g. [1], [2], ...)
-        text = self._replace_urls_with_footnotes(message.text, song_infos)
-        if text:
-            text += '\n'
-        # Form a reply text.  In group chats quote the original message
-        if message.chat.type != ChatType.PRIVATE:
-            reply_list = [
-                f'<b>@{message.from_user.username} wrote:</b> {text}'
-            ]
-        else:
-            reply_list = [text]
-        for index, song_info in enumerate(song_infos, start=1):
-            # Use original URL if we failed to find that song via Odesli API
-            if not song_info.ids:
-                urls_in_text = song_info.urls_in_text.pop()
-                reply_list.append(f'{index}. {urls_in_text}')
-                continue
-            reply_list.append(
-                f'{index}. {song_info.artist} - {song_info.title}'
-            )
-            platform_urls = []
-            for platform_name, url in song_info.urls.items():
-                platform_urls.append(f'<a href="{url}">{platform_name}</a>')
-            reply_list.append(' | '.join(platform_urls))
-        reply_text = '\n'.join(reply_list).strip()
+        prepared_message_text = self._replace_urls_with_footnotes(
+            message.text, song_infos
+        )
+        if prepared_message_text:
+            prepared_message_text += '\n'
+        # Compose reply text
+        append_index = bool(len(song_infos) > 1 or prepared_message_text)
+        reply_text = self._compose_reply(
+            song_infos=song_infos,
+            message_text=prepared_message_text,
+            message=message,
+            append_index=append_index,
+        )
         await message.reply(text=reply_text, parse_mode='HTML', reply=False)
         # In group chat try to delete original message
         if message.chat.type != ChatType.PRIVATE:
