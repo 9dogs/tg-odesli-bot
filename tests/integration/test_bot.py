@@ -154,6 +154,28 @@ class TestOdesliBot:
         assert message.reply.called
         assert message.reply.called_with_text == reply_text
 
+    async def test_replies_to_private_for_single_url(self, bot, odesli_api):
+        """Send reply to a private message without an index number if incoming
+        message consists only from one URL.
+        """
+        message = make_mock_message(
+            text='https://www.deezer.com/track/1', chat_type=ChatType.PRIVATE,
+        )
+        reply_text = (
+            'Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">YouTube Music</a> | '
+            '<a href="https://www.test.com/y">YouTube</a> | '
+            '<a href="https://www.test.com/am">Apple Music</a>'
+        )
+        await bot.dispatcher.message_handlers.notify(message)
+        assert message.reply.called
+        assert message.reply.called_with_text == reply_text
+
     async def test_replies_if_some_urls_not_found(self, bot):
         """Send reply to a private message if song not found in some
         platforms.
@@ -220,6 +242,31 @@ class TestOdesliBot:
         with aioresponses() as m:
             m.get(api_url1, status=HTTPStatus.OK, payload=payload1)
             m.get(api_url2, status=HTTPStatus.OK, payload=payload2)
+            await bot.dispatcher.message_handlers.notify(message)
+            assert message.reply.called
+            assert message.reply.called_with_text == reply_text
+
+    async def test_replies_to_private_message_for_single_urls(self, bot):
+        """Send reply to a private message without an index number if incoming
+        message consists only from one URL.
+        """
+        url = 'https://www.deezer.com/track/1'
+        message = make_mock_message(text=url, chat_type=ChatType.PRIVATE)
+        reply_text = (
+            'Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">YouTube Music</a> | '
+            '<a href="https://www.test.com/y">YouTube</a> | '
+            '<a href="https://www.test.com/am">Apple Music</a>'
+        )
+        api_url = f'{bot.config.ODESLI_API_URL}?url={url}'
+        payload = make_response(id=1)
+        with aioresponses() as m:
+            m.get(api_url, status=HTTPStatus.OK, payload=payload)
             await bot.dispatcher.message_handlers.notify(message)
             assert message.reply.called
             assert message.reply.called_with_text == reply_text
