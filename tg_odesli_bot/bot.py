@@ -175,7 +175,7 @@ class OdesliBot:
         :param song_infos: list of SongInfo metadata objects
         :return: transformed message
         """
-        # Check if message consists only of song URL and return empty string
+        # Check if message consists only of a song URL and return empty string
         # if so
         _test_message = message
         for song_info in song_infos:
@@ -261,7 +261,7 @@ class OdesliBot:
     ) -> str:
         """Compose a reply.  For group chats original message is included in
         reply with song URLs replaces with its indexes.  If original message
-        consists only from a single link the index is omitted.
+        consists only of a single link the index is omitted.
 
         <b>@test_user wrote:</b> check this one [1]
         1. Artist - Song
@@ -286,10 +286,7 @@ class OdesliBot:
             # Use original URL if we failed to find that song via Odesli API
             if not song_info.ids:
                 urls_in_text = song_info.urls_in_text.pop()
-                if append_index:
-                    reply_list.append(f'{index}. {urls_in_text}')
-                else:
-                    reply_list.append(urls_in_text)
+                reply_list.append(f'{index}. {urls_in_text}')
                 continue
             if append_index:
                 reply_list.append(

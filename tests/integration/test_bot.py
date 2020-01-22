@@ -156,7 +156,7 @@ class TestOdesliBot:
 
     async def test_replies_to_private_for_single_url(self, bot, odesli_api):
         """Send reply to a private message without an index number if incoming
-        message consists only from one URL.
+        message consists only of one URL.
         """
         message = make_mock_message(
             text='https://www.deezer.com/track/1', chat_type=ChatType.PRIVATE,
@@ -248,7 +248,7 @@ class TestOdesliBot:
 
     async def test_replies_to_private_message_for_single_urls(self, bot):
         """Send reply to a private message without an index number if incoming
-        message consists only from one URL.
+        message consists only of one URL.
         """
         url = 'https://www.deezer.com/track/1'
         message = make_mock_message(text=url, chat_type=ChatType.PRIVATE)
