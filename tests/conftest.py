@@ -27,6 +27,7 @@ TEST_RESPONSE_TEMPLATE = {
             'title': 'Test Title ${id}',
             'artistName': 'Test Artist ${id}',
             'apiProvider': 'deezer',
+            'thumbnailUrl': 'http://thumb1',
         },
         'ITUNES_SONG::IT${id}': {
             'id': 'IT${id}',

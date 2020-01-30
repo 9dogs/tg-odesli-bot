@@ -13,6 +13,8 @@ class SongSchema(Schema):
     artist = fields.Str(data_key='artistName')
     #: Title
     title = fields.Str(data_key='title')
+    #: Thumbnail URL
+    thumbnail_url = fields.Str(data_key='thumbnailUrl')
 
 
 class PlatformLink(Schema):

@@ -72,6 +72,7 @@ class TestOdesliBot:
                 ids={'id1', 'id2'},
                 title='Test title',
                 artist='Test artist',
+                thumbnail_url='url1',
                 urls={'deezer': 'http://test_deezer_url'},
                 urls_in_text={'http://test_deezer_url'},
             ),
@@ -79,6 +80,7 @@ class TestOdesliBot:
                 ids={'id2', 'id3'},
                 title='Test title',
                 artist='Test artist',
+                thumbnail_url='url2',
                 urls={'google': 'http://test_google_url'},
                 urls_in_text={'http://test_google_url'},
             ),
@@ -86,6 +88,7 @@ class TestOdesliBot:
                 ids={'id3', 'id4'},
                 title='Test title',
                 artist='Test artist',
+                thumbnail_url='url3',
                 urls={'soundcloud': 'http://test_soundcloud_url'},
                 urls_in_text={'http://test_soundcloud_url'},
             ),
@@ -93,6 +96,7 @@ class TestOdesliBot:
                 ids={'id5'},
                 title='Not merged',
                 artist='Not merged',
+                thumbnail_url='url4',
                 urls={'not_merged': 'http://not_merged'},
                 urls_in_text={'http://not_merged'},
             ),
@@ -106,6 +110,7 @@ class TestOdesliBot:
             'google': 'http://test_google_url',
             'soundcloud': 'http://test_soundcloud_url',
         }
+        assert song_info.thumbnail_url
         assert set(song_info.urls_in_text) == {
             'http://test_deezer_url',
             'http://test_google_url',

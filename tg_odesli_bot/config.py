@@ -76,7 +76,7 @@ class Config:
 
     def init_logging(self):
         """Init logging."""
-        if self.DEBUG:
+        if self.DEBUG:  # pragma: no cover
             self.LOG_CONFIG['loggers']['tg_odesli_bot']['level'] = 'DEBUG'
             if not isinstance(
                 self.LOG_RENDERER, structlog.dev.ConsoleRenderer
