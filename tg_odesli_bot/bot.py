@@ -1,6 +1,7 @@
 """Telegram Odesli bot."""
 import asyncio
 import contextvars
+import hashlib
 from collections import Counter
 from dataclasses import dataclass
 from http import HTTPStatus
@@ -12,7 +13,13 @@ import structlog
 from aiocache import caches
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher.middlewares import BaseMiddleware
-from aiogram.types import ChatType, Message
+from aiogram.types import (
+    ChatType,
+    InlineQuery,
+    InlineQueryResultArticle,
+    InputTextMessageContent,
+    Message,
+)
 from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
 from aiohttp import ClientConnectionError, TCPConnector
 from marshmallow import ValidationError
@@ -24,6 +31,10 @@ from tg_odesli_bot.schemas import ApiResponseSchema
 
 class BotException(Exception):
     """Odesli bot exception."""
+
+
+class NotFound(BotException):
+    """No song info found."""
 
 
 @dataclass(frozen=True)
@@ -50,6 +61,8 @@ class SongInfo:
     artist: Optional[str]
     #: Platform URLs
     urls: Optional[Dict[str, str]]
+    #: Thumbnail URL
+    thumbnail_url: Optional[str]
     #: URLs in text
     urls_in_text: Set[str]
 
@@ -147,6 +160,7 @@ class OdesliBot:
             self.send_welcome
         )
         self.dispatcher.message_handler()(self.handle_message)
+        self.dispatcher.inline_handler()(self.handle_inline_query)
 
     async def send_welcome(self, message: types.Message):
         """Send a welcome message.
@@ -252,6 +266,47 @@ class OdesliBot:
         )
         return merged_song_infos
 
+    async def _find_songs(self, text: str) -> Tuple[SongInfo, ...]:
+        """Find song info based on given text.
+
+        :param text: message text
+        :return: tuple of SongInfo instances
+        :raise NotFound: if no song info found in message or via Odesli API
+        """
+        # Extract song URLs from the message
+        song_urls = self.extract_song_urls(text)
+        if not song_urls:
+            raise NotFound('No song URLs found in message')
+        # Get songs information by its URLs via Odesli service API
+        song_infos = await asyncio.gather(
+            *[self.find_song_by_url(song_url) for song_url in song_urls]
+        )
+        # Do not reply to the message if all song infos are empty
+        if not any(song_info.ids for song_info in song_infos):
+            raise NotFound('Cannot find info for any song')
+        # Merge song infos if different platform links point to the same song
+        song_infos = self._merge_same_songs(tuple(song_infos))
+        return song_infos
+
+    def _format_urls(
+        self, song_info: SongInfo, separator: str = ' | '
+    ) -> Tuple[str, str]:
+        """Format platform URLs into a single HTML string.
+
+        :param song_info: SongInfo metadata
+        :param separator: separator for platform URLs
+        :return: HTML string e.g.
+            <a href="1">Deezer</a> | <a href="2">Google Music</a> ...
+        """
+        platform_urls = song_info.urls or {}
+        reply_urls, platform_names = [], []
+        for platform_name, url in platform_urls.items():
+            reply_urls.append(f'<a href="{url}">{platform_name}</a>')
+            platform_names.append(platform_name)
+        formatted_urls = separator.join(reply_urls)
+        formatted_platforms = separator.join(platform_names)
+        return formatted_urls, formatted_platforms
+
     def _compose_reply(
         self,
         song_infos: Tuple[SongInfo, ...],
@@ -294,13 +349,45 @@ class OdesliBot:
                 )
             else:
                 reply_list.append(f'{song_info.artist} - {song_info.title}')
-            platform_urls = song_info.urls or {}
-            reply_urls = []
-            for platform_name, url in platform_urls.items():
-                reply_urls.append(f'<a href="{url}">{platform_name}</a>')
-            reply_list.append(' | '.join(reply_urls))
+            platform_urls, __ = self._format_urls(song_info)
+            reply_list.append(platform_urls)
         reply = '\n'.join(reply_list).strip()
         return reply
+
+    async def handle_inline_query(self, inline_query: InlineQuery):
+        """Handle inline query.
+
+        :param inline_query: query
+        """
+        logger = self.logger_var.get()
+        query = inline_query.query
+        logger.info('Inline request', query=query)
+        if not query:
+            await self.bot.answer_inline_query(inline_query.id, results=[])
+            return
+        try:
+            song_infos = await self._find_songs(query)
+        except NotFound:
+            await self.bot.answer_inline_query(inline_query.id, results=[])
+            return
+        articles = []
+        for song_info in song_infos:
+            # Use hashed concatenated IDs as a result id
+            id_ = ''.join(song_info.ids)
+            result_id = hashlib.md5(id_.encode()).hexdigest()
+            title = f'{song_info.artist} - {song_info.title}'
+            platform_urls, platform_names = self._format_urls(song_info)
+            reply_text = f'{title}\n{platform_urls}'
+            reply = InputTextMessageContent(reply_text, parse_mode='HTML')
+            article = InlineQueryResultArticle(
+                id=result_id,
+                title=title,
+                input_message_content=reply,
+                thumb_url=song_info.thumbnail_url,
+                description=platform_names,
+            )
+            articles.append(article)
+        await self.bot.answer_inline_query(inline_query.id, results=articles)
 
     async def handle_message(self, message: types.Message):
         """Handle incoming message.
@@ -312,20 +399,11 @@ class OdesliBot:
         if self.SKIP_MARK in message.text:
             logger.debug('Message is skipped due to skip mark')
             return
-        # Extract song URLs from the message
-        song_urls = self.extract_song_urls(message.text)
-        if not song_urls:
-            logger.debug('No songs found in message')
+        try:
+            song_infos = await self._find_songs(message.text)
+        except NotFound as exc:
+            logger.debug(exc)
             return
-        # Get songs information by its URLs via Odesli service API
-        song_infos = await asyncio.gather(
-            *[self.find_song_by_url(song_url) for song_url in song_urls]
-        )
-        # Do not reply to the message if all song infos are empty
-        if not any(song_info.ids for song_info in song_infos):
-            return
-        # Merge song infos if different platform links point to the same song
-        song_infos = self._merge_same_songs(tuple(song_infos))
         # Replace original URLs in message with footnotes (e.g. [1], [2], ...)
         prepared_message_text = self._replace_urls_with_footnotes(
             message.text, song_infos
@@ -389,7 +467,7 @@ class OdesliBot:
             params['api_key'] = self.config.ODESLI_API_KEY
         logger = logger.bind(url=self.config.ODESLI_API_URL, params=params)
         # Create empty SongInfo to use in case of API error
-        song_info = SongInfo(set(), None, None, None, {song_url.url})
+        song_info = SongInfo(set(), None, None, None, None, {song_url.url})
         _retries = 0
         while _retries < self.API_MAX_RETRIES:
             # Try to get data from cache.  Do it inside a loop in case other
@@ -401,6 +479,7 @@ class OdesliBot:
                     ids=cached.ids,
                     title=cached.title,
                     artist=cached.artist,
+                    thumbnail_url=None,
                     urls=cached.urls,
                     urls_in_text={song_url.url},
                 )
@@ -489,10 +568,14 @@ class OdesliBot:
         #: Set of song identifiers
         ids = set()
         titles, artists = [], []
+        thumbnail_url = None
         for song_entity in data['songs'].values():
             ids.add(song_entity['id'])
             titles.append(song_entity['title'])
             artists.append(song_entity['artist'])
+            # Pick the first thumbnail URL
+            if song_entity.get('thumbnail_url') and not thumbnail_url:
+                thumbnail_url = song_entity['thumbnail_url']
         platform_urls = {}
         for platform_key, link_entity in data['links'].items():
             platform_urls[platform_key] = link_entity['url']
@@ -506,6 +589,7 @@ class OdesliBot:
             ids=ids,
             title=title,
             artist=artist,
+            thumbnail_url=thumbnail_url,
             urls=platform_urls,
             urls_in_text={url},
         )
