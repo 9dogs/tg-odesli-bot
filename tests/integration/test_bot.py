@@ -4,7 +4,14 @@ from http import HTTPStatus
 from unittest import mock
 
 from aiogram import types
-from aiogram.types import Chat, ChatType, ContentType, Message, User
+from aiogram.types import (
+    Chat,
+    ChatType,
+    ContentType,
+    InlineQuery,
+    Message,
+    User,
+)
 from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
 from aiohttp import ClientConnectionError
 from aioresponses import aioresponses
@@ -18,17 +25,24 @@ def make_mock_message(
     text: str,
     chat_type: ChatType = ChatType.GROUP,
     raise_on_delete: bool = False,
+    inline: bool = False,
 ) -> mock.Mock:
     """Make a mock message with given text.
 
     :param text: text of the message
     :param chat_type: chat type.  See `aiogram.types.ChatType` enum
     :param raise_on_delete: raise exception on message delete
+    :param inline: message is an inline query
     :return: mock message
     """
-    message = mock.Mock(spec=Message)
+    spec = InlineQuery if inline else Message
+    message = mock.Mock(spec=spec)
     message.content_type = ContentType.TEXT
-    message.text = text
+    if inline:
+        message.query = text
+        message.message_id = 'id'
+    else:
+        message.text = text
     message.from_user = mock.Mock(spec=User)
     message.from_user.username = 'test_user'
     message.chat = mock.Mock(spec=Chat)
@@ -100,6 +114,82 @@ class TestOdesliBot:
         assert message.delete.called
         assert message.reply.called_with_text == reply_text
 
+    async def test_replies_to_inline_query(self, bot, odesli_api, monkeypatch):
+        """Send reply to an inline query."""
+        inline_query = make_mock_message(
+            'https://www.deezer.com/track/1', inline=True
+        )
+        reply_text = (
+            'Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">YouTube Music</a> | '
+            '<a href="https://www.test.com/y">YouTube</a> | '
+            '<a href="https://www.test.com/am">Apple Music</a>'
+        )
+
+        async def mock_answer_inline_query(id, results):
+            """Mock inline query answer."""
+            assert len(results) == 1
+            result = results[0]
+            assert result.title == 'Test Artist 1 - Test Title 1'
+            assert result.input_message_content.message_text == reply_text
+            assert result.input_message_content.parse_mode == 'HTML'
+            assert result.thumb_url == 'http://thumb1'
+            assert result.description == (
+                'Deezer | Google Music | SoundCloud | Yandex Music | Spotify '
+                '| YouTube Music | YouTube | Apple Music'
+            )
+
+        monkeypatch.setattr(
+            bot.bot, 'answer_inline_query', mock_answer_inline_query
+        )
+        await bot.dispatcher.inline_query_handlers.notify(inline_query)
+
+    @mark.parametrize('query', ['no URL', ''])
+    async def test_do_not_reply_to_inline_query_if_no_url(
+        self, bot, odesli_api, monkeypatch, query
+    ):
+        """Do not reply to an inline query if not URL in query."""
+        inline_query = make_mock_message(query, inline=True)
+
+        async def mock_answer_inline_query(id, results):
+            """Mock an inline query answer."""
+            assert not results
+
+        monkeypatch.setattr(
+            bot.bot, 'answer_inline_query', mock_answer_inline_query
+        )
+        await bot.dispatcher.inline_query_handlers.notify(inline_query)
+
+    @mark.parametrize('error_code', [400, 500])
+    async def test_do_not_reply_to_inline_query_if_api_errors(
+        self, caplog, bot, error_code, monkeypatch
+    ):
+        """Do not reply to an inline query if API error returns for all
+        songs.
+        """
+        message = make_mock_message(
+            text='https://deezer.com/track/1', inline=True,
+        )
+
+        async def mock_answer_inline_query(id, results):
+            """Mock an inline query answer."""
+            assert not results
+
+        monkeypatch.setattr(
+            bot.bot, 'answer_inline_query', mock_answer_inline_query
+        )
+
+        url = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
+        with aioresponses() as m:
+            m.get(url, status=error_code, repeat=True)
+            await bot.dispatcher.inline_query_handlers.notify(message)
+            assert 'API error' in caplog.text
+
     async def test_returns_song_info_from_cache(self, bot, caplog, odesli_api):
         """Bot retrieves song info from cache."""
         url = 'https://www.deezer.com/track/1'
@@ -107,6 +197,7 @@ class TestOdesliBot:
             ids={1},
             title='Cached',
             artist='Cached',
+            thumbnail_url='cached',
             urls={'soundcloud': 'test'},
             urls_in_text={url},
         )
@@ -281,7 +372,7 @@ class TestOdesliBot:
         """Log and do not reply if message has no song links."""
         message = make_mock_message(text=f'test message without song links')
         await bot.dispatcher.message_handlers.notify(message)
-        assert 'No songs found in message' in caplog.text
+        assert 'No song URLs found in message' in caplog.text
 
     async def test_logs_if_cannot_delete_message(
         self, caplog, bot, odesli_api
