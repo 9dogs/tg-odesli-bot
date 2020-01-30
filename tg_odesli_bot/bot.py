@@ -479,7 +479,7 @@ class OdesliBot:
                     ids=cached.ids,
                     title=cached.title,
                     artist=cached.artist,
-                    thumbnail_url=None,
+                    thumbnail_url=cached.thumbnail_url,
                     urls=cached.urls,
                     urls_in_text={song_url.url},
                 )
