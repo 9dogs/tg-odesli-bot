@@ -33,6 +33,12 @@ Original message           |  Bot's replay
 :-------------------------:|:-------------------------:
 <img alt="Original message" title="Original message" src="https://user-images.githubusercontent.com/432235/67324149-0a2b2580-f51c-11e9-8ce2-033cdf2d6628.png" height="200px">  | <img alt="Bot's reply" title="Bot's reply" src="https://user-images.githubusercontent.com/432235/67324159-0dbeac80-f51c-11e9-834a-7d4831a661d8.png" height="200px">
 
+## Features
+
+- Inline mode
+- Private chat mode
+- Group chat mode
+
 ## Supported services
 
 Currently the following services are supported:
