@@ -688,8 +688,8 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "f98d1712ee726b6ea5da8df6d965853cef2e8e23d4e5d1170ae0bfb0ea6bbd8a"
-python-versions = "^3.8"
+content-hash = "2478a9282232f0ca44385f650e1536a49e8d0b8b8bce661074f817b4bd733300"
+python-versions = "^3.7,^3.8"
 
 [metadata.files]
 aiocache = [

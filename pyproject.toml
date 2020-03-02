@@ -20,7 +20,7 @@ license = "GPL-3.0-only"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7,^3.8"
 aiocache = "^0.11.1"
 aiogram = "^2.6.1"
 marshmallow = "^3.5.0"
