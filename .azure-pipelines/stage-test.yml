@@ -26,8 +26,8 @@ stages:
         architecture: 'x64'
 
     - script: |
-        curl https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python
-      displayName: 'Install pipenv'
+        pip install poetry
+      displayName: 'Install poetry'
 
     - script: |
         pipenv install --dev
