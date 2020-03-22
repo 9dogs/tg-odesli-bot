@@ -7,6 +7,7 @@ Add in Telegram: [@odesli\_bot](https://t.me/odesli_bot)
 
 It's useful but still work in progress. Some turbulence is expected.
 
+[![PyPI](https://img.shields.io/pypi/v/tg-odesli-bot?color=blue)](https://pypi.org/project/tg-odesli-bot/)
 [![Azure build status](https://dev.azure.com/9dogs/tg-odesli-bot/_apis/build/status/9dogs.tg-odesli-bot?branchName=master)](https://github.com/9dogs/tg-odesli-bot)
 [![Code coverage](https://codecov.io/gh/9dogs/tg-odesli-bot/branch/master/graph/badge.svg?token=3nWZWJ3Bl3)](https://codecov.io/gh/9dogs/tg-odesli-bot)
 [![Docker build](https://img.shields.io/docker/cloud/automated/9dogs/tg-odesli-bot)](https://hub.docker.com/r/9dogs/tg-odesli-bot)
