@@ -30,7 +30,7 @@ stages:
       displayName: 'Install poetry'
 
     - script: |
-        pipenv install --dev
+        poetry install
       displayName: 'Install deps'
 
     - script: |
