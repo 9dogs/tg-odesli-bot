@@ -15,9 +15,6 @@ stages:
               pip install poetry
             displayName: 'Install poetry'
           - script: |
-              poetry config repositories.pypi https://test.pypi.org/legacy/
-            displayName: 'Config repo'
-          - script: |
               poetry publish --build
             displayName: 'Publish to PyPI'
             env:
