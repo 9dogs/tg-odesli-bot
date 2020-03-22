@@ -14,15 +14,15 @@ FILES = tg_odesli_bot tests
 IMAGE_NAME = 9dogs/tg-odesli-bot:latest
 
 fmt:
-	pipenv run black $(FILES)
-	pipenv run isort --recursive $(FILES)
+	poetry run black $(FILES)
+	poetry run isort --recursive $(FILES)
 
 lint:
-	pipenv run black --check $(FILES)
-	pipenv run isort --check-only --recursive $(FILES)
-	pipenv run flake8 $(FILES)
-	pipenv run pydocstyle $(FILES)
-	pipenv run mypy $(FILES)
+	poetry run black --check $(FILES)
+	poetry run isort --check-only --recursive $(FILES)
+	poetry run flake8 $(FILES)
+	poetry run pydocstyle $(FILES)
+	poetry run mypy $(FILES)
 
 build:
 	docker build -t $(IMAGE_NAME) .
@@ -30,7 +30,7 @@ build:
 TEST_OPTS ?= tests -r R --timeout=10
 TEST_OUTPUT ?= .
 test:
-	pipenv run py.test \
+	poetry run py.test \
         --cov tg_odesli_bot \
         --cov-report term-missing \
         --cov-report html:$(TEST_OUTPUT)/htmlcov \

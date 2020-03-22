@@ -1,25 +1,22 @@
-FROM python:3.7.5-stretch AS builder
+FROM python:3.8.2-buster AS builder
 
-ARG pipenv_install_args="--deploy"
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Install Pipenv
-RUN curl https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python
+# Install & config poetry
+RUN pip install poetry \
+    && poetry config virtualenvs.create true \
+    && poetry config virtualenvs.in-project true
 WORKDIR /opt/tg-odesli-bot
 # Install project dependencies
-ENV PIPENV_VENV_IN_PROJECT 1
-COPY Pipfile* ./
-RUN pipenv install $pipenv_install_args
+COPY poetry.lock pyproject.toml /opt/tg-odesli-bot/
+WORKDIR /opt/tg-odesli-bot
+RUN poetry install --no-interaction --no-ansi
 # Copy project files
 COPY . /opt/tg-odesli-bot
-# Remove Python cache and auxilary files
-RUN find -L /opt/tg-odesli-bot -type d -name __pycache__ -prune -exec rm -rf {} \; \
-    && find -L /opt/tg-odesli-bot -maxdepth 1 -type f,d \
-            ! -path /opt/tg-odesli-bot \
-            ! -name 'tg_odesli_bot' \
-            ! -name '.venv' \
-        -exec rm -rf {} \;
 
-FROM python:3.7.5-slim-stretch
+
+FROM python:3.8.2-slim-buster
 
 ARG UID=997
 ARG GID=997

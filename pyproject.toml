@@ -1,4 +1,57 @@
 [tool.black]
 line-length = 79
 skip-string-normalization = true
-target-version = ["py37"]
+target-version = ["py38"]
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+default_section = "THIRDPARTY"
+known_first_party = "tg_odesli_bot,tests"
+
+[tool.poetry]
+name = "tg_odesli_bot"
+version = "0.2.0"
+description = "Telegram Bot to share music with Odesli (former Songlink) service."
+repository = "https://github.com/9dogs/tg-odesli-bot"
+homepage = "https://github.com/9dogs/tg-odesli-bot"
+authors = ["Mikhail Knyazev <hellishbot@gmail.com>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4"
+aiocache = "^0.11.1"
+aiogram = "^2.6.1"
+marshmallow = "^3.5.0"
+python-dotenv = "^0.12.0"
+sentry-sdk = "^0.14.2"
+structlog = "^20.1.0"
+structlog-sentry = "^1.2.1"
+aiohttp = "^3.6.2"
+ujson = "^2.0.2"
+
+[tool.poetry.dev-dependencies]
+aioresponses = "^0.6.3"
+black = "^19.10b0"
+isort = "^4.3.21"
+flake8 = "^3.7.9"
+flake8-bugbear = "^20.1.4"
+flake8-comprehensions = "^3.2.2"
+flake8-debugger = "^3.2.1"
+flake8-print = "^3.1.4"
+flake8-quotes = "^2.1.1"
+flake8-todo = "^0.7"
+pep8-naming = "^0.10.0"
+pydocstyle = "^5.0.2"
+coverage = "^5.0.4"
+mypy = "^0.770"
+pytest = "^5.3"
+pytest-cov = "^2.8.1"
+pytest-aiohttp = "^0.3.0"
+pytest-timeout = "^1.3.4"
+
+[tool.poetry.scripts]
+bot = "tg_odesli_bot.bot:main"
