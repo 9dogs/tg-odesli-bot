@@ -1,5 +1,8 @@
 FROM python:3.8.2-buster AS builder
 
+LABEL maintainer="Mikhail.Knyazev@phystech.edu"
+LABEL description="Telegram Bot to share music with Odesli (former Songlink) service."
+
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
