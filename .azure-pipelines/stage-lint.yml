@@ -1,29 +1,29 @@
 stages:
-- stage: lint
-  displayName: 'Lint'
+  - stage: lint
+    displayName: 'Lint'
 
-  jobs:
-  - job: 'lint'
-    pool:
-      vmImage: 'ubuntu-latest'
+    jobs:
+      - job: 'lint'
+        pool:
+          vmImage: 'ubuntu-latest'
 
-    steps:
-    - checkout: self
-      clean: true
+        steps:
+          - checkout: self
+            clean: true
 
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.8'
-        architecture: 'x64'
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.8'
+              architecture: 'x64'
 
-    - script: |
-        pip install poetry
-      displayName: 'Install poetry'
+          - script: |
+              pip install poetry
+            displayName: 'Install poetry'
 
-    - script: |
-        poetry install
-      displayName: 'Install deps'
+          - script: |
+              poetry install
+            displayName: 'Install deps'
 
-    - script: |
-        make lint
-      displayName: 'Run linters'
+          - script: |
+              make lint
+            displayName: 'Run linters'

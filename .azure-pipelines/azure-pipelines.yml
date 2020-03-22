@@ -1,12 +1,14 @@
 trigger:
-- master
+  - master
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-- group: codecov
+  - group: codecov
+  - group: pypi
 
 stages:
-- template: stage-lint.yml
-- template: stage-test.yml
+  - template: stage-lint.yml
+  - template: stage-test.yml
+  - template: stage-publish.yml
