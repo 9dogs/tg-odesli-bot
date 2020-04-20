@@ -90,23 +90,19 @@ $ # OR
 $ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> <bot_run_command (see below)>
 ```
 
-One you obtain a Telegram bot token, you can run bot using either Python
-or Docker.
+Ones you obtain a Telegram bot token, you can run bot using either Python
+(3.7 or 3.8) or Docker.
 
-### Run with Python
+### Run PyPI version
 
-Clone this repository, [install
-pipenv](https://github.com/pypa/pipenv#installation), copy `.env` file
-into the project's root directory and run the bot (Python 3.7 or 3.8 required):
+Create virtual environment, install `tg-odesli-bot` package and run the bot
+with `tg-odesli-bot` command:
 
 ```console
-$ git clone https://github.com/9dogs/tg-odesli-bot.git
-$ cd tg-odesli-bot
-$ # If you have token in .env file
-$ cp /path/to/.env ./
-$ PYTHONPATH=. pipenv run bot
-$ # If you specify token via shell env var
-$ PYTHONPATH=. TG_ODESLI_BOT_TG_API_TOKEN=<your_token> pipenv run bot
+$ python -m venv botenv
+$ source botenv/bin/activate
+$ pip install tg-odesli-bot
+$ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> tg-odesli-bot
 ```
 
 ### Run with Docker
@@ -116,7 +112,25 @@ Set `TG_ODESLI_BOT_TG_API_TOKEN` environment variable and run the image
 `/opt/tg-odesli-bot/.env`):
 
 ```console
-$ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run 9dogs/tg-odesli-bot
-$ # OR
 $ docker run --rm -it -v /path/to/.env:/opt/tg-odesli-bot/.env 9dogs/tg-odesli-bot
+# OR
+$ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> docker run -it --rm 9dogs/tg-odesli-bot
+```
+
+
+### Run version from the repository
+
+Clone this repository, [install
+poetry](https://python-poetry.org/docs/#installation), copy `.env` file
+into the project's root directory and run the bot:
+
+```console
+$ git clone https://github.com/9dogs/tg-odesli-bot.git && cd tg-odesli-bot
+# Install dependencies
+$ poetry install
+# If you have token in .env file
+$ cp /path/to/.env ./
+$ poetry run tg-odesli-bot
+# If you specify token via shell env var
+$ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> poetry run tg-odesli-bot
 ```
