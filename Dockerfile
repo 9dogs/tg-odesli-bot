@@ -6,6 +6,8 @@ LABEL description="Telegram Bot to share music with Odesli (former Songlink) ser
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+ARG poetry_args='--no-dev'
+
 # Install & config poetry
 RUN pip install poetry \
     && poetry config virtualenvs.create true \
@@ -14,9 +16,10 @@ WORKDIR /opt/tg-odesli-bot
 # Install project dependencies
 COPY poetry.lock pyproject.toml /opt/tg-odesli-bot/
 WORKDIR /opt/tg-odesli-bot
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install --no-interaction --no-ansi $poetry_args
 # Copy project files
 COPY . /opt/tg-odesli-bot
+ENV PYTHONPATH "${PYTHONPATH}:/opt/tg-odesli-bot"
 
 
 FROM python:3.8.2-slim-buster
@@ -30,8 +33,7 @@ RUN groupadd -g $GID -r bot \
 USER bot
 # Copy project files
 COPY --from=builder --chown=bot:bot /opt/tg-odesli-bot /opt/tg-odesli-bot
-
+WORKDIR /opt/tg-odesli-bot
 ENV PYTHONPATH "${PYTHONPATH}:/opt/tg-odesli-bot"
 
-WORKDIR /opt/tg-odesli-bot
-CMD ["/opt/tg-odesli-bot/.venv/bin/python", "tg_odesli_bot/bot.py"]
+CMD ["/opt/tg-odesli-bot/.venv/bin/python", "-m", "tg_odesli_bot.bot"]

@@ -54,4 +54,4 @@ pytest-aiohttp = "^0.3.0"
 pytest-timeout = "^1.3.4"
 
 [tool.poetry.scripts]
-bot = "tg_odesli_bot.bot:main"
+tg-odesli-bot = "tg_odesli_bot.bot:main"
