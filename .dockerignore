@@ -1,0 +1,18 @@
+# Ignore everything
+**
+
+# Allowed
+!.azure-pipelines
+!tests
+!tg_odesli_bot
+!.deepsource.toml
+!.dockerignore
+!.editorconfig
+!.gitignore
+!Dockerfile
+!LICENSE
+!Makefile
+!poetry.lock
+!pyproject.toml
+!README.md
+!setup.cfg
