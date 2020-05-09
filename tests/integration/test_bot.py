@@ -378,7 +378,7 @@ class TestOdesliBot:
 
     async def test_logs_if_no_song_links_in_message(self, caplog, bot):
         """Log and do not reply if message has no song links."""
-        message = make_mock_message(text=f'test message without song links')
+        message = make_mock_message(text='test message without song links')
         await bot.dispatcher.message_handlers.notify(message)
         assert 'No song URLs found in message' in caplog.text
 
