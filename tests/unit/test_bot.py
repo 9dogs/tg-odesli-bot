@@ -67,9 +67,7 @@ class TestOdesliBot:
         )
         tidal = urls[9]
         assert tidal.platform_key == "tidal"
-        assert tidal.url == (
-            'https://tidal.com/track/139494756'
-        )
+        assert tidal.url == ('https://tidal.com/track/139494756')
 
     async def test_merges_urls_for_same_song(self, bot: OdesliBot):
         """Merge SongInfo objects if they point to the same song."""
