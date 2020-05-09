@@ -52,6 +52,7 @@ Currently the following services are supported:
   - YouTube Music
   - YouTube
   - Apple Music
+  - Tidal
 
 ## Privacy considerations
 
