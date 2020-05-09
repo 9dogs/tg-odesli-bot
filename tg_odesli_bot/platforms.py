@@ -96,3 +96,12 @@ class AppleMusicPlatform(PlatformABC):
     url_re = r'https?://([a-zA-Z\d-]+\.)*music\.apple\.com/[^\s.,]*'
     name = 'Apple Music'
     order = 7
+
+
+class TidalPlatform(PlatformABC):
+    """Tidal platform."""
+
+    key = 'tidal'
+    url_re = r'https?://(www\.)?tidal\.com(/browse)?/track/\d+'
+    name = "Tidal"
+    order = 8

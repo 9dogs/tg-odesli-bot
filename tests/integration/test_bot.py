@@ -81,7 +81,7 @@ class TestOdesliBot:
         """
         supported_platforms = (
             'Deezer | Google Music | SoundCloud | Yandex Music | Spotify | '
-            'YouTube Music | YouTube | Apple Music'
+            'YouTube Music | YouTube | Apple Music | Tidal'
         )
         message = make_mock_message(text=text)
         reply_text = bot.WELCOME_MSG_TEMPLATE.format(
@@ -107,7 +107,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
         assert message.reply.called
@@ -128,7 +129,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
 
         async def mock_answer_inline_query(id, results):
@@ -141,7 +143,7 @@ class TestOdesliBot:
             assert result.thumb_url == 'http://thumb1'
             assert result.description == (
                 'Deezer | Google Music | SoundCloud | Yandex Music | Spotify '
-                '| YouTube Music | YouTube | Apple Music'
+                '| YouTube Music | YouTube | Apple Music | Tidal'
             )
 
         monkeypatch.setattr(
@@ -239,7 +241,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
         assert message.reply.called
@@ -261,7 +264,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
         assert message.reply.called
@@ -285,7 +289,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
         api_url = f'{bot.config.ODESLI_API_URL}?url={url}'
         payload = make_response(id=1)
@@ -315,7 +320,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>\n'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>\n'
             '2. Test Artist 2 - Test Title 2\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
             '<a href="https://www.test.com/g">Google Music</a> | '
@@ -324,7 +330,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
         api_url1 = f'{bot.config.ODESLI_API_URL}?url={url1}'
         api_url2 = f'{bot.config.ODESLI_API_URL}?url={url2}'
@@ -352,7 +359,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
         api_url = f'{bot.config.ODESLI_API_URL}?url={url}'
         payload = make_response(id=1)
@@ -405,7 +413,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
         api_url1 = f'{bot.config.ODESLI_API_URL}?url={url1}'
         api_url2 = f'{bot.config.ODESLI_API_URL}?url={url2}'
@@ -439,7 +448,8 @@ class TestOdesliBot:
             '<a href="https://www.test.com/s">Spotify</a> | '
             '<a href="https://www.test.com/ym">YouTube Music</a> | '
             '<a href="https://www.test.com/y">YouTube</a> | '
-            '<a href="https://www.test.com/am">Apple Music</a>'
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
         )
         url1 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
         url2 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/2'

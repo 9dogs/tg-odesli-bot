@@ -19,10 +19,11 @@ class TestOdesliBot:
             '6 https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh\n'
             '7 https://music.youtube.com/watch?v=eVTXPUF4Oz4\n'
             '8 https://www.youtube.com/watch?v=eVTXPUF4Oz4\n'
-            '9 https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
+            '9 https://music.apple.com/se/album/raindrops-feat-j3po/1450701158\n'
+            '10 https://tidal.com/track/139494756'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 9
+        assert len(urls) == 10
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -63,6 +64,11 @@ class TestOdesliBot:
         assert apple_music.platform_key == 'appleMusic'
         assert apple_music.url == (
             'https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
+        )
+        tidal = urls[9]
+        assert tidal.platform_key == "tidal"
+        assert tidal.url == (
+            'https://tidal.com/track/139494756'
         )
 
     async def test_merges_urls_for_same_song(self, bot: OdesliBot):
