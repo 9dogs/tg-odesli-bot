@@ -127,3 +127,6 @@ dmypy.json
 
 # Idea
 .idea/
+
+# JUnit
+junit.xml
