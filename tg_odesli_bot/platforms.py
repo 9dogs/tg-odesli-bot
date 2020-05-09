@@ -103,5 +103,5 @@ class TidalPlatform(PlatformABC):
 
     key = 'tidal'
     url_re = r'https?://(www\.)?tidal\.com(/browse)?/track/\d+'
-    name = "Tidal"
+    name = 'Tidal'
     order = 8
