@@ -24,6 +24,8 @@ class Config:
     ODESLI_API_KEY: Optional[str] = ''
     #: Sentry DSN (optional)
     SENTRY_DSN: Optional[str] = ''
+    #: Sentry environment
+    SENTRY_ENVIRONMENT: str = 'production'
 
     #: Logging configuration
     LOG_CONFIG = {
@@ -90,9 +92,11 @@ class Config:
                 structlog.stdlib.PositionalArgumentsFormatter(),
                 structlog.processors.TimeStamper(fmt='iso'),
                 structlog.processors.StackInfoRenderer(),
-                structlog.processors.format_exc_info,
                 structlog.processors.UnicodeDecoder(),
-                SentryJsonProcessor(level=logging.WARNING),
+                SentryJsonProcessor(
+                    level=logging.WARNING, tag_keys=['status_code']
+                ),
+                structlog.processors.format_exc_info,
                 self.LOG_RENDERER,
             ],
             logger_factory=structlog.stdlib.LoggerFactory(),
@@ -120,7 +124,9 @@ class Config:
                 setattr(config, var_name, value)
         if config.SENTRY_DSN:
             sentry_sdk.init(
-                dsn=config.SENTRY_DSN, integrations=[AioHttpIntegration()]
+                dsn=config.SENTRY_DSN,
+                integrations=[AioHttpIntegration()],
+                environment=config.SENTRY_ENVIRONMENT,
             )
         if not structlog.is_configured():
             config.init_logging()
