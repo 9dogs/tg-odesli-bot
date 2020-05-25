@@ -1,4 +1,4 @@
-FROM python:3.8.2-buster AS builder
+FROM python:3.8.3-buster AS builder
 
 LABEL maintainer="Mikhail.Knyazev@phystech.edu"
 LABEL description="Telegram Bot to share music with Odesli (former Songlink) service."
@@ -22,7 +22,7 @@ COPY . /opt/tg-odesli-bot
 ENV PYTHONPATH "${PYTHONPATH}:/opt/tg-odesli-bot"
 
 
-FROM python:3.8.2-slim-buster
+FROM python:3.8.3-slim-buster
 
 ARG UID=997
 ARG GID=997
