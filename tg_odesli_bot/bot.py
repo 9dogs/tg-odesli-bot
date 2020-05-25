@@ -125,27 +125,27 @@ class OdesliBot:
         :param config: configuration
         :param loop: event loop
         """
-        #: Configuration
+        # Configuration
         self.config = config or Config.load()
-        #: Logger
+        # Logger
         self.logger = structlog.get_logger('tg_odesli_bot')
         self.logger_var = contextvars.ContextVar('logger', default=self.logger)
-        #: Event loop
+        # Event loop
         self._loop = loop or asyncio.get_event_loop()
-        #: Cache
+        # Cache
         self.cache = caches.get('default')
-        #: Telegram connect retries count
+        # Telegram connection retries count
         self._tg_retries = 0
 
     async def init(self):
         """Initialize the bot (async part)."""
-        #: HTTP session
+        # HTTP session
         self.session = aiohttp.ClientSession(connector=TCPConnector(limit=10))
-        #: aiogram bot instance
+        # aiogram bot instance
         self.bot = Bot(token=self.config.TG_API_TOKEN)
-        #: Bot's dispatcher
+        # Bot's dispatcher
         self.dispatcher = Dispatcher(self.bot)
-        #: API ready event (used for requests throttling)
+        # API ready event (used for requests throttling)
         self._api_ready = asyncio.Event()
         self._api_ready.set()
         # Setup logging middleware
@@ -470,8 +470,8 @@ class OdesliBot:
         song_info = SongInfo(set(), None, None, None, None, {song_url.url})
         _retries = 0
         while _retries < self.API_MAX_RETRIES:
-            # Try to get data from cache.  Do it inside a loop in case other
-            # task retrieves the data and sets cache
+            # Try to get data from cache.  Should be inside `while` loop in
+            # case other task retrieves the data and sets cache
             cached = await self.cache.get(normalized_url)
             if cached:
                 logger.debug('Returning data from cache')
@@ -485,7 +485,7 @@ class OdesliBot:
                 )
                 return song_info
             try:
-                # Wait if requests are being throttled
+                # Wait for ready event if requests are being throttled
                 if not self._api_ready.is_set():
                     logger.info('Waiting for the API')
                     await self._api_ready.wait()
@@ -565,7 +565,7 @@ class OdesliBot:
         :param url: original URL in message text
         :return: song info object
         """
-        #: Set of song identifiers
+        # Set of song identifiers
         ids = set()
         titles, artists = [], []
         thumbnail_url = None
