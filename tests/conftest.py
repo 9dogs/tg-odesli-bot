@@ -139,14 +139,14 @@ TEST_RESPONSE_TEMPLATE = {
 }
 
 
-def make_response(id: Union[str, int] = 1) -> dict:
+def make_response(song_id: Union[str, int] = 1) -> dict:
     """Prepare Odesli API test response with given song id.
 
-    :param id: substitution for a song identifier
+    :param song_id: substitution for a song identifier
     :return: response dict
     """
     response_template = string.Template(json.dumps(TEST_RESPONSE_TEMPLATE))
-    response = response_template.substitute(id=str(id))
+    response = response_template.substitute(id=str(song_id))
     payload = json.loads(response)
     return payload
 
@@ -191,7 +191,7 @@ async def bot(test_config):
 async def odesli_api(test_config):
     """Odesli API mock."""
     pattern = re.compile(rf'^{re.escape(test_config.ODESLI_API_URL)}.*$')
-    payload = make_response(id=1)
+    payload = make_response(song_id=1)
     with aioresponses() as m:
         m.get(pattern, status=HTTPStatus.OK, payload=payload)
         yield m

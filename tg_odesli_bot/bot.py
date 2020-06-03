@@ -50,6 +50,7 @@ class APIError(Exception):
         :param status_code: response status code
         :param message: error message
         """
+        super().__init__()
         self.status_code = status_code
         self.message = message
 

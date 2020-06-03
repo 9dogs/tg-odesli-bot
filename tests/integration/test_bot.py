@@ -135,7 +135,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/t">Tidal</a>'
         )
 
-        async def mock_answer_inline_query(id, results):
+        async def mock_answer_inline_query(inline_query_id, results):
             """Mock inline query answer."""
             assert len(results) == 1
             result = results[0]
@@ -160,7 +160,7 @@ class TestOdesliBot:
         """Do not reply to an inline query if not URL in query."""
         inline_query = make_mock_message(query, inline=True)
 
-        async def mock_answer_inline_query(id, results):
+        async def mock_answer_inline_query(inline_query_id, results):
             """Mock an inline query answer."""
             assert not results
 
@@ -183,7 +183,7 @@ class TestOdesliBot:
             text='https://deezer.com/track/1', inline=True,
         )
 
-        async def mock_answer_inline_query(id, results):
+        async def mock_answer_inline_query(inline_query_id, results):
             """Mock an inline query answer."""
             assert not results
 
@@ -205,7 +205,7 @@ class TestOdesliBot:
             text='https://deezer.com/track/1', inline=True,
         )
 
-        async def mock_answer_inline_query(id, results):
+        async def mock_answer_inline_query(inline_query_id, results):
             """Mock an inline query answer."""
             assert len(results) == 1
             result = results[0]
@@ -328,7 +328,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/t">Tidal</a>'
         )
         api_url = f'{bot.config.ODESLI_API_URL}?url={url}'
-        payload = make_response(id=1)
+        payload = make_response(song_id=1)
         # Remove Deezer data from the payload
         del payload['linksByPlatform']['deezer']
         with aioresponses() as m:
@@ -370,8 +370,8 @@ class TestOdesliBot:
         )
         api_url1 = f'{bot.config.ODESLI_API_URL}?url={url1}'
         api_url2 = f'{bot.config.ODESLI_API_URL}?url={url2}'
-        payload1 = make_response(id=1)
-        payload2 = make_response(id=2)
+        payload1 = make_response(song_id=1)
+        payload2 = make_response(song_id=2)
         with aioresponses() as m:
             m.get(api_url1, status=HTTPStatus.OK, payload=payload1)
             m.get(api_url2, status=HTTPStatus.OK, payload=payload2)
@@ -398,7 +398,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/t">Tidal</a>'
         )
         api_url = f'{bot.config.ODESLI_API_URL}?url={url}'
-        payload = make_response(id=1)
+        payload = make_response(song_id=1)
         with aioresponses() as m:
             m.get(api_url, status=HTTPStatus.OK, payload=payload)
             await bot.dispatcher.message_handlers.notify(message)
