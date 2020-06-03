@@ -684,7 +684,7 @@ class OdesliBot:
                 await self.stop()
                 self._loop.stop()
         else:
-            self.logger.info('Bot started')
+            self.logger.info('Bot started')  # pragma: no cover
 
     def start(self):
         """Start the bot."""
@@ -705,9 +705,9 @@ class OdesliBot:
 
 def main():
     """Run the bot."""
-    bot = OdesliBot()
-    bot.start()
+    bot = OdesliBot()  # pragma: no cover
+    bot.start()  # pragma: no cover
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma: no cover
