@@ -19,4 +19,4 @@ class TestConfiguration:
     def test_does_not_override_in_test_mode(self, test_dotenv):
         """Do not override config variables in test mode."""
         config = TestConfig.load()
-        assert config.TG_API_TOKEN == 'invalid'
+        assert config.TG_API_TOKEN == 'test_token'

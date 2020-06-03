@@ -33,8 +33,25 @@ class BotException(Exception):
     """Odesli bot exception."""
 
 
-class NotFound(BotException):
-    """No song info found."""
+class SongNotFoundError(BotException):
+    """Song not found exception."""
+
+
+class APIError(Exception):
+    """Odesli API error."""
+
+    def __init__(
+        self,
+        status_code: Optional[HTTPStatus] = None,
+        message: Optional[str] = None,
+    ):
+        """Init an error.
+
+        :param status_code: response status code
+        :param message: error message
+        """
+        self.status_code = status_code
+        self.message = message
 
 
 @dataclass(frozen=True)
@@ -65,6 +82,11 @@ class SongInfo:
     thumbnail_url: Optional[str]
     #: URLs in text
     urls_in_text: Set[str]
+
+    def __bool__(self):
+        """Return True if SongInfo is not empty."""
+
+        return bool(self.ids)
 
 
 class LoggingMiddleware(BaseMiddleware):
@@ -114,8 +136,9 @@ class OdesliBot:
         '\n'
         '<b>Supported platforms:</b> {supported_platforms}.\n'
         '\n'
-        'The bot is open source. More info on '
-        '<a href="https://github.com/9dogs/tg-odesli-bot">GitHub</a>.\n'
+        'The bot is open source. Your feedback, suggestions and PRs are '
+        'welcome: <a href="https://github.com/9dogs/tg-odesli-bot">GitHub</a>.'
+        '\n'
         'Powered by a great <a href="https://odesli.co/">Odesli</a> service.'
     )
 
@@ -235,7 +258,7 @@ class OdesliBot:
         merged_song_info_indexes: Set[int] = set()
         for idx1, song_info1 in enumerate(song_infos):
             # Skip empty SongInfos
-            if not song_info1.ids:
+            if not song_info1:
                 continue
             if idx1 in merged_song_info_indexes:
                 continue
@@ -244,7 +267,7 @@ class OdesliBot:
                 if (
                     song_info2 is song_info1
                     or idx2 in merged_song_info_indexes
-                    or not song_info2.ids
+                    or not song_info2
                 ):
                     continue
                 ids2 = song_info2.ids
@@ -271,22 +294,33 @@ class OdesliBot:
 
         :param text: message text
         :return: tuple of SongInfo instances
-        :raise NotFound: if no song info found in message or via Odesli API
+        :raise SongNotFoundError: if Odesli couldn't find any song
         """
         # Extract song URLs from the message
         song_urls = self.extract_song_urls(text)
         if not song_urls:
-            raise NotFound('No song URLs found in message')
+            return ()
         # Get songs information by its URLs via Odesli service API
-        song_infos = await asyncio.gather(
-            *[self.find_song_by_url(song_url) for song_url in song_urls]
-        )
-        # Do not reply to the message if all song infos are empty
-        if not any(song_info.ids for song_info in song_infos):
-            raise NotFound('Cannot find info for any song')
+        tasks = [self.find_song_by_url(song_url) for song_url in song_urls]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        song_infos, exceptions = [], []
+        for item, song_url in zip(results, song_urls):
+            if isinstance(item, SongInfo):
+                song_infos.append(item)
+            else:
+                # Append an empty SongInfo
+                song_infos.append(
+                    SongInfo(set(), None, None, None, None, {song_url.url})
+                )
+                exceptions.append(item)
+        # Raise an exception if API returned 404 for all songs
+        if not any(song_infos) and all(
+            exc.status_code == HTTPStatus.NOT_FOUND for exc in exceptions
+        ):
+            raise SongNotFoundError
         # Merge song infos if different platform links point to the same song
-        song_infos = self._merge_same_songs(tuple(song_infos))
-        return song_infos
+        merged_song_infos = self._merge_same_songs(tuple(song_infos))
+        return merged_song_infos
 
     def _format_urls(
         self, song_info: SongInfo, separator: str = ' | '
@@ -339,7 +373,7 @@ class OdesliBot:
             reply_list = [message_text]
         for index, song_info in enumerate(song_infos, start=1):
             # Use original URL if we failed to find that song via Odesli API
-            if not song_info.ids:
+            if not song_info:
                 urls_in_text = song_info.urls_in_text.pop()
                 reply_list.append(f'{index}. {urls_in_text}')
                 continue
@@ -367,11 +401,23 @@ class OdesliBot:
             return
         try:
             song_infos = await self._find_songs(query)
-        except NotFound:
-            await self.bot.answer_inline_query(inline_query.id, results=[])
+        except SongNotFoundError:
+            reply = InputTextMessageContent(
+                "Sorry, Odesli couldn't find that song", parse_mode='HTML'
+            )
+            article = InlineQueryResultArticle(
+                id=hashlib.md5(query.encode()).hexdigest(),
+                title='Not found',
+                input_message_content=reply,
+            )
+            await self.bot.answer_inline_query(
+                inline_query.id, results=[article]
+            )
             return
         articles = []
         for song_info in song_infos:
+            if not song_info:
+                continue
             # Use hashed concatenated IDs as a result id
             id_ = ''.join(song_info.ids)
             result_id = hashlib.md5(id_.encode()).hexdigest()
@@ -401,8 +447,14 @@ class OdesliBot:
             return
         try:
             song_infos = await self._find_songs(message.text)
-        except NotFound as exc:
-            logger.debug(exc)
+        except SongNotFoundError:
+            await message.reply(
+                text="Sorry, Odesli couldn't find that song",
+                parse_mode='HTML',
+            )
+            return
+        # Do not reply if no songs have been found in message
+        if not any(song_infos):
             return
         # Replace original URLs in message with footnotes (e.g. [1], [2], ...)
         prepared_message_text = self._replace_urls_with_footnotes(
@@ -452,22 +504,21 @@ class OdesliBot:
         )
         return normalized_url
 
-    async def find_song_by_url(self, song_url: SongUrl):
+    async def find_song_by_url(self, song_url: SongUrl) -> SongInfo:
         """Make an API call to Odesli service and return song data for
         supported services.
 
         :param song_url: SongURL object
-        :return: Odesli response
+        :return: SongInfo instance for given URL
+        :raises APIError: if Odesli API returned an error
         """
         logger = self.logger_var.get()
-        # Normalize URL for cache querying
+        # Normalize URL to use as a consistent cache key
         normalized_url = self.normalize_url(song_url.url)
         params = {'url': normalized_url}
         if self.config.ODESLI_API_KEY:
             params['api_key'] = self.config.ODESLI_API_KEY
         logger = logger.bind(url=self.config.ODESLI_API_URL, params=params)
-        # Create empty SongInfo to use in case of API error
-        song_info = SongInfo(set(), None, None, None, None, {song_url.url})
         _retries = 0
         while _retries < self.API_MAX_RETRIES:
             # Try to get data from cache.  Should be inside `while` loop in
@@ -485,7 +536,7 @@ class OdesliBot:
                 )
                 return song_info
             try:
-                # Wait for ready event if requests are being throttled
+                # Wait for ready event in case requests are being throttled
                 if not self._api_ready.is_set():
                     logger.info('Waiting for the API')
                     await self._api_ready.wait()
@@ -505,10 +556,12 @@ class OdesliBot:
                             await asyncio.sleep(self.API_RETRY_TIME)
                             self._api_ready.set()
                             continue
-                        # Return empty response if API error
-                        else:
-                            logger.error('API error', status_code=resp.status)
-                            break
+                        # Else log and raise an error
+                        text = await resp.text()
+                        logger.error(
+                            'API error', status_code=resp.status, message=text
+                        )
+                        raise APIError(status_code=resp.status, message=text)
                     response = await resp.json()
                     logger.debug('Got Odesli API response', response=response)
                     schema = ApiResponseSchema(unknown='EXCLUDE')
@@ -516,13 +569,16 @@ class OdesliBot:
                         data = schema.load(response)
                     except ValidationError as exc:
                         logger.error('Invalid response data', exc_info=exc)
+                        raise APIError(
+                            status_code=None, message='Invalid data'
+                        )
                     else:
                         song_info = self.process_api_response(
                             data, song_url.url
                         )
                         # Cache processed data
                         await self.cache.set(normalized_url, song_info)
-                    break
+                        return song_info
             except ClientConnectionError as exc:
                 _retries += 1
                 logger.error(
@@ -532,7 +588,7 @@ class OdesliBot:
                     retries=_retries,
                 )
                 await asyncio.sleep(self.API_RETRY_TIME)
-        return song_info
+        raise APIError(status_code=None, message='Connection error')
 
     def _filter_platform_urls(self, platform_urls: dict) -> dict:
         """Filter and reorder platform URLs according to `PLATFORMS` registry.

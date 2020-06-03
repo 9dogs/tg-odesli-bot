@@ -26,6 +26,7 @@ def make_mock_message(
     chat_type: ChatType = ChatType.GROUP,
     raise_on_delete: bool = False,
     inline: bool = False,
+    is_reply: bool = False,
 ) -> mock.Mock:
     """Make a mock message with given text.
 
@@ -33,6 +34,7 @@ def make_mock_message(
     :param chat_type: chat type.  See `aiogram.types.ChatType` enum
     :param raise_on_delete: raise exception on message delete
     :param inline: message is an inline query
+    :param is_reply: message is a reply
     :return: mock message
     """
     spec = InlineQuery if inline else Message
@@ -50,10 +52,10 @@ def make_mock_message(
     types.User.set_current(message.from_user)
     types.Chat.set_current(message.chat)
 
-    async def reply_mock_fn(text, parse_mode, reply):
+    async def reply_mock_fn(text, parse_mode, reply=True):
         """Reply mock."""
         assert parse_mode == 'HTML'
-        assert not reply
+        assert reply == is_reply
         # Save text argument for assertion
         reply_mock.called_with_text = text
 
@@ -151,8 +153,8 @@ class TestOdesliBot:
         )
         await bot.dispatcher.inline_query_handlers.notify(inline_query)
 
-    @mark.parametrize('query', ['no URL', ''])
-    async def test_do_not_reply_to_inline_query_if_no_url(
+    @mark.parametrize('query', ['not a URL', ''])
+    async def test_not_replies_to_inline_query_if_no_url(
         self, bot, odesli_api, monkeypatch, query
     ):
         """Do not reply to an inline query if not URL in query."""
@@ -167,8 +169,11 @@ class TestOdesliBot:
         )
         await bot.dispatcher.inline_query_handlers.notify(inline_query)
 
-    @mark.parametrize('error_code', [400, 500])
-    async def test_do_not_reply_to_inline_query_if_api_errors(
+    @mark.parametrize(
+        'error_code',
+        [HTTPStatus.BAD_REQUEST, HTTPStatus.INTERNAL_SERVER_ERROR],
+    )
+    async def test_not_replies_to_inline_query_if_api_errors(
         self, caplog, bot, error_code, monkeypatch
     ):
         """Do not reply to an inline query if API error returns for all
@@ -189,6 +194,36 @@ class TestOdesliBot:
         url = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
         with aioresponses() as m:
             m.get(url, status=error_code, repeat=True)
+            await bot.dispatcher.inline_query_handlers.notify(message)
+            assert 'API error' in caplog.text
+
+    async def test_replies_to_inline_query_if_404(
+        self, caplog, bot, monkeypatch
+    ):
+        """Reply to an inline query if API error returns 404 for all songs."""
+        message = make_mock_message(
+            text='https://deezer.com/track/1', inline=True,
+        )
+
+        async def mock_answer_inline_query(id, results):
+            """Mock an inline query answer."""
+            assert len(results) == 1
+            result = results[0]
+            assert result.title == 'Not found'
+            assert result.input_message_content.message_text == (
+                "Sorry, Odesli couldn't find that song"
+            )
+            assert result.input_message_content.parse_mode == 'HTML'
+            assert not result.thumb_url
+            assert not result.description
+
+        monkeypatch.setattr(
+            bot.bot, 'answer_inline_query', mock_answer_inline_query
+        )
+
+        url = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
+        with aioresponses() as m:
+            m.get(url, status=HTTPStatus.NOT_FOUND, repeat=True)
             await bot.dispatcher.inline_query_handlers.notify(message)
             assert 'API error' in caplog.text
 
@@ -344,7 +379,7 @@ class TestOdesliBot:
             assert message.reply.called
             assert message.reply.called_with_text == reply_text
 
-    async def test_replies_to_private_message_for_single_urls(self, bot):
+    async def test_replies_to_private_message_for_single_url(self, bot):
         """Send reply to a private message without an index number if incoming
         message consists only of one URL.
         """
@@ -375,12 +410,6 @@ class TestOdesliBot:
         message = make_mock_message(text=f'test message {bot.SKIP_MARK}')
         await bot.dispatcher.message_handlers.notify(message)
         assert 'Message is skipped due to skip mark' in caplog.text
-
-    async def test_logs_if_no_song_links_in_message(self, caplog, bot):
-        """Log and do not reply if message has no song links."""
-        message = make_mock_message(text='test message without song links')
-        await bot.dispatcher.message_handlers.notify(message)
-        assert 'No song URLs found in message' in caplog.text
 
     async def test_logs_if_cannot_delete_message(
         self, caplog, bot, odesli_api
@@ -475,8 +504,11 @@ class TestOdesliBot:
             assert message2.reply.called
             assert message2.reply.called_with_text == reply_text
 
-    @mark.parametrize('error_code', [400, 500])
-    async def test_do_not_reply_if_api_errors_for_all_songs(
+    @mark.parametrize(
+        'error_code',
+        [HTTPStatus.BAD_REQUEST, HTTPStatus.INTERNAL_SERVER_ERROR],
+    )
+    async def test_not_replies_if_api_errors_for_all_songs(
         self, caplog, bot, error_code
     ):
         """Do not reply if API error returns for all songs."""
@@ -496,7 +528,24 @@ class TestOdesliBot:
             assert 'API error' in caplog.text
             assert not message.reply.called
 
-    async def test_do_not_reply_if_validation_error(self, caplog, bot):
+    async def test_replies_if_404(self, caplog, bot):
+        """Reply if API error returned 404 for a song URL."""
+        message = make_mock_message(
+            text='https://deezer.com/track/1',
+            chat_type=ChatType.PRIVATE,
+            is_reply=True,
+        )
+        url1 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
+        with aioresponses() as m:
+            m.get(url1, status=HTTPStatus.NOT_FOUND, repeat=True)
+            await bot.dispatcher.message_handlers.notify(message)
+            assert 'API error' in caplog.text
+            assert message.reply.called
+            assert message.reply.called_with_text == (
+                "Sorry, Odesli couldn't find that song"
+            )
+
+    async def test_not_replies_if_validation_error(self, caplog, bot):
         """Do not reply if API response validation error."""
         message = make_mock_message(
             text='check this one: https://deezer.com/track/1',
