@@ -30,7 +30,7 @@ class DeezerPlatform(PlatformABC):
     """Deezer platform."""
 
     key = 'deezer'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*deezer\.com/[^\s.,]*'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*deezer\.com/(album|track)/[^\s.,]*'
     name = 'Deezer'
     order = 0
 
@@ -57,7 +57,10 @@ class YandexMusicPlatform(PlatformABC):
     """Yandex Music platform."""
 
     key = 'yandex'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*music\.yandex\.(com|ru)/[^\s.,]*'
+    url_re = (
+        r'https?://([a-zA-Z\d-]+\.)*music\.yandex\.(com|ru)/(album|track)/'
+        r'[^\s.,]*'
+    )
     name = 'Yandex Music'
     order = 3
 
@@ -66,7 +69,7 @@ class SpotifyPlatform(PlatformABC):
     """Spotify platform."""
 
     key = 'spotify'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*spotify\.com/[^\s.,]*'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*spotify\.com/(album|track)/[^\s.,]*'
     name = 'Spotify'
     order = 4
 
@@ -75,7 +78,7 @@ class YouTubeMusicPlatform(PlatformABC):
     """YouTube Music platform."""
 
     key = 'youtubeMusic'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*music\.youtube\.com/[^\s.,]*'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*music\.youtube\.com/watch\?v=[^\s.,]*'
     name = 'YouTube Music'
     order = 5
 
@@ -84,7 +87,7 @@ class YouTubePlatform(PlatformABC):
     """YouTube platform."""
 
     key = 'youtube'
-    url_re = r'https?://(www\.)?youtube\.com/[^\s.,]*'
+    url_re = r'https?://(www\.)?youtube\.com/watch\?v=[^\s,]*'
     name = 'YouTube'
     order = 6
 
@@ -93,7 +96,7 @@ class AppleMusicPlatform(PlatformABC):
     """Apple Music platform."""
 
     key = 'appleMusic'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*music\.apple\.com/[^\s.,]*'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*music\.apple\.com/.*?/album/[^\s,.]*'
     name = 'Apple Music'
     order = 7
 

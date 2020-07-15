@@ -70,6 +70,26 @@ class TestOdesliBot:
         assert tidal.platform_key == 'tidal'
         assert tidal.url == 'https://tidal.com/track/139494756'
 
+    @mark.parametrize(
+        'url',
+        [
+            'https://open.spotify.com/user/spotify/playlist/INVALID',
+            'https://open.spotify.com/playlist/INVALID',
+            'https://open.spotify.com/artist/INVALID',
+            'https://www.spotify.com/us/purchase/products/?country=RU',
+            'https://spotify.com/family-plan/redeem/?token=INVALID',
+            'https://www.youtube.com/channel/INVALID',
+            'https://music.youtube.com/transfer',
+            'https://music.apple.com/ru/artist/INVALID',
+            'https://music.apple.com/en/playlist/INVALID',
+            'https://music.yandex.ru/users/INVALID',
+            'https://www.deezer.com/playlist/INVALID',
+        ],
+    )
+    async def test_skips_incorrect_urls(self, bot, url):
+        """Skip messages with invalid URLs."""
+        assert not bot.extract_song_urls(url)
+
     async def test_merges_urls_for_same_song(self, bot: OdesliBot):
         """Merge SongInfo objects if they point to the same song."""
         song_infos = (
