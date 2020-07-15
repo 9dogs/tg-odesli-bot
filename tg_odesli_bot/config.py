@@ -141,6 +141,6 @@ class TestConfig(Config):
     #: Debug
     DEBUG = True
     #: Telegram bot API key
-    TG_API_TOKEN = 'test_token'
+    TG_API_TOKEN = '1:test_token'
     #: Sentry DSN
     SENTRY_DSN = None
