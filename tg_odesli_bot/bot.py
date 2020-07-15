@@ -227,14 +227,19 @@ class OdesliBot:
                 message = message.replace(url, f'[{index}]')
         return message
 
-    def extract_song_urls(self, text: str) -> List[SongUrl]:
+    def extract_song_urls(
+        self, text: str, skip_youtube: bool = False
+    ) -> List[SongUrl]:
         """Extract song URLs from text for each registered platform.
 
         :param text: message text
+        :param skip_youtube: skip YouTube platform (used for group messages)
         :return: list of SongURLs
         """
         urls = []
         for platform_key, platform in PLATFORMS.items():
+            if skip_youtube and platform_key == 'youtube':
+                continue
             for match in platform.url_re.finditer(text):
                 platform_url = SongUrl(
                     platform_key=platform_key,
@@ -290,15 +295,18 @@ class OdesliBot:
         )
         return merged_song_infos
 
-    async def _find_songs(self, text: str) -> Tuple[SongInfo, ...]:
+    async def _find_songs(
+        self, text: str, group_message: bool
+    ) -> Tuple[SongInfo, ...]:
         """Find song info based on given text.
 
         :param text: message text
+        :param group_message: text is from a group message
         :return: tuple of SongInfo instances
         :raise SongNotFoundError: if Odesli couldn't find any song
         """
         # Extract song URLs from the message
-        song_urls = self.extract_song_urls(text)
+        song_urls = self.extract_song_urls(text, skip_youtube=group_message)
         if not song_urls:
             return ()
         # Get songs information by its URLs via Odesli service API
@@ -401,7 +409,7 @@ class OdesliBot:
             await self.bot.answer_inline_query(inline_query.id, results=[])
             return
         try:
-            song_infos = await self._find_songs(query)
+            song_infos = await self._find_songs(query, group_message=False)
         except SongNotFoundError:
             reply = InputTextMessageContent(
                 "Sorry, Odesli couldn't find that song", parse_mode='HTML'
@@ -446,8 +454,14 @@ class OdesliBot:
         if self.SKIP_MARK in message.text:
             logger.debug('Message is skipped due to skip mark')
             return
+        group_message = message.chat.type in (
+            ChatType.GROUP,
+            ChatType.SUPER_GROUP,
+        )
         try:
-            song_infos = await self._find_songs(message.text)
+            song_infos = await self._find_songs(
+                message.text, group_message=group_message
+            )
         except SongNotFoundError:
             await message.reply(
                 text="Sorry, Odesli couldn't find that song",

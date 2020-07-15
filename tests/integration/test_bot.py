@@ -117,10 +117,87 @@ class TestOdesliBot:
         assert message.delete.called
         assert message.reply.called_with_text == reply_text
 
+    async def test_skips_youtube_platform_for_group_messages(
+        self, bot, odesli_api
+    ):
+        """Skip YouTube platform handling for group messages since Bot cannot
+        distinguish music link and video link yet.
+        """
+        message = make_mock_message(
+            text=(
+                'youtube link: https://www.youtube.com/watch?v=oHg5SJYRHA0, '
+                'deezer link: https://www.deezer.com/track/1'
+            )
+        )
+        reply_text = (
+            '<b>@test_user wrote:</b> youtube link: '
+            'https://www.youtube.com/watch?v=oHg5SJYRHA0, deezer link: [1]\n'
+            '\n'
+            '1. Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">YouTube Music</a> | '
+            '<a href="https://www.test.com/y">YouTube</a> | '
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
+        )
+        await bot.dispatcher.message_handlers.notify(message)
+        assert message.reply.called
+        assert message.delete.called
+        assert message.reply.called_with_text == reply_text
+
+    async def test_not_replies_if_only_youtube_url(self, bot, odesli_api):
+        """Do not reply if group message contains only YouTube link."""
+        message = make_mock_message(
+            text='youtube link: https://www.youtube.com/watch?v=oHg5SJYRHA0',
+        )
+        assert not message.reply.called
+
     async def test_replies_to_inline_query(self, bot, odesli_api, monkeypatch):
         """Send reply to an inline query."""
         inline_query = make_mock_message(
             'https://www.deezer.com/track/1', inline=True
+        )
+        reply_text = (
+            'Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">YouTube Music</a> | '
+            '<a href="https://www.test.com/y">YouTube</a> | '
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
+        )
+
+        async def mock_answer_inline_query(inline_query_id, results):
+            """Mock inline query answer."""
+            assert len(results) == 1
+            result = results[0]
+            assert result.title == 'Test Artist 1 - Test Title 1'
+            assert result.input_message_content.message_text == reply_text
+            assert result.input_message_content.parse_mode == 'HTML'
+            assert result.thumb_url == 'http://thumb1'
+            assert result.description == (
+                'Deezer | Google Music | SoundCloud | Yandex Music | Spotify '
+                '| YouTube Music | YouTube | Apple Music | Tidal'
+            )
+
+        monkeypatch.setattr(
+            bot.bot, 'answer_inline_query', mock_answer_inline_query
+        )
+        await bot.dispatcher.inline_query_handlers.notify(inline_query)
+
+    async def test_replies_to_inline_query_if_youtube(
+        self, bot, odesli_api, monkeypatch
+    ):
+        """Send reply to an inline query even if it's a YouTube link."""
+        inline_query = make_mock_message(
+            'https://www.youtube.com/watch?v=1', inline=True
         )
         reply_text = (
             'Test Artist 1 - Test Title 1\n'
@@ -262,7 +339,7 @@ class TestOdesliBot:
     async def test_replies_to_private_message(self, bot, odesli_api):
         """Send reply to a private message."""
         message = make_mock_message(
-            text='check this one: https://www.deezer.com/track/1',
+            text='check this one: https://www.youtube.com/watch?v=1',
             chat_type=ChatType.PRIVATE,
         )
         reply_text = (

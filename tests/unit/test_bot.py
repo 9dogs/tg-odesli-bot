@@ -78,6 +78,8 @@ class TestOdesliBot:
             'https://open.spotify.com/artist/INVALID',
             'https://www.spotify.com/us/purchase/products/?country=RU',
             'https://spotify.com/family-plan/redeem/?token=INVALID',
+            'https://open.spotify.com/episode/INVALID',
+            'https://support.spotify.com/ru-ru/article/INVALID/',
             'https://www.youtube.com/channel/INVALID',
             'https://music.youtube.com/transfer',
             'https://music.apple.com/ru/artist/INVALID',
