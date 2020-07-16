@@ -15,11 +15,11 @@ IMAGE_NAME = 9dogs/tg-odesli-bot:latest
 
 fmt:
 	poetry run black $(FILES)
-	poetry run isort --recursive $(FILES)
+	poetry run isort $(FILES)
 
 lint:
 	poetry run black --check $(FILES)
-	poetry run isort --check-only --recursive $(FILES)
+	poetry run isort --check-only $(FILES)
 	poetry run flake8 $(FILES)
 	poetry run pydocstyle $(FILES)
 	poetry run mypy $(FILES)
