@@ -25,7 +25,6 @@ TEST_RESPONSE_TEMPLATE = {
         'DEEZER_SONG::D${id}': {
             'id': 'D${id}',
             'title': 'Test Title ${id}',
-            'artistName': 'Test Artist ${id}',
             'apiProvider': 'deezer',
             'thumbnailUrl': 'http://thumb1',
         },
