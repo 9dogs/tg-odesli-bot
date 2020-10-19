@@ -31,7 +31,7 @@ class DeezerPlatform(PlatformABC):
 
     key = 'deezer'
     url_re = (
-        r'(https?://([a-zA-Z\d-]+\.)*deezer\.com/(album|track)/[^\s.,]*)'
+        r'(https?://([a-zA-Z\d-]+\.)*deezer\.com(/\w\w)?/(album|track)/[^\s.,]*)'
         r'|(https?://deezer\.page\.link/[^\s.,]*)'
     )
     name = 'Deezer'
@@ -61,7 +61,7 @@ class YandexMusicPlatform(PlatformABC):
 
     key = 'yandex'
     url_re = (
-        r'https?://([a-zA-Z\d-]+\.)*music\.yandex\.(com|ru)/(album|track)/'
+        r'https?://([a-zA-Z\d-]+\.)*music\.yandex\.(com|ru|by)/(album|track)/'
         r'[^\s.,]*'
     )
     name = 'Yandex Music'
