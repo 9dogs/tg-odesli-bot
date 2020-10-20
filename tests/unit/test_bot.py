@@ -22,55 +22,65 @@ class TestOdesliBot:
             '9 https://music.apple.com/se/album/'
             'raindrops-feat-j3po/1450701158\n '
             '10 https://tidal.com/track/139494756\n'
-            '11 https://deezer.page.link/aXUq1xjzF8s2AZje9'
+            '11 https://deezer.page.link/aXUq1xjzF8s2AZje9\n'
+            '12 https://music.yandex.by/album/6004920/track/44769475\n'
+            '13 https://www.deezer.com/ru/track/568497412,\n'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 11
+        assert len(urls) == 13
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
         deezer_new = urls[1]
         assert deezer_new.platform_key == 'deezer'
         assert deezer_new.url == 'https://deezer.page.link/aXUq1xjzF8s2AZje9'
-        google_url = urls[2]
+        deezer_ru = urls[2]
+        assert deezer_ru.platform_key == 'deezer'
+        assert deezer_ru.url == 'https://www.deezer.com/ru/track/568497412'
+        google_url = urls[3]
         assert google_url.platform_key == 'google'
         assert google_url.url == (
             'https://play.google.com/music/m/Tdyd5oxivy52cpw4b2qqbgewdwu'
         )
-        soundcloud_url = urls[3]
+        soundcloud_url = urls[4]
         assert soundcloud_url.platform_key == 'soundcloud'
         assert soundcloud_url.url == (
             'https://soundcloud.com/worakls/nto-trauma-worakls-remix'
         )
-        yandex_com = urls[4]
+        yandex_com = urls[5]
         assert yandex_com.platform_key == 'yandex'
         assert yandex_com.url == (
             'https://music.yandex.com/album/50197/track/120711'
         )
-        yandex_ru = urls[5]
+        yandex_ru = urls[6]
         assert yandex_ru.platform_key == 'yandex'
         assert yandex_ru.url == (
             'https://music.yandex.ru/album/6004920/track/44769475'
         )
-        spotify = urls[6]
+        yandex_by = urls[7]
+        assert yandex_by.platform_key == 'yandex'
+        assert yandex_by.url == (
+            'https://music.yandex.by/album/6004920/track/44769475'
+        )
+        spotify = urls[8]
         assert spotify.platform_key == 'spotify'
         assert spotify.url == (
             'https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh'
         )
-        youtube_music = urls[7]
+        youtube_music = urls[9]
         assert youtube_music.platform_key == 'youtubeMusic'
         assert youtube_music.url == (
             'https://music.youtube.com/watch?v=eVTXPUF4Oz4'
         )
-        youtube = urls[8]
+        youtube = urls[10]
         assert youtube.platform_key == 'youtube'
         assert youtube.url == 'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
-        apple_music = urls[9]
+        apple_music = urls[11]
         assert apple_music.platform_key == 'appleMusic'
         assert apple_music.url == (
             'https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
         )
-        tidal = urls[10]
+        tidal = urls[12]
         assert tidal.platform_key == 'tidal'
         assert tidal.url == 'https://tidal.com/track/139494756'
 
