@@ -52,6 +52,7 @@ pytest = "^6.0"
 pytest-cov = "^2.8.1"
 pytest-aiohttp = "^0.3.0"
 pytest-timeout = "^1.3.4"
+asynctest = "^0.13.0"
 
 [tool.poetry.scripts]
 tg-odesli-bot = "tg_odesli_bot.bot:main"
