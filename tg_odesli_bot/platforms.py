@@ -31,7 +31,8 @@ class DeezerPlatform(PlatformABC):
 
     key = 'deezer'
     url_re = (
-        r'(https?://([a-zA-Z\d-]+\.)*deezer\.com(/\w\w)?/(album|track)/[^\s.,]*)'
+        r'(https?://([a-zA-Z\d-]+\.)*deezer\.com(/\w\w)?/'
+        r'(album|track)/[^\s.,]*)'
         r'|(https?://deezer\.page\.link/[^\s.,]*)'
     )
     name = 'Deezer'
