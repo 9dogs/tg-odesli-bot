@@ -1,4 +1,4 @@
-FROM python:3.8.3-buster AS builder
+FROM python:3.9.0-buster AS builder
 
 LABEL maintainer="Mikhail.Knyazev@phystech.edu"
 LABEL description="Telegram Bot to share music with Odesli (former Songlink) service."
