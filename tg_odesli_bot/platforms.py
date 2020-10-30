@@ -73,7 +73,10 @@ class SpotifyPlatform(PlatformABC):
     """Spotify platform."""
 
     key = 'spotify'
-    url_re = r'(https?://([a-zA-Z\d-]+\.)*(spotify|tospotify)\.com/((album|track)/[^\s.,]*|[^\s.,]*))'
+    url_re = (
+        r'(https?://([a-zA-Z\d-]+\.)*(spotify|tospotify)\.com/'
+        r'((album|track)/[^\s.,]*|[^\s.,]*))'
+    )
     name = 'Spotify'
     order = 4
 
