@@ -25,9 +25,10 @@ class TestOdesliBot:
             '11 https://deezer.page.link/aXUq1xjzF8s2AZje9\n'
             '12 https://music.yandex.by/album/6004920/track/44769475\n'
             '13 https://www.deezer.com/ru/track/568497412,\n'
+            '14 https://link.tospotify.com/pfc3erwl2ab\n'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 13
+        assert len(urls) == 14
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -67,20 +68,23 @@ class TestOdesliBot:
         assert spotify.url == (
             'https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh'
         )
-        youtube_music = urls[9]
+        spotify = urls[9]
+        assert spotify.platform_key == 'spotify'
+        assert spotify.url == 'https://link.tospotify.com/pfc3erwl2ab'
+        youtube_music = urls[10]
         assert youtube_music.platform_key == 'youtubeMusic'
         assert youtube_music.url == (
             'https://music.youtube.com/watch?v=eVTXPUF4Oz4'
         )
-        youtube = urls[10]
+        youtube = urls[11]
         assert youtube.platform_key == 'youtube'
         assert youtube.url == 'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
-        apple_music = urls[11]
+        apple_music = urls[12]
         assert apple_music.platform_key == 'appleMusic'
         assert apple_music.url == (
             'https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
         )
-        tidal = urls[12]
+        tidal = urls[13]
         assert tidal.platform_key == 'tidal'
         assert tidal.url == 'https://tidal.com/track/139494756'
 
