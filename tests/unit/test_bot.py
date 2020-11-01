@@ -70,7 +70,7 @@ class TestOdesliBot:
         )
         spotify = urls[9]
         assert spotify.platform_key == 'spotify'
-        assert spotify.url == ('https://link.tospotify.com/pfc3erwl2ab')
+        assert spotify.url == 'https://link.tospotify.com/pfc3erwl2ab'
         youtube_music = urls[10]
         assert youtube_music.platform_key == 'youtubeMusic'
         assert youtube_music.url == (
