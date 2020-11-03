@@ -375,11 +375,14 @@ class OdesliBot:
         """
         # Quote the original message for group chats
         if message.chat.type != ChatType.PRIVATE:
-            reply_list = [
-                f'<b>@{message.from_user.username} wrote:</b> {message_text}'
-            ]
+            if message.from_user.username:
+                reply_list = [f"<b>@{message.from_user.username} wrote:</b> {message_text}"]
+            else:
+                reply_list = [
+                    f"<b><a href='tg://user?id={message.from_user.id}'>{message.from_user.full_name}</a>  wrote:</b> {message_text}"
+                ]
         else:
-            reply_list = [message_text]
+            reply_list = [message_text]            
         for index, song_info in enumerate(song_infos, start=1):
             # Use original URL if we failed to find that song via Odesli API
             if not song_info:
