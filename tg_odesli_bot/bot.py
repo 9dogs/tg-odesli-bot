@@ -382,7 +382,7 @@ class OdesliBot:
                     f"<b><a href='tg://user?id={message.from_user.id}'>{message.from_user.full_name}</a>  wrote:</b> {message_text}"
                 ]
         else:
-            reply_list = [message_text]            
+            reply_list = [message_text]
         for index, song_info in enumerate(song_infos, start=1):
             # Use original URL if we failed to find that song via Odesli API
             if not song_info:
