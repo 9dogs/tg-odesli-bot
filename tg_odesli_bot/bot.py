@@ -379,7 +379,8 @@ class OdesliBot:
                 reply_list = [f"<b>@{message.from_user.username} wrote:</b> {message_text}"]
             else:
                 reply_list = [
-                    f"<b><a href='tg://user?id={message.from_user.id}'>{message.from_user.full_name}</a>  wrote:</b> {message_text}"
+                    f"<b><a href='tg://user?id={message.from_user.id}'>" \
+                    f"{message.from_user.full_name}</a> wrote:</b> {message_text}",
                 ]
         else:
             reply_list = [message_text]
