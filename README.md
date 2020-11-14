@@ -136,7 +136,7 @@ $ poetry run tg-odesli-bot
 $ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> poetry run tg-odesli-bot
 ```
 
-## Contribution
+## Contributing
 
 Contributions are welcome via GitHub pull requests. The easiest way to bootstrap
 development environment is to build `builder` target of Docker image:
