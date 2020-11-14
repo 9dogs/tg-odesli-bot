@@ -135,3 +135,17 @@ $ poetry run tg-odesli-bot
 # If you specify token via shell env var
 $ TG_ODESLI_BOT_TG_API_TOKEN=<your_token> poetry run tg-odesli-bot
 ```
+
+## Contribution
+
+Contributions are welcome via GitHub pull requests. The easiest way to bootstrap
+development environment is to build `builder` target of Docker image:
+```console
+$ git clone https://github.com/9dogs/tg-odesli-bot.git && cd tg-odesli-bot
+$ docker build -t 9dogs/tg-odesli-bot:dev --target=builder --build-arg poetry_args= .
+```
+Then you can run a shell inside the container:
+```console
+$ docker run -it --rm -v %cd%:/opt/tg-odesli-bot -v /opt/tg-odesli-bot/.venv 9dogs/tg-odesli-bot:dev bash
+(container)$ make lint test
+```
