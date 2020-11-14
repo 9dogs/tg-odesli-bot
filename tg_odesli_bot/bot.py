@@ -71,7 +71,7 @@ class SongUrl:
 class SongInfo:
     """Song metadata."""
 
-    #: Set of Odesli identifiers
+    #: Odesli identifiers
     ids: set
     #: Title
     title: Optional[str]
@@ -86,7 +86,6 @@ class SongInfo:
 
     def __bool__(self):
         """Return True if SongInfo is not empty."""
-
         return bool(self.ids)
 
 
@@ -98,15 +97,15 @@ class LoggingMiddleware(BaseMiddleware):
         self.logger_var = logger_var
         super().__init__()
 
-    async def on_pre_process_message(self, message: types.Message, data: dict):
+    async def on_pre_process_message(self, message: types.Message, *args):
         """Bind message metadata to a logger.
 
         :param message: incoming message
-        :param data: additional data
+        :param * args: arguments
         """
         logger = self.logger_var.get()
         _logger = logger.bind(
-            from_username=message.from_user.username,
+            from_username=message.from_user.mention,
             chat_id=message.chat.id,
             message_id=message.message_id,
         )
@@ -165,7 +164,7 @@ class OdesliBot:
         """Initialize the bot (async part)."""
         # HTTP session
         self.session = aiohttp.ClientSession(connector=TCPConnector(limit=10))
-        # aiogram bot instance
+        # Aiogram bot instance
         self.bot = Bot(token=self.config.TG_API_TOKEN)
         # Bot's dispatcher
         self.dispatcher = Dispatcher(self.bot)
@@ -252,11 +251,10 @@ class OdesliBot:
     def _merge_same_songs(
         self, song_infos: Tuple[SongInfo, ...]
     ) -> Tuple[SongInfo, ...]:
-        """Merge SongInfo objects if two or more links point to the same
-        song.
+        """Merge SongInfo objects if different links point to the same song.
 
-        Use identifiers provided by Odesli API to find identical song even
-        though they can be linked from different platforms.
+        Use identifiers provided by Odesli API to find identical song linked
+        from different platforms.
 
         :param song_infos: tuple of SongInfo objects found in a message
         :return: tuple of merged SongInfo objects
@@ -357,7 +355,9 @@ class OdesliBot:
         message: Message,
         append_index: bool,
     ) -> str:
-        """Compose a reply.  For group chats original message is included in
+        """Compose a reply.
+
+        For group chats original message is included in
         reply with song URLs replaces with its indexes.  If original message
         consists only of a single link the index is omitted.
 
@@ -520,7 +520,9 @@ class OdesliBot:
         return normalized_url
 
     async def find_song_by_url(self, song_url: SongUrl) -> SongInfo:
-        """Make an API call to Odesli service and return song data for
+        """Find song info by its URL.
+
+        Make an API call to Odesli service and return song data for
         supported services.
 
         :param song_url: SongURL object
