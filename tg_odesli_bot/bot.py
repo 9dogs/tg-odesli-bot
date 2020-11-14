@@ -456,7 +456,7 @@ class OdesliBot:
             return
         group_message = message.chat.type in (
             ChatType.GROUP,
-            ChatType.SUPER_GROUP,
+            ChatType.SUPERGROUP,
         )
         try:
             song_infos = await self._find_songs(
