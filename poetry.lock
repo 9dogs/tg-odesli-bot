@@ -694,7 +694,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4"
-content-hash = "9e68ad6aba6673cb8914cfffa1614c033919deb3b45488d62245e4ea3e18bf39"
+content-hash = "4602484cf3a424d75e6826ede7a92a549aa23c5c4e53413d745ef1903e528de2"
 
 [metadata.files]
 aiocache = [
