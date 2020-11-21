@@ -45,8 +45,14 @@ def make_mock_message(
         message.message_id = 'id'
     else:
         message.text = text
-    message.from_user = mock.Mock(spec=User)
-    message.from_user.username = 'test_user'
+    message.from_user = User(
+        id=1,
+        is_bot=False,
+        first_name=None,
+        last_name='TestLastName',
+        username='test_user',
+        language_code='ru',
+    )
     message.chat = mock.Mock(spec=Chat)
     message.chat.type = chat_type
     types.User.set_current(message.from_user)
@@ -94,7 +100,7 @@ class TestOdesliBot:
         assert message.reply.called_with_text == reply_text
 
     async def test_replies_to_group_message(self, bot, odesli_api):
-        """Send reply to a group message."""
+        """Send a reply to a group message."""
         message = make_mock_message(
             text='check this one: https://www.deezer.com/track/1'
         )
@@ -157,7 +163,7 @@ class TestOdesliBot:
         assert not message.reply.called
 
     async def test_replies_to_inline_query(self, bot, odesli_api, monkeypatch):
-        """Send reply to an inline query."""
+        """Send a reply to an inline query."""
         inline_query = make_mock_message(
             'https://www.deezer.com/track/1', inline=True
         )
@@ -195,7 +201,7 @@ class TestOdesliBot:
     async def test_replies_to_inline_query_if_youtube(
         self, bot, odesli_api, monkeypatch
     ):
-        """Send reply to an inline query even if it's a YouTube link."""
+        """Send a reply to an inline query even if it's a YouTube link."""
         inline_query = make_mock_message(
             'https://www.youtube.com/watch?v=1', inline=True
         )
@@ -229,6 +235,39 @@ class TestOdesliBot:
             bot.bot, 'answer_inline_query', mock_answer_inline_query
         )
         await bot.dispatcher.inline_query_handlers.notify(inline_query)
+
+    async def test_replies_with_correct_user_mention(self, bot, odesli_api):
+        """Send a reply with correct user mention for a user without
+        username.
+        """
+        message = make_mock_message(
+            text='check this one: https://www.deezer.com/track/1'
+        )
+        message.from_user = User(
+            id=1,
+            is_bot=False,
+            first_name='test_first_name',
+            last_name='test_last_name',
+            username=None,
+            language_code='ru',
+        )
+        reply_text = (
+            '<b><a href="tg://user?id=1">test_first_name test_last_name</a> '
+            'wrote:</b> check this one: [1]\n'
+            '\n'
+            '1. Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/g">Google Music</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">YouTube Music</a> | '
+            '<a href="https://www.test.com/y">YouTube</a> | '
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
+        )
+        await bot.dispatcher.message_handlers.notify(message)
+        assert message.reply.called_with_text == reply_text
 
     @mark.parametrize('query', ['not a URL', ''])
     async def test_not_replies_to_inline_query_if_no_url(
@@ -337,7 +376,7 @@ class TestOdesliBot:
         await bot.cache.get('https://www.deezer.com/track/1')
 
     async def test_replies_to_private_message(self, bot, odesli_api):
-        """Send reply to a private message."""
+        """Send a reply to a private message."""
         message = make_mock_message(
             text='check this one: https://www.youtube.com/watch?v=1',
             chat_type=ChatType.PRIVATE,
@@ -361,7 +400,7 @@ class TestOdesliBot:
         assert message.reply.called_with_text == reply_text
 
     async def test_replies_to_private_for_single_url(self, bot, odesli_api):
-        """Send reply to a private message without an index number if incoming
+        """Send a reply to a private message without an index number if incoming
         message consists only of one URL.
         """
         message = make_mock_message(
@@ -384,7 +423,7 @@ class TestOdesliBot:
         assert message.reply.called_with_text == reply_text
 
     async def test_replies_if_some_urls_not_found(self, bot):
-        """Send reply to a private message if song not found in some
+        """Send a reply to a private message if song not found in some
         platforms.
         """
         url = 'https://www.deezer.com/track/1'
@@ -415,7 +454,7 @@ class TestOdesliBot:
             assert message.reply.called_with_text == reply_text
 
     async def test_replies_to_private_message_if_only_urls(self, bot):
-        """Send reply to a private message without text if message consists of
+        """Send a reply to a private message without text if message consists of
         song URLs only.
         """
         url1 = 'https://www.deezer.com/track/1'
@@ -457,7 +496,7 @@ class TestOdesliBot:
             assert message.reply.called_with_text == reply_text
 
     async def test_replies_to_private_message_for_single_url(self, bot):
-        """Send reply to a private message without an index number if incoming
+        """Send a reply to a private message without an index number if incoming
         message consists only of one URL.
         """
         url = 'https://www.deezer.com/track/1'
