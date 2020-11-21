@@ -375,9 +375,11 @@ class OdesliBot:
         """
         # Quote the original message for group chats
         if message.chat.type != ChatType.PRIVATE:
-            reply_list = [
-                f'<b>@{message.from_user.username} wrote:</b> {message_text}'
-            ]
+            if message.from_user.username:
+                mention = message.from_user.mention
+            else:
+                mention = message.from_user.get_mention(as_html=True)
+            reply_list = [f'<b>{mention} wrote:</b> {message_text}']
         else:
             reply_list = [message_text]
         for index, song_info in enumerate(song_infos, start=1):
