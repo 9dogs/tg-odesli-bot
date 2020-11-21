@@ -531,7 +531,6 @@ class TestOdesliBot:
         self, caplog, bot, odesli_api
     ):
         """Log if cannot delete the message."""
-
         message = make_mock_message(
             text='check this one: https://www.deezer.com/track/1',
             raise_on_delete=True,
