@@ -26,18 +26,27 @@ class TestOdesliBot:
             '12 https://music.yandex.by/album/6004920/track/44769475\n'
             '13 https://www.deezer.com/ru/track/568497412,\n'
             '14 https://link.tospotify.com/pfc3erwl2ab\n'
+            # Album URLs
+            '15 https://music.youtube.com/playlist?list=OLAK5uy_l2F5ezYgFM0mQ3tg2-vK900BTgr8zXMW0\n'
+            '16 https://www.youtube.com/playlist?list=OLAK5uy_n64ojqXEYWqrvO5GAWU1Ik040wTIzBdbQ\n'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 14
+        assert len(urls) == 16
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
-        assert deezer_url.url == 'https://www.deezer.com/track/568497412'
+        assert deezer_url.url == (
+            'https://www.deezer.com/track/568497412'
+        )
         deezer_new = urls[1]
         assert deezer_new.platform_key == 'deezer'
-        assert deezer_new.url == 'https://deezer.page.link/aXUq1xjzF8s2AZje9'
+        assert deezer_new.url == (
+            'https://deezer.page.link/aXUq1xjzF8s2AZje9'
+        )
         deezer_ru = urls[2]
         assert deezer_ru.platform_key == 'deezer'
-        assert deezer_ru.url == 'https://www.deezer.com/ru/track/568497412'
+        assert deezer_ru.url == (
+            'https://www.deezer.com/ru/track/568497412'
+        )
         google_url = urls[3]
         assert google_url.platform_key == 'google'
         assert google_url.url == (
@@ -70,23 +79,39 @@ class TestOdesliBot:
         )
         spotify = urls[9]
         assert spotify.platform_key == 'spotify'
-        assert spotify.url == 'https://link.tospotify.com/pfc3erwl2ab'
+        assert spotify.url == (
+            'https://link.tospotify.com/pfc3erwl2ab'
+        )
         youtube_music = urls[10]
         assert youtube_music.platform_key == 'youtubeMusic'
         assert youtube_music.url == (
             'https://music.youtube.com/watch?v=eVTXPUF4Oz4'
         )
-        youtube = urls[11]
+        youtube_music_album = urls[11]
+        assert youtube_music_album.platform_key == 'youtubeMusic'
+        assert youtube_music_album.url == (
+            'https://music.youtube.com/playlist?list=OLAK5uy_l2F5ezYgFM0mQ3tg2-vK900BTgr8zXMW0'
+        )
+        youtube = urls[12]
         assert youtube.platform_key == 'youtube'
-        assert youtube.url == 'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
-        apple_music = urls[12]
+        assert youtube.url == (
+            'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
+        )
+        youtube_album = urls[13]
+        assert youtube_album.platform_key == 'youtube'
+        assert youtube_album.url == (
+            'https://www.youtube.com/playlist?list=OLAK5uy_n64ojqXEYWqrvO5GAWU1Ik040wTIzBdbQ'
+        )
+        apple_music = urls[14]
         assert apple_music.platform_key == 'appleMusic'
         assert apple_music.url == (
             'https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
         )
-        tidal = urls[13]
+        tidal = urls[15]
         assert tidal.platform_key == 'tidal'
-        assert tidal.url == 'https://tidal.com/track/139494756'
+        assert tidal.url == (
+            'https://tidal.com/track/139494756'
+        )
 
     @mark.parametrize(
         'url',
