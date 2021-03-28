@@ -130,6 +130,3 @@ dmypy.json
 
 # JUnit
 junit.xml
-
-# VSCode
-.vscode/

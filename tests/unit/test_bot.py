@@ -34,19 +34,13 @@ class TestOdesliBot:
         assert len(urls) == 16
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
-        assert deezer_url.url == (
-            'https://www.deezer.com/track/568497412'
-        )
+        assert deezer_url.url == 'https://www.deezer.com/track/568497412'
         deezer_new = urls[1]
         assert deezer_new.platform_key == 'deezer'
-        assert deezer_new.url == (
-            'https://deezer.page.link/aXUq1xjzF8s2AZje9'
-        )
+        assert deezer_new.url == 'https://deezer.page.link/aXUq1xjzF8s2AZje9'
         deezer_ru = urls[2]
         assert deezer_ru.platform_key == 'deezer'
-        assert deezer_ru.url == (
-            'https://www.deezer.com/ru/track/568497412'
-        )
+        assert deezer_ru.url == 'https://www.deezer.com/ru/track/568497412'
         google_url = urls[3]
         assert google_url.platform_key == 'google'
         assert google_url.url == (
@@ -79,9 +73,7 @@ class TestOdesliBot:
         )
         spotify = urls[9]
         assert spotify.platform_key == 'spotify'
-        assert spotify.url == (
-            'https://link.tospotify.com/pfc3erwl2ab'
-        )
+        assert spotify.url == 'https://link.tospotify.com/pfc3erwl2ab'
         youtube_music = urls[10]
         assert youtube_music.platform_key == 'youtubeMusic'
         assert youtube_music.url == (
@@ -94,9 +86,7 @@ class TestOdesliBot:
         )
         youtube = urls[12]
         assert youtube.platform_key == 'youtube'
-        assert youtube.url == (
-            'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
-        )
+        assert youtube.url == 'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
         youtube_album = urls[13]
         assert youtube_album.platform_key == 'youtube'
         assert youtube_album.url == (
@@ -109,9 +99,7 @@ class TestOdesliBot:
         )
         tidal = urls[15]
         assert tidal.platform_key == 'tidal'
-        assert tidal.url == (
-            'https://tidal.com/track/139494756'
-        )
+        assert tidal.url == 'https://tidal.com/track/139494756'
 
     @mark.parametrize(
         'url',

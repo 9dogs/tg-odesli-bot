@@ -40,7 +40,7 @@ class DeezerPlatform(PlatformABC):
 
 
 class GoogleMusicPlatform(PlatformABC):
-    """Google Music platform. Google Play Music is no longer available"""
+    """Google Music platform."""
 
     key = 'google'
     url_re = r'https?://([a-zA-Z\d-]+\.)*play\.google\.com/music/[^\s.,]*'
