@@ -296,7 +296,7 @@ class TestOdesliBot:
         songs.
         """
         message = make_mock_message(
-            text='https://deezer.com/track/1', inline=True,
+            text='https://deezer.com/track/1', inline=True
         )
 
         async def mock_answer_inline_query(inline_query_id, results):
@@ -318,7 +318,7 @@ class TestOdesliBot:
     ):
         """Reply to an inline query if API error returns 404 for all songs."""
         message = make_mock_message(
-            text='https://deezer.com/track/1', inline=True,
+            text='https://deezer.com/track/1', inline=True
         )
 
         async def mock_answer_inline_query(inline_query_id, results):
@@ -404,7 +404,7 @@ class TestOdesliBot:
         message consists only of one URL.
         """
         message = make_mock_message(
-            text='https://www.deezer.com/track/1', chat_type=ChatType.PRIVATE,
+            text='https://www.deezer.com/track/1', chat_type=ChatType.PRIVATE
         )
         reply_text = (
             'Test Artist 1 - Test Title 1\n'
