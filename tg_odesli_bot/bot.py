@@ -29,12 +29,12 @@ from tg_odesli_bot.platforms import PLATFORMS
 from tg_odesli_bot.schemas import ApiResponseSchema
 
 
-class BotException(Exception):
-    """Odesli bot exception."""
+class BotError(Exception):
+    """Base bot error."""
 
 
-class SongNotFoundError(BotException):
-    """Song not found exception."""
+class SongNotFoundError(BotError):
+    """Song not found error."""
 
 
 class APIError(Exception):
