@@ -39,22 +39,13 @@ class DeezerPlatform(PlatformABC):
     order = 0
 
 
-class GoogleMusicPlatform(PlatformABC):
-    """Google Music platform."""
-
-    key = 'google'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*play\.google\.com/music/[^\s.,]*'
-    name = 'Google Music'
-    order = 1
-
-
 class SoundCloudPlatform(PlatformABC):
     """SoundCloud platform."""
 
     key = 'soundcloud'
     url_re = r'https?://([a-zA-Z\d-]+\.)*soundcloud\.com/[^\s.,]*'
     name = 'SoundCloud'
-    order = 2
+    order = 1
 
 
 class YandexMusicPlatform(PlatformABC):
@@ -66,7 +57,7 @@ class YandexMusicPlatform(PlatformABC):
         r'[^\s.,]*'
     )
     name = 'Yandex Music'
-    order = 3
+    order = 2
 
 
 class SpotifyPlatform(PlatformABC):
@@ -78,7 +69,7 @@ class SpotifyPlatform(PlatformABC):
         r'|(tospotify\.com/[^\s.,]*))'
     )
     name = 'Spotify'
-    order = 4
+    order = 3
 
 
 class YouTubeMusicPlatform(PlatformABC):
@@ -90,7 +81,7 @@ class YouTubeMusicPlatform(PlatformABC):
         r'(v|list)=[^\s.,]*)'
     )
     name = 'YouTube Music'
-    order = 5
+    order = 4
 
 
 class YouTubePlatform(PlatformABC):
@@ -101,7 +92,7 @@ class YouTubePlatform(PlatformABC):
         r'(https?://(www\.)?youtube\.com/(watch|playlist)\?(v|list)=[^\s,]*)'
     )
     name = 'YouTube'
-    order = 6
+    order = 5
 
 
 class AppleMusicPlatform(PlatformABC):
@@ -110,7 +101,7 @@ class AppleMusicPlatform(PlatformABC):
     key = 'appleMusic'
     url_re = r'https?://([a-zA-Z\d-]+\.)*music\.apple\.com/.*?/album/[^\s,.]*'
     name = 'Apple Music'
-    order = 7
+    order = 6
 
 
 class TidalPlatform(PlatformABC):
@@ -121,4 +112,4 @@ class TidalPlatform(PlatformABC):
         r'https?://(www\.|listen\.)?tidal\.com(/browse)?/(track|album)/\d+'
     )
     name = 'Tidal'
-    order = 8
+    order = 7

@@ -19,7 +19,7 @@ from tg_odesli_bot.config import TestConfig
 BASE_DIR = Path(__file__).resolve().parent
 #: Odesli API test response template
 TEST_RESPONSE_TEMPLATE = {
-    'entityUniqueId': 'GOOGLE_SONG::G${id}',
+    'entityUniqueId': 'DEEZER_SONG::D${id}',
     'userCountry': 'US',
     'entitiesByUniqueId': {
         'DEEZER_SONG::D${id}': {
@@ -39,12 +39,6 @@ TEST_RESPONSE_TEMPLATE = {
             'title': 'Test Title ${id}',
             'artistName': 'Test Artist ${id}',
             'apiProvider': 'spotify',
-        },
-        'GOOGLE_SONG::${id}': {
-            'id': 'G${id}',
-            'title': 'Test Title ${id}',
-            'artistName': 'Test Artist ${id}',
-            'apiProvider': 'google',
         },
         'AMAZON_SONG::A${id}': {
             'id': 'A${id}',
@@ -98,10 +92,6 @@ TEST_RESPONSE_TEMPLATE = {
             'url': 'https://www.test.com/ym',
             'entityUniqueId': 'YOUTUBE_VIDEO::YM${id}',
         },
-        'google': {
-            'url': 'https://www.test.com/g',
-            'entityUniqueId': 'GOOGLE_SONG::G${id}',
-        },
         'amazonMusic': {
             'url': 'https://www.test.com/a',
             'entityUniqueId': 'AMAZON_SONG::A${id}',
@@ -121,10 +111,6 @@ TEST_RESPONSE_TEMPLATE = {
         'itunes': {
             'url': 'https://www.test.com/it',
             'entityUniqueId': 'ITUNES_SONG::IT${id}',
-        },
-        'googleStore': {
-            'url': 'https://www.test.com/gs',
-            'entityUniqueId': 'GOOGLE_SONG::GS${id}',
         },
         'amazonStore': {
             'url': 'https://www.test.com/az',

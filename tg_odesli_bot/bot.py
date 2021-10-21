@@ -337,7 +337,7 @@ class OdesliBot:
         :param song_info: SongInfo metadata
         :param separator: separator for platform URLs
         :return: HTML string e.g.
-            <a href="1">Deezer</a> | <a href="2">Google Music</a> ...
+            <a href="1">Deezer</a> | <a href="2">SoundCloud</a> ...
         """
         platform_urls = song_info.urls or {}
         reply_urls, platform_names = [], []

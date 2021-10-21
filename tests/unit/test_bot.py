@@ -12,28 +12,27 @@ class TestOdesliBot:
         """Extract platform URLs from message text."""
         text = (
             '1 https://www.deezer.com/track/568497412,\n'
-            '2 https://play.google.com/music/m/Tdyd5oxivy52cpw4b2qqbgewdwu.\n'
-            '3 https://soundcloud.com/worakls/nto-trauma-worakls-remix \n'
-            '4 https://music.yandex.com/album/50197/track/120711 no_link\n'
-            '5 https://music.yandex.ru/album/6004920/track/44769475\n'
-            '6 https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh\n'
-            '7 https://music.youtube.com/watch?v=eVTXPUF4Oz4\n'
-            '8 https://www.youtube.com/watch?v=eVTXPUF4Oz4\n'
-            '9 https://music.apple.com/se/album/'
+            '2 https://soundcloud.com/worakls/nto-trauma-worakls-remix \n'
+            '3 https://music.yandex.com/album/50197/track/120711 no_link\n'
+            '4 https://music.yandex.ru/album/6004920/track/44769475\n'
+            '5 https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh\n'
+            '6 https://music.youtube.com/watch?v=eVTXPUF4Oz4\n'
+            '7 https://www.youtube.com/watch?v=eVTXPUF4Oz4\n'
+            '8 https://music.apple.com/se/album/'
             'raindrops-feat-j3po/1450701158\n '
-            '10 https://tidal.com/track/139494756\n'
-            '11 https://deezer.page.link/aXUq1xjzF8s2AZje9\n'
-            '12 https://music.yandex.by/album/6004920/track/44769475\n'
-            '13 https://www.deezer.com/ru/track/568497412,\n'
-            '14 https://link.tospotify.com/pfc3erwl2ab\n'
+            '9 https://tidal.com/track/139494756\n'
+            '10 https://deezer.page.link/aXUq1xjzF8s2AZje9\n'
+            '11 https://music.yandex.by/album/6004920/track/44769475\n'
+            '12 https://www.deezer.com/ru/track/568497412,\n'
+            '13 https://link.tospotify.com/pfc3erwl2ab\n'
             # Album URLs
-            '15 https://music.youtube.com/playlist?list='
+            '14 https://music.youtube.com/playlist?list='
             'OLAK5uy_l2F5ezYgFM0mQ3tg2-vK900BTgr8zXMW0\n'
-            '16 https://www.youtube.com/playlist?list='
+            '15 https://www.youtube.com/playlist?list='
             'OLAK5uy_n64ojqXEYWqrvO5GAWU1Ik040wTIzBdbQ\n'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 16
+        assert len(urls) == 15
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -43,65 +42,60 @@ class TestOdesliBot:
         deezer_ru = urls[2]
         assert deezer_ru.platform_key == 'deezer'
         assert deezer_ru.url == 'https://www.deezer.com/ru/track/568497412'
-        google_url = urls[3]
-        assert google_url.platform_key == 'google'
-        assert google_url.url == (
-            'https://play.google.com/music/m/Tdyd5oxivy52cpw4b2qqbgewdwu'
-        )
-        soundcloud_url = urls[4]
+        soundcloud_url = urls[3]
         assert soundcloud_url.platform_key == 'soundcloud'
         assert soundcloud_url.url == (
             'https://soundcloud.com/worakls/nto-trauma-worakls-remix'
         )
-        yandex_com = urls[5]
+        yandex_com = urls[4]
         assert yandex_com.platform_key == 'yandex'
         assert yandex_com.url == (
             'https://music.yandex.com/album/50197/track/120711'
         )
-        yandex_ru = urls[6]
+        yandex_ru = urls[5]
         assert yandex_ru.platform_key == 'yandex'
         assert yandex_ru.url == (
             'https://music.yandex.ru/album/6004920/track/44769475'
         )
-        yandex_by = urls[7]
+        yandex_by = urls[6]
         assert yandex_by.platform_key == 'yandex'
         assert yandex_by.url == (
             'https://music.yandex.by/album/6004920/track/44769475'
         )
-        spotify = urls[8]
+        spotify = urls[7]
         assert spotify.platform_key == 'spotify'
         assert spotify.url == (
             'https://open.spotify.com/track/1gfzgfcrmkn2yTWuVGhCgh'
         )
-        spotify = urls[9]
+        spotify = urls[8]
         assert spotify.platform_key == 'spotify'
         assert spotify.url == 'https://link.tospotify.com/pfc3erwl2ab'
-        youtube_music = urls[10]
+        youtube_music = urls[9]
         assert youtube_music.platform_key == 'youtubeMusic'
         assert youtube_music.url == (
             'https://music.youtube.com/watch?v=eVTXPUF4Oz4'
         )
-        youtube_music_album = urls[11]
+        youtube_music_album = urls[10]
         assert youtube_music_album.platform_key == 'youtubeMusic'
         assert youtube_music_album.url == (
             'https://music.youtube.com/playlist?list='
             'OLAK5uy_l2F5ezYgFM0mQ3tg2-vK900BTgr8zXMW0'
         )
-        youtube = urls[12]
+        youtube = urls[11]
         assert youtube.platform_key == 'youtube'
         assert youtube.url == 'https://www.youtube.com/watch?v=eVTXPUF4Oz4'
-        youtube_album = urls[13]
+        youtube_album = urls[12]
         assert youtube_album.platform_key == 'youtube'
         assert youtube_album.url == (
             'https://www.youtube.com/playlist?list='
             'OLAK5uy_n64ojqXEYWqrvO5GAWU1Ik040wTIzBdbQ'
         )
-        apple_music = urls[14]
+        apple_music = urls[13]
         assert apple_music.platform_key == 'appleMusic'
         assert apple_music.url == (
             'https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
         )
-        tidal = urls[15]
+        tidal = urls[14]
         assert tidal.platform_key == 'tidal'
         assert tidal.url == 'https://tidal.com/track/139494756'
 

@@ -88,8 +88,8 @@ class TestOdesliBot:
         /start or /help command.
         """
         supported_platforms = (
-            'Deezer | Google Music | SoundCloud | Yandex Music | Spotify | '
-            'YouTube Music | YouTube | Apple Music | Tidal'
+            'Deezer | SoundCloud | Yandex Music | Spotify | YouTube Music '
+            '| YouTube | Apple Music | Tidal'
         )
         message = make_mock_message(text=text)
         reply_text = bot.WELCOME_MSG_TEMPLATE.format(
@@ -109,7 +109,6 @@ class TestOdesliBot:
             '\n'
             '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -141,7 +140,6 @@ class TestOdesliBot:
             '\n'
             '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -170,7 +168,6 @@ class TestOdesliBot:
         reply_text = (
             'Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -189,8 +186,8 @@ class TestOdesliBot:
             assert result.input_message_content.parse_mode == 'HTML'
             assert result.thumb_url == 'http://thumb1'
             assert result.description == (
-                'Deezer | Google Music | SoundCloud | Yandex Music | Spotify '
-                '| YouTube Music | YouTube | Apple Music | Tidal'
+                'Deezer | SoundCloud | Yandex Music | Spotify | YouTube Music '
+                '| YouTube | Apple Music | Tidal'
             )
 
         monkeypatch.setattr(
@@ -208,7 +205,6 @@ class TestOdesliBot:
         reply_text = (
             'Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -227,8 +223,8 @@ class TestOdesliBot:
             assert result.input_message_content.parse_mode == 'HTML'
             assert result.thumb_url == 'http://thumb1'
             assert result.description == (
-                'Deezer | Google Music | SoundCloud | Yandex Music | Spotify '
-                '| YouTube Music | YouTube | Apple Music | Tidal'
+                'Deezer | SoundCloud | Yandex Music | Spotify | YouTube Music '
+                '| YouTube | Apple Music | Tidal'
             )
 
         monkeypatch.setattr(
@@ -257,7 +253,6 @@ class TestOdesliBot:
             '\n'
             '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -386,7 +381,6 @@ class TestOdesliBot:
             '\n'
             '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -409,7 +403,6 @@ class TestOdesliBot:
         reply_text = (
             'Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -434,7 +427,6 @@ class TestOdesliBot:
             'check this one: [1]\n'
             '\n'
             '1. Test Artist 1 - Test Title 1\n'
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -465,7 +457,6 @@ class TestOdesliBot:
         reply_text = (
             '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -475,7 +466,6 @@ class TestOdesliBot:
             '<a href="https://www.test.com/t">Tidal</a>\n'
             '2. Test Artist 2 - Test Title 2\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -504,7 +494,6 @@ class TestOdesliBot:
         reply_text = (
             'Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -551,7 +540,6 @@ class TestOdesliBot:
             '1. https://deezer.com/track/1\n'
             '2. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
@@ -586,7 +574,6 @@ class TestOdesliBot:
             '\n'
             '1. Test Artist 1 - Test Title 1\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
-            '<a href="https://www.test.com/g">Google Music</a> | '
             '<a href="https://www.test.com/sc">SoundCloud</a> | '
             '<a href="https://www.test.com/yn">Yandex Music</a> | '
             '<a href="https://www.test.com/s">Spotify</a> | '
