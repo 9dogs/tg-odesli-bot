@@ -142,7 +142,7 @@ class OdesliBot:
         'Powered by a great <a href="https://odesli.co/">Odesli</a> service.'
     )
 
-    def __init__(self, config: Config = None, *, loop=None):
+    def __init__(self, config: Config | None = None, *, loop=None):
         """Initialize the bot.
 
         :param config: configuration

@@ -5,7 +5,6 @@ import string
 from functools import partial
 from http import HTTPStatus
 from pathlib import Path
-from typing import Union
 from unittest import mock
 
 import dotenv
@@ -124,7 +123,7 @@ TEST_RESPONSE_TEMPLATE = {
 }
 
 
-def make_response(song_id: Union[str, int] = 1) -> dict:
+def make_response(song_id: str | int = 1) -> dict:
     """Prepare Odesli API test response with given song id.
 
     :param song_id: substitution for a song identifier

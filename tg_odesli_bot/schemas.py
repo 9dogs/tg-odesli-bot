@@ -10,7 +10,7 @@ class SongSchema(Schema):
     #: Platform
     platform = fields.Str(required=True, data_key='apiProvider')
     #: Artist (can be missing)
-    artist = fields.Str(data_key='artistName', missing='<Unknown>')
+    artist = fields.Str(data_key='artistName', load_default='<Unknown>')
     #: Title
     title = fields.Str(data_key='title')
     #: Thumbnail URL
