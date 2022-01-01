@@ -1,4 +1,6 @@
 """Helpers and fixtures for pytest."""
+from __future__ import annotations
+
 import json
 import re
 import string
