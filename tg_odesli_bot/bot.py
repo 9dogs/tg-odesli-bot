@@ -1,6 +1,4 @@
 """Telegram Odesli bot."""
-from __future__ import annotations
-
 import asyncio
 import contextvars
 import hashlib
@@ -144,7 +142,7 @@ class OdesliBot:
         'Powered by a great <a href="https://odesli.co/">Odesli</a> service.'
     )
 
-    def __init__(self, config: Config | None = None, *, loop=None):
+    def __init__(self, config: Optional[Config] = None, *, loop=None):
         """Initialize the bot.
 
         :param config: configuration

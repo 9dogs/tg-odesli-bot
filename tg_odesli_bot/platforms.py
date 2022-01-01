@@ -1,7 +1,7 @@
 """Supported platforms."""
 import re
 from abc import ABC
-from typing import Pattern
+from typing import Pattern, Union
 
 #: Supported platforms registry
 PLATFORMS = {}
@@ -13,7 +13,7 @@ class PlatformABC(ABC):
     # Platform's Odesli name
     key: str
     # RegEx to find platform's URL in a message text
-    url_re: str | Pattern
+    url_re: Union[str, Pattern]
     # Human readable name which will appear in a bot's message
     name: str
     # Order of platform's link in a bot's message
