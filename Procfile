@@ -1,1 +1,1 @@
-web: python3 bot.py
+web: python3 /tg_odesli_bot/bot.py'
