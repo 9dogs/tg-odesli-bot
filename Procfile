@@ -1,1 +1,1 @@
-web: poetry run tg-odesli-bot
+web: poetry publish --build
