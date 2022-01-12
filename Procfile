@@ -1,1 +1,1 @@
-web: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python - | poetry install | TG_ODESLI_BOT_TG_API_TOKEN=5054668230:AAE3O4s6spW3d3QuusyibW8G8L4OfaGIV-U poetry run tg-odesli-bot
+web: python -m venv botenv
