@@ -43,7 +43,7 @@ class SoundCloudPlatform(PlatformABC):
     """SoundCloud platform."""
 
     key = 'soundcloud'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*soundcloud\.com/[^\s.,]*'
+    url_re = r'https?://([a-zA-Z\d-]+\.)*soundcloud\.(com|app\.goo\.gl)/[^\s.,]*'
     name = 'SoundCloud'
     order = 1
 
