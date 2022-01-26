@@ -89,7 +89,8 @@ class YouTubePlatform(PlatformABC):
 
     key = 'youtube'
     url_re = (
-        r'(https?://(www\.)?youtube\.com/(watch|playlist)\?(v|list)=[^\s,]*)'
+        r'https?://([a-zA-Z\d-]+\.)*((youtube\.com/(watch|playlist)\?(v|list)=[^\s,]*)'
+        r'|(youtu\.be/[^\s.,]*))'
     )
     name = 'YouTube'
     order = 5
