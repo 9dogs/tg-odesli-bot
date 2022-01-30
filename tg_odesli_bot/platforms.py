@@ -116,3 +116,12 @@ class TidalPlatform(PlatformABC):
     )
     name = 'Tidal'
     order = 7
+
+
+class BandcampPlatform(PlatformABC):
+    """Bandcamp platform."""
+
+    key = 'bandcamp'
+    url_re = r'https?://[^\s.,]*\.bandcamp\.com/(album|track)/[^\s.,]*'
+    name = 'Bandcamp'
+    order = 8
