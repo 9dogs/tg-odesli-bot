@@ -89,7 +89,7 @@ class TestOdesliBot:
         """
         supported_platforms = (
             'Deezer | SoundCloud | Yandex Music | Spotify | YouTube Music '
-            '| YouTube | Apple Music | Tidal'
+            '| YouTube | Apple Music | Tidal | Bandcamp'
         )
         message = make_mock_message(text=text)
         reply_text = bot.WELCOME_MSG_TEMPLATE.format(

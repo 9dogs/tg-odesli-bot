@@ -25,14 +25,17 @@ class TestOdesliBot:
             '11 https://music.yandex.by/album/6004920/track/44769475\n'
             '12 https://www.deezer.com/ru/track/568497412,\n'
             '13 https://link.tospotify.com/pfc3erwl2ab\n'
-            # Album URLs
             '14 https://music.youtube.com/playlist?list='
             'OLAK5uy_l2F5ezYgFM0mQ3tg2-vK900BTgr8zXMW0\n'
             '15 https://www.youtube.com/playlist?list='
             'OLAK5uy_n64ojqXEYWqrvO5GAWU1Ik040wTIzBdbQ\n'
+            '16 https://gunnarspardel.bandcamp.com/album/simplicity-in-a-'
+            'complex-world\n'
+            '17 https://carbonbasedlifeforms.bandcamp.com/track/6equj5\n'
+            '18 https://youtu.be/ugYB3VxpivU'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 15
+        assert len(urls) == 18
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -90,14 +93,28 @@ class TestOdesliBot:
             'https://www.youtube.com/playlist?list='
             'OLAK5uy_n64ojqXEYWqrvO5GAWU1Ik040wTIzBdbQ'
         )
-        apple_music = urls[13]
+        youtube_short = urls[13]
+        assert youtube_short.platform_key == 'youtube'
+        assert youtube_short.url == 'https://youtu.be/ugYB3VxpivU'
+        apple_music = urls[14]
         assert apple_music.platform_key == 'appleMusic'
         assert apple_music.url == (
             'https://music.apple.com/se/album/raindrops-feat-j3po/1450701158'
         )
-        tidal = urls[14]
+        tidal = urls[15]
         assert tidal.platform_key == 'tidal'
         assert tidal.url == 'https://tidal.com/track/139494756'
+        bandcamp_album = urls[16]
+        assert bandcamp_album.platform_key == 'bandcamp'
+        assert bandcamp_album.url == (
+            'https://gunnarspardel.bandcamp.com/album/simplicity-in-a-'
+            'complex-world'
+        )
+        bandcamp_track = urls[17]
+        assert bandcamp_track.platform_key == 'bandcamp'
+        assert bandcamp_track.url == (
+            'https://carbonbasedlifeforms.bandcamp.com/track/6equj5'
+        )
 
     @mark.parametrize(
         'url',
@@ -115,6 +132,8 @@ class TestOdesliBot:
             'https://music.apple.com/en/playlist/INVALID',
             'https://music.yandex.ru/users/INVALID',
             'https://www.deezer.com/playlist/INVALID',
+            'https://bandcamp.com/?from=menubar_logo_logged_out',
+            'https://daily.bandcamp.com/',
         ],
     )
     async def test_skips_incorrect_urls(self, bot, url):
