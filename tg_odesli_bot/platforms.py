@@ -43,7 +43,9 @@ class SoundCloudPlatform(PlatformABC):
     """SoundCloud platform."""
 
     key = 'soundcloud'
-    url_re = r'https?://([a-zA-Z\d-]+\.)*soundcloud\.com/[^\s.,]*'
+    url_re = (
+        r'https?://([a-zA-Z\d-]+\.)*soundcloud\.(com|app\.goo\.gl)/[^\s.,]*'
+    )
     name = 'SoundCloud'
     order = 1
 
@@ -89,7 +91,8 @@ class YouTubePlatform(PlatformABC):
 
     key = 'youtube'
     url_re = (
-        r'(https?://(www\.)?youtube\.com/(watch|playlist)\?(v|list)=[^\s,]*)'
+        r'https?://(((www\.)?youtube\.com/(watch|playlist)\?(v|list)=[^\s,]*)'
+        r'|(youtu\.be/[^\s.,]*))'
     )
     name = 'YouTube'
     order = 5
