@@ -1,4 +1,4 @@
-FROM python:3.10.1-bullseye AS builder
+FROM python:3.10.2-bullseye AS builder
 
 LABEL maintainer="Mikhail.Knyazev@phystech.edu"
 LABEL description="Telegram Bot to share music with Odesli (former Songlink) service."
@@ -22,7 +22,7 @@ COPY . /opt/tg-odesli-bot
 ENV PYTHONPATH "${PYTHONPATH}:/opt/tg-odesli-bot"
 
 
-FROM python:3.10.1-slim-bullseye
+FROM python:3.10.2-slim-bullseye
 
 ARG UID=997
 ARG GID=997
