@@ -13,6 +13,7 @@ known_first_party = "tg_odesli_bot,tests"
 
 [tool.pytest.ini_options]
 junit_family = "xunit2"
+asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.mypy]
