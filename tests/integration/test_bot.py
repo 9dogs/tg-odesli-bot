@@ -1,5 +1,6 @@
 """Integration tests for Odesli bot."""
 import asyncio
+import re
 from http import HTTPStatus
 from unittest import mock
 
@@ -17,7 +18,7 @@ from aiohttp import ClientConnectionError
 from aioresponses import aioresponses
 from pytest import mark
 
-from tests.conftest import make_response
+from tests.conftest import TEST_RESPONSE_WITH_ONE_URL_TEMPLATE, make_response
 from tg_odesli_bot.bot import SongInfo
 
 
@@ -35,7 +36,7 @@ def make_mock_message(
     :param raise_on_delete: raise exception on message delete
     :param inline: message is an inline query
     :param is_reply: message is a reply
-    :return: mock message
+    :returns: mock message
     """
     spec = InlineQuery if inline else Message
     message = mock.Mock(spec=spec)
@@ -121,6 +122,25 @@ class TestOdesliBot:
         assert message.reply.called
         assert message.delete.called
         assert message.reply.called_with_text == reply_text
+
+    async def test_does_not_reply_to_group_message_if_found_on_one_platform(
+        self, bot, test_config
+    ):
+        """Don't send a reply if only one platform is found for the given
+        URL.
+        """
+        message = make_mock_message(
+            text='check this one: https://www.deezer.com/track/1'
+        )
+        pattern = re.compile(rf'^{re.escape(test_config.ODESLI_API_URL)}.*$')
+        payload = make_response(
+            song_id=1, template=TEST_RESPONSE_WITH_ONE_URL_TEMPLATE
+        )
+        with aioresponses() as m:
+            m.get(pattern, status=HTTPStatus.OK, payload=payload)
+            await bot.dispatcher.message_handlers.notify(message)
+        assert not message.reply.called
+        assert not message.delete.called
 
     async def test_skips_youtube_platform_for_group_messages(
         self, bot, odesli_api
@@ -346,7 +366,7 @@ class TestOdesliBot:
             title='Cached',
             artist='Cached',
             thumbnail_url='cached',
-            urls={'soundcloud': 'test'},
+            urls={'soundcloud': 'test1', 'deezer': 'test2'},
             urls_in_text={url},
         )
         await bot.cache.set(url, song_info)
@@ -355,7 +375,7 @@ class TestOdesliBot:
             '<b>@test_user wrote:</b> check this one: [1]\n'
             '\n'
             '1. Cached - Cached\n'
-            '<a href="test">soundcloud</a>'
+            '<a href="test1">soundcloud</a> | <a href="test2">deezer</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
         assert 'Returning data from cache' in caplog.text

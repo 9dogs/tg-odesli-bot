@@ -122,15 +122,37 @@ TEST_RESPONSE_TEMPLATE = {
         },
     },
 }
+#: Odesli API test response template with one URL
+TEST_RESPONSE_WITH_ONE_URL_TEMPLATE = {
+    'entityUniqueId': 'DEEZER_SONG::D${id}',
+    'userCountry': 'US',
+    'entitiesByUniqueId': {
+        'DEEZER_SONG::D${id}': {
+            'id': 'D${id}',
+            'title': 'Test Title ${id}',
+            'apiProvider': 'deezer',
+            'thumbnailUrl': 'http://thumb1',
+        },
+    },
+    'linksByPlatform': {
+        'deezer': {
+            'url': 'https://www.test.com/d',
+            'entityUniqueId': 'DEEZER_SONG::D${id}',
+        },
+    },
+}
 
 
-def make_response(song_id: Union[str, int] = 1) -> dict:
+def make_response(
+    song_id: Union[str, int] = 1, template: dict = TEST_RESPONSE_TEMPLATE
+) -> dict:
     """Prepare Odesli API test response with given song id.
 
     :param song_id: substitution for a song identifier
-    :return: response dict
+    :param template: response template
+    :returns: response dict
     """
-    response_template = string.Template(json.dumps(TEST_RESPONSE_TEMPLATE))
+    response_template = string.Template(json.dumps(template))
     response = response_template.substitute(id=str(song_id))
     payload = json.loads(response)
     return payload

@@ -109,7 +109,7 @@ class Config:
         """Load config merging default variables and environment variables.
 
         :param env_prefix: prefix for environment variables
-        :return: filled config object
+        :returns: filled config object
         """
         config = cls()
         # Load environment from .env file

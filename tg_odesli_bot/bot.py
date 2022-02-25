@@ -210,7 +210,7 @@ class OdesliBot:
 
         :param message: original message text
         :param song_infos: list of SongInfo metadata objects
-        :return: transformed message
+        :returns: transformed message
         """
         # Check if message consists only of a song URL and return empty string
         # if so
@@ -233,7 +233,7 @@ class OdesliBot:
 
         :param text: message text
         :param skip_youtube: skip YouTube platform (used for group messages)
-        :return: list of SongURLs
+        :returns: list of SongURLs
         """
         urls = []
         for platform_key, platform in PLATFORMS.items():
@@ -257,7 +257,7 @@ class OdesliBot:
         from different platforms.
 
         :param song_infos: tuple of SongInfo objects found in a message
-        :return: tuple of merged SongInfo objects
+        :returns: tuple of merged SongInfo objects
         """
         merged_song_info_indexes: Set[int] = set()
         for idx1, song_info1 in enumerate(song_infos):
@@ -300,7 +300,7 @@ class OdesliBot:
 
         :param text: message text
         :param group_message: text is from a group message
-        :return: tuple of SongInfo instances
+        :returns: tuple of SongInfo instances
         :raise SongNotFoundError: if Odesli couldn't find any song
         """
         # Extract song URLs from the message
@@ -336,7 +336,7 @@ class OdesliBot:
 
         :param song_info: SongInfo metadata
         :param separator: separator for platform URLs
-        :return: HTML string e.g.
+        :returns: HTML string e.g.
             <a href="1">Deezer</a> | <a href="2">SoundCloud</a> ...
         """
         platform_urls = song_info.urls or {}
@@ -371,7 +371,7 @@ class OdesliBot:
         :param message_text: incoming message text with song URLs replaced
             with its indexes
         :param append_index: append index
-        :return: reply text
+        :returns: reply text
         """
         # Quote the original message for group chats
         if message.chat.type != ChatType.PRIVATE:
@@ -470,8 +470,13 @@ class OdesliBot:
                 parse_mode='HTML',
             )
             return
-        # Do not reply if no songs have been found in message
-        if not any(song_infos):
+        # Do not reply if no songs have been found in message or song info has
+        # only one URL (which will be the same URL as in the original message)
+        if not any(song_infos) or all(
+            len(song_info.urls) == 1
+            for song_info in song_infos
+            if song_info.urls
+        ):
             return
         # Replace original URLs in message with footnotes (e.g. [1], [2], ...)
         prepared_message_text = self._replace_urls_with_footnotes(
@@ -502,7 +507,7 @@ class OdesliBot:
         Used in caching to increase cache density.
 
         :param url: url
-        :return: normalized URL
+        :returns: normalized URL
         """
         parsed = urlparse(url)
         query_dict = parse_qs(parsed.query, keep_blank_values=True)
@@ -528,7 +533,7 @@ class OdesliBot:
         supported services.
 
         :param song_url: SongURL object
-        :return: SongInfo instance for given URL
+        :returns: SongInfo instance for given URL
         :raises APIError: if Odesli API returned an error
         """
         logger = self.logger_var.get()
@@ -613,7 +618,7 @@ class OdesliBot:
         """Filter and reorder platform URLs according to `PLATFORMS` registry.
 
         :param platform_urls: dictionary of {platform_key: platform_urls}
-        :return: dictionary of filtered and ordered platform URLs
+        :returns: dictionary of filtered and ordered platform URLs
         """
         logger = self.logger_var.get()
         logger = logger.bind(data=platform_urls)
@@ -638,7 +643,7 @@ class OdesliBot:
 
         :param data: deserialized Odesli data
         :param url: original URL in message text
-        :return: song info object
+        :returns: song info object
         """
         # Set of song identifiers
         ids = set()
