@@ -77,11 +77,12 @@ pep8-naming = "^0.12.0"
 pydocstyle = "^6.0.0"
 coverage = "^6.0"
 mypy = "^0.931"
-pytest = "^6.0"
+pytest = "^7.0"
 pytest-cov = "^3.0.0"
 pytest-aiohttp = "^1.0"
 pytest-timeout = "^2.0.0"
 asynctest = "^0.13.0"
+toml = "^0.10.2"
 
 [tool.poetry.scripts]
 tg-odesli-bot = "tg_odesli_bot.bot:main"
