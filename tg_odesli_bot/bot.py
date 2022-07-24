@@ -22,7 +22,7 @@ from aiogram.types import (
 )
 from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
 from aiohttp import ClientConnectionError, TCPConnector
-from marshmallow import ValidationError
+from marshmallow import EXCLUDE, ValidationError
 
 from tg_odesli_bot.config import Config
 from tg_odesli_bot.platforms import PLATFORMS
@@ -322,7 +322,9 @@ class OdesliBot:
                 exceptions.append(item)
         # Raise an exception if API returned 404 for all songs
         if not any(song_infos) and all(
-            exc.status_code == HTTPStatus.NOT_FOUND for exc in exceptions
+            exc.status_code == HTTPStatus.NOT_FOUND
+            for exc in exceptions
+            if isinstance(exc, APIError)
         ):
             raise SongNotFoundError
         # Merge song infos if different platform links point to the same song
@@ -588,7 +590,7 @@ class OdesliBot:
                         raise APIError(status_code=resp.status, message=text)
                     response = await resp.json()
                     logger.debug('Got Odesli API response', response=response)
-                    schema = ApiResponseSchema(unknown='EXCLUDE')
+                    schema = ApiResponseSchema(unknown=EXCLUDE)
                     try:
                         data = schema.load(response)
                     except ValidationError as exc:

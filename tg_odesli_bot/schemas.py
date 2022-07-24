@@ -1,5 +1,5 @@
 """Odesli API schemas."""
-from marshmallow import Schema, fields
+from marshmallow import EXCLUDE, Schema, fields
 
 
 class SongSchema(Schema):
@@ -32,14 +32,14 @@ class ApiResponseSchema(Schema):
     #: Dictionary of entity_id -> SongSchema
     songs = fields.Dict(
         keys=fields.Str(),
-        values=fields.Nested(SongSchema, unknown='EXCLUDE'),
+        values=fields.Nested(SongSchema, unknown=EXCLUDE),
         data_key='entitiesByUniqueId',
         required=True,
     )
     #: Dictionary of platform -> LinkSchema
     links = fields.Dict(
         keys=fields.Str(),
-        values=fields.Nested(PlatformLink, unknown='EXCLUDE'),
+        values=fields.Nested(PlatformLink, unknown=EXCLUDE),
         data_key='linksByPlatform',
         required=True,
     )
