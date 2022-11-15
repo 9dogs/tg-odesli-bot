@@ -53,6 +53,8 @@ Currently the following services are supported:
   - Apple Music
   - Tidal
 
+Note that bot doesn't react to YouTube links in group chats. Reasons are [here](https://github.com/9dogs/tg-odesli-bot/issues/12).
+
 ## Privacy considerations
 
 The bot have to have access to messages in group chats to operate (that
