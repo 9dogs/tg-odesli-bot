@@ -77,7 +77,7 @@ TEST_RESPONSE_TEMPLATE = {
             'entityUniqueId': 'DEEZER_SONG::D${id}',
         },
         'appleMusic': {
-            'url': 'https://www.test.com/am',
+            'url': 'https://geo.www.test.com/am',
             'entityUniqueId': 'ITUNES_SONG::AM${id}',
         },
         'spotify': {

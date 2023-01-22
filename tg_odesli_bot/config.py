@@ -8,7 +8,7 @@ import sentry_sdk
 import structlog
 from aiocache import caches
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
-from structlog_sentry import SentryJsonProcessor
+from structlog_sentry import SentryProcessor
 
 
 class Config:
@@ -93,7 +93,7 @@ class Config:
                 structlog.processors.TimeStamper(fmt='iso'),
                 structlog.processors.StackInfoRenderer(),
                 structlog.processors.UnicodeDecoder(),
-                SentryJsonProcessor(
+                SentryProcessor(
                     level=logging.WARNING, tag_keys=['status_code']
                 ),
                 structlog.processors.format_exc_info,

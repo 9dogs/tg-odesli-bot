@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import aiohttp
 import structlog
-from aiocache import caches
+from aiocache import BaseCache, caches
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types import (
@@ -25,7 +25,7 @@ from aiohttp import ClientConnectionError, TCPConnector
 from marshmallow import EXCLUDE, ValidationError
 
 from tg_odesli_bot.config import Config
-from tg_odesli_bot.platforms import PLATFORMS
+from tg_odesli_bot.platforms import PLATFORMS, YouTubePlatform
 from tg_odesli_bot.schemas import ApiResponseSchema
 
 
@@ -77,7 +77,7 @@ class SongInfo:
     title: Optional[str]
     #: Artist
     artist: Optional[str]
-    #: Platform URLs
+    #: Platform URLs (key: platform key, value: URL)
     urls: Optional[Dict[str, str]]
     #: Thumbnail URL
     thumbnail_url: Optional[str]
@@ -87,6 +87,14 @@ class SongInfo:
     def __bool__(self):
         """Return True if SongInfo is not empty."""
         return bool(self.ids)
+
+    def __post_init__(self) -> None:
+        """Postprocess song URLs."""
+        if self.urls:
+            for platform_key, url in self.urls.items():
+                platform = PLATFORMS.get(platform_key)
+                if platform:
+                    self.urls[platform_key] = platform.postprocess_url(url)
 
 
 class LoggingMiddleware(BaseMiddleware):
@@ -156,7 +164,7 @@ class OdesliBot:
         # Event loop
         self._loop = loop or asyncio.get_event_loop()
         # Cache
-        self.cache = caches.get('default')
+        self.cache: BaseCache = caches.get('default')  # type: ignore
         # Telegram connection retries count
         self._tg_retries = 0
 
@@ -237,7 +245,7 @@ class OdesliBot:
         """
         urls = []
         for platform_key, platform in PLATFORMS.items():
-            if skip_youtube and platform_key == 'youtube':
+            if skip_youtube and platform_key == YouTubePlatform.key:
                 continue
             for match in platform.url_re.finditer(text):
                 platform_url = SongUrl(
@@ -343,7 +351,8 @@ class OdesliBot:
         """
         platform_urls = song_info.urls or {}
         reply_urls, platform_names = [], []
-        for platform_name, url in platform_urls.items():
+        for platform_key, url in platform_urls.items():
+            platform_name = PLATFORMS[platform_key].name
             reply_urls.append(f'<a href="{url}">{platform_name}</a>')
             platform_names.append(platform_name)
         formatted_urls = separator.join(reply_urls)
@@ -632,11 +641,11 @@ class OdesliBot:
                 )
                 continue
             urls.append(
-                (platform.order, platform.name, platform_urls[platform_key])
+                (platform.order, platform.key, platform_urls[platform_key])
             )
         # Reorder platform URLs
         platform_urls = {
-            name: url for order, name, url in sorted(urls, key=lambda x: x[0])
+            key: url for order, key, url in sorted(urls, key=lambda x: x[0])
         }
         return platform_urls
 

@@ -375,7 +375,7 @@ class TestOdesliBot:
             '<b>@test_user wrote:</b> check this one: [1]\n'
             '\n'
             '1. Cached - Cached\n'
-            '<a href="test1">soundcloud</a> | <a href="test2">deezer</a>'
+            '<a href="test1">SoundCloud</a> | <a href="test2">Deezer</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
         assert 'Returning data from cache' in caplog.text
@@ -414,8 +414,8 @@ class TestOdesliBot:
         assert message.reply.called_with_text == reply_text
 
     async def test_replies_to_private_for_single_url(self, bot, odesli_api):
-        """Send a reply to a private message without an index number if incoming
-        message consists only of one URL.
+        """Send a reply to a private message without an index number if
+        incoming message consists only of one URL.
         """
         message = make_mock_message(
             text='https://www.deezer.com/track/1', chat_type=ChatType.PRIVATE
@@ -466,8 +466,8 @@ class TestOdesliBot:
             assert message.reply.called_with_text == reply_text
 
     async def test_replies_to_private_message_if_only_urls(self, bot):
-        """Send a reply to a private message without text if message consists of
-        song URLs only.
+        """Send a reply to a private message without text if message consists
+        of song URLs only.
         """
         url1 = 'https://www.deezer.com/track/1'
         url2 = 'https://soundcloud.com/2'
@@ -506,8 +506,8 @@ class TestOdesliBot:
             assert message.reply.called_with_text == reply_text
 
     async def test_replies_to_private_message_for_single_url(self, bot):
-        """Send a reply to a private message without an index number if incoming
-        message consists only of one URL.
+        """Send a reply to a private message without an index number if
+        incoming message consists only of one URL.
         """
         url = 'https://www.deezer.com/track/1'
         message = make_mock_message(text=url, chat_type=ChatType.PRIVATE)

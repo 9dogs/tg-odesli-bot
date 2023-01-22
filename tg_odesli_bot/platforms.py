@@ -14,7 +14,7 @@ class PlatformABC(ABC):
     key: str
     # RegEx to find platform's URL in a message text
     url_re: Union[str, Pattern]
-    # Human readable name which will appear in a bot's message
+    # Human-readable name which will appear in a bot message
     name: str
     # Order of platform's link in a bot's message
     order: int
@@ -24,6 +24,10 @@ class PlatformABC(ABC):
         super().__init_subclass__(**kwargs)
         cls.url_re = re.compile(cls.url_re)
         PLATFORMS[cls.key] = cls()
+
+    def postprocess_url(self, url: str) -> str:
+        """Postprocess the platform URL."""
+        return url
 
 
 class DeezerPlatform(PlatformABC):
@@ -105,6 +109,14 @@ class AppleMusicPlatform(PlatformABC):
     url_re = r'https?://([a-zA-Z\d-]+\.)*music\.apple\.com/.*?/album/[^\s,.]*'
     name = 'Apple Music'
     order = 6
+
+    def postprocess_url(self, url: str) -> str:
+        """Postprocess the platform URL.
+
+        Remove ".geo" prefix
+        (see https://github.com/9dogs/tg-odesli-bot/issues/39).
+        """
+        return url.replace('://geo.', '://')
 
 
 class TidalPlatform(PlatformABC):
