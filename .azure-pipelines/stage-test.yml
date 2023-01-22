@@ -11,8 +11,6 @@ stages:
         strategy:
           maxParallel: 2
           matrix:
-            Python_37:
-              python.version: '3.7'
             Python_38:
               python.version: '3.8'
             Python_39:
