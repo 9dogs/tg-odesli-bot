@@ -284,12 +284,11 @@ class TestOdesliBot:
         await bot.dispatcher.message_handlers.notify(message)
         assert message.reply.called_with_text == reply_text
 
-    @mark.parametrize('query', ['not a URL', ''])
-    async def test_not_replies_to_inline_query_if_no_url(
-        self, bot, odesli_api, monkeypatch, query
+    async def test_not_replies_to_inline_query_if_empty_query(
+        self, bot, odesli_api, monkeypatch
     ):
-        """Do not reply to an inline query if not URL in query."""
-        inline_query = make_mock_message(query, inline=True)
+        """Do not reply to an inline query if it's empty."""
+        inline_query = make_mock_message('', inline=True)
 
         async def mock_answer_inline_query(inline_query_id, results):
             """Mock an inline query answer."""
@@ -298,6 +297,39 @@ class TestOdesliBot:
         monkeypatch.setattr(
             bot.bot, 'answer_inline_query', mock_answer_inline_query
         )
+        await bot.dispatcher.inline_query_handlers.notify(inline_query)
+
+    async def test_search_for_song_for_inline_query(
+        self, bot, odesli_api, monkeypatch
+    ):
+        """Search for a song if inline query is not empty."""
+        inline_query = make_mock_message('title', inline=True)
+        reply_text = (
+            'Test Artist 1 - Test Title 1\n'
+            '<a href="https://www.test.com/d">Deezer</a> | '
+            '<a href="https://www.test.com/sc">SoundCloud</a> | '
+            '<a href="https://www.test.com/yn">Yandex Music</a> | '
+            '<a href="https://www.test.com/s">Spotify</a> | '
+            '<a href="https://www.test.com/ym">YouTube Music</a> | '
+            '<a href="https://www.test.com/y">YouTube</a> | '
+            '<a href="https://www.test.com/am">Apple Music</a> | '
+            '<a href="https://www.test.com/t">Tidal</a>'
+        )
+
+        async def mock_answer_inline_query(inline_query_id, results):
+            """Mock an inline query answer."""
+            assert len(results) == 1
+            result = results[0]
+            assert result.title == 'Test Title 1'
+            assert result.description == 'Test Artist 1'
+            assert result.input_message_content.message_text == reply_text
+            assert result.input_message_content.parse_mode == 'HTML'
+            assert result.thumb_url == 'http://thumb1'
+
+        monkeypatch.setattr(
+            bot.bot, 'answer_inline_query', mock_answer_inline_query
+        )
+
         await bot.dispatcher.inline_query_handlers.notify(inline_query)
 
     @mark.parametrize(

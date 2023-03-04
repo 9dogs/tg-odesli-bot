@@ -2,18 +2,17 @@
 import json
 import re
 import string
-from functools import partial
 from http import HTTPStatus
 from pathlib import Path
 from typing import Union
 from unittest import mock
+from unittest.mock import Mock
 
-import dotenv
 from aioresponses import aioresponses
 from pytest import fixture
 
 from tg_odesli_bot.bot import OdesliBot
-from tg_odesli_bot.config import TestConfig
+from tg_odesli_bot.settings import TestSettings
 
 #: Tests base dir
 BASE_DIR = Path(__file__).resolve().parent
@@ -141,6 +140,20 @@ TEST_RESPONSE_WITH_ONE_URL_TEMPLATE = {
         },
     },
 }
+#: Mock Spotify search response
+MOCK_SPOTIFY_SEARCH_RESPONSE = {
+    'tracks': {
+        'items': [
+            {
+                'id': 'test_id',
+                'name': 'test_name',
+                'artists': [{'name': 'test_artist'}],
+                'album': {'images': [{'url': 'http://thumb1'}]},
+                'external_urls': {'spotify': 'test_url'},
+            }
+        ]
+    }
+}
 
 
 def make_response(
@@ -159,24 +172,9 @@ def make_response(
 
 
 @fixture
-def test_dotenv():
-    """Load test .env file."""
-    load_test_dotenv = partial(
-        dotenv.load_dotenv,
-        dotenv_path=BASE_DIR / 'test_env',
-        verbose=True,
-        override=True,
-    )
-    with mock.patch(
-        'tg_odesli_bot.config.dotenv.load_dotenv', load_test_dotenv
-    ):
-        yield
-
-
-@fixture
 def test_config():
     """Test config fixture."""
-    config = TestConfig.load()
+    config = TestSettings.load()
     return config
 
 
@@ -190,6 +188,8 @@ async def bot(test_config):
     with mock.patch('aiogram.bot.api.check_token', mock_check_token):
         bot = OdesliBot(config=test_config)
         await bot.init()
+        bot.sp = Mock()
+        bot.sp.search.return_value = MOCK_SPOTIFY_SEARCH_RESPONSE
         yield bot
     await bot.stop()
 
