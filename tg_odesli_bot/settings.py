@@ -1,34 +1,40 @@
 """Bot configuration."""
-import logging.config
-import os
-from typing import Optional
+from __future__ import annotations
 
-import dotenv
+import logging.config
+
 import sentry_sdk
 import structlog
 from aiocache import caches
+from pydantic import BaseSettings
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from structlog_sentry import SentryProcessor
 
+RendererT = structlog.processors.JSONRenderer | structlog.dev.ConsoleRenderer
 
-class Config:
+
+class Settings(BaseSettings):
     """Bot configuration."""
 
     #: Debug
-    DEBUG = False
-    #: Telegram bot API key (required)
-    TG_API_TOKEN = ''
-    #: Odesli API URL (required)
-    ODESLI_API_URL = 'https://api.song.link/v1-alpha.1/links'
-    #: Odesli API key (optional)
-    ODESLI_API_KEY: Optional[str] = ''
-    #: Sentry DSN (optional)
-    SENTRY_DSN: Optional[str] = ''
+    DEBUG: bool = False
+    #: Telegram bot API key
+    TG_API_TOKEN: str
+    #: Odesli API URL
+    ODESLI_API_URL: str = 'https://api.song.link/v1-alpha.1/links'
+    #: Odesli API key
+    ODESLI_API_KEY: str | None = None
+    #: Sentry DSN
+    SENTRY_DSN: str | None = None
     #: Sentry environment
     SENTRY_ENVIRONMENT: str = 'production'
+    #: Spotify client ID
+    SPOTIFY_CLIENT_ID: str
+    #: Spotify client secret
+    SPOTIFY_CLIENT_SECRET: str
 
     #: Logging configuration
-    LOG_CONFIG = {
+    LOG_CONFIG: dict = {
         'version': 1,
         'disable_existing_loggers': False,
         'formatters': {
@@ -61,7 +67,7 @@ class Config:
         },
     }
     #: Log renderer
-    LOG_RENDERER = structlog.processors.JSONRenderer()
+    LOG_RENDERER: RendererT = structlog.processors.JSONRenderer()
 
     # Cache config
     caches.set_config(
@@ -76,7 +82,13 @@ class Config:
         }
     )
 
-    def init_logging(self):
+    class Config:
+        """Settings."""
+
+        env_file = '.env'
+        env_prefix = 'TG_ODESLI_BOT_'
+
+    def init_logging(self) -> None:
         """Init logging."""
         if self.DEBUG:  # pragma: no cover
             self.LOG_CONFIG['loggers']['tg_odesli_bot']['level'] = 'DEBUG'
@@ -105,23 +117,12 @@ class Config:
         )
 
     @classmethod
-    def load(cls, env_prefix: str = 'TG_ODESLI_BOT_'):
-        """Load config merging default variables and environment variables.
+    def load(cls) -> 'Settings':
+        """Load config and init logging.
 
-        :param env_prefix: prefix for environment variables
-        :returns: filled config object
+        :returns: a config object
         """
         config = cls()
-        # Load environment from .env file
-        dotenv.load_dotenv()
-        # Update config object with environment variables
-        for env_var_name, value in os.environ.items():
-            if env_var_name.startswith(env_prefix):
-                var_name = env_var_name[len(env_prefix) :]
-                # Do not override config vars in testing mode
-                if hasattr(config, 'TESTING') and hasattr(config, var_name):
-                    continue
-                setattr(config, var_name, value)
         if config.SENTRY_DSN:
             sentry_sdk.init(
                 dsn=config.SENTRY_DSN,
@@ -133,14 +134,23 @@ class Config:
         return config
 
 
-class TestConfig(Config):
+class TestSettings(Settings):
     """Testing configuration."""
 
     #: Testing mode
-    TESTING = True
+    TESTING: bool = True
     #: Debug
-    DEBUG = True
+    DEBUG: bool = True
     #: Telegram bot API key
-    TG_API_TOKEN = '1:test_token'
+    TG_API_TOKEN: str = '1:test_token'
     #: Sentry DSN
-    SENTRY_DSN = None
+    SENTRY_DSN: str | None = None
+    #: Spotify client ID
+    SPOTIFY_CLIENT_ID: str = 'test_id'
+    #: Spotify client secret
+    SPOTIFY_CLIENT_SECRET: str = 'test_secret'
+
+    class Config:
+        """Settings."""
+
+        env_file = None
