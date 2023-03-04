@@ -454,10 +454,10 @@ class OdesliBot:
                 inline_query.id, results=[article]
             )
             return
-        if not any(song_infos):
-            return
         articles = []
         for song_info in song_infos:
+            if not song_info:
+                continue
             # Use hashed concatenated IDs as a result id
             id_ = ''.join(song_info.ids)
             result_id = hashlib.md5(id_.encode()).hexdigest()
@@ -477,9 +477,14 @@ class OdesliBot:
                 inline_query.id, results=articles
             )
             return
-        # Search for song on Spotify if no results have been found
-        if not self.sp:
+        if (
+            self.extract_song_urls(query)
+            and not any(song_infos)
+            or not self.sp
+        ):
             return
+        # Search for song on Spotify if no results have been found
+        logger.info('Search Spotify', query=query)
         _fn = partial(self.sp.search, query, limit=self.SPOTIFY_SEARCH_LIMIT)
         search_results = await self._loop.run_in_executor(self.executor, _fn)
         tracks = search_results['tracks']['items']

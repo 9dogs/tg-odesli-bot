@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     caches.set_config(
         {
             'default': {
-                'ttl': 6000,  # 100 min
+                'ttl': 18000,  # 300 min
                 'cache': 'aiocache.SimpleMemoryCache',
                 'serializer': {
                     'class': 'aiocache.serializers.PickleSerializer'
