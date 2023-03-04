@@ -1,7 +1,18 @@
+[tool.poetry]
+name = "tg_odesli_bot"
+version = "0.3.0"
+description = "Telegram Bot to share music with Odesli (former Songlink) service."
+repository = "https://github.com/9dogs/tg-odesli-bot"
+homepage = "https://github.com/9dogs/tg-odesli-bot"
+authors = ["Mikhail Knyazev <hellishbot@gmail.com>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+
+
 [tool.black]
 line-length = 79
 skip-string-normalization = true
-target-version = ["py37", "py38", "py39", "py310"]
+target-version = ["py310", "py311"]
 
 [tool.isort]
 multi_line_output = 3
@@ -39,19 +50,8 @@ branch = true
 ignore = ["D202", "D203", "D205", "D213", "D400", "D415"]
 match = ".*\\.py"
 
-
-[tool.poetry]
-name = "tg_odesli_bot"
-version = "0.3.0"
-description = "Telegram Bot to share music with Odesli (former Songlink) service."
-repository = "https://github.com/9dogs/tg-odesli-bot"
-homepage = "https://github.com/9dogs/tg-odesli-bot"
-authors = ["Mikhail Knyazev <hellishbot@gmail.com>"]
-license = "GPL-3.0-only"
-readme = "README.md"
-
 [tool.poetry.dependencies]
-python = ">=3.8.1,<4"
+python = ">=3.10,<=3.12"
 aiocache = "^0.12.0"
 aiogram = "^2.0"
 marshmallow = "^3.17.0"
