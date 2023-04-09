@@ -36,6 +36,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 no_implicit_optional = true
 strict_equality = true
+plugins = "pydantic.mypy"
 
 [tool.coverage.run]
 branch = true
