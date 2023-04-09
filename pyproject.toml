@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tg_odesli_bot"
-version = "0.3.0"
+version = "0.3.1"
 description = "Telegram Bot to share music with Odesli (former Songlink) service."
 repository = "https://github.com/9dogs/tg-odesli-bot"
 homepage = "https://github.com/9dogs/tg-odesli-bot"
