@@ -33,10 +33,11 @@ class TestOdesliBot:
             'complex-world\n'
             '17 https://carbonbasedlifeforms.bandcamp.com/track/6equj5\n'
             '18 https://youtu.be/ugYB3VxpivU\n'
-            '19 https://spotify.link/a9uvoB7YQyb'
+            '19 https://spotify.link/a9uvoB7YQyb\n'
+            '20 https://open.spotify.com/intl-pt/track/1g6F8wj3IME7EiJ0L0tmzy?si=e3295c2850eb4a4f'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 19
+        assert len(urls) == 20
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -118,6 +119,11 @@ class TestOdesliBot:
         assert bandcamp_track.platform_key == 'bandcamp'
         assert bandcamp_track.url == (
             'https://carbonbasedlifeforms.bandcamp.com/track/6equj5'
+        )
+        spotify_intl_track = urls[19]
+        assert spotify_intl_track.platform_key == 'spotify'
+        assert spotify_intl_track.url == (
+            'https://open.spotify.com/intl-pt/track/1g6F8wj3IME7EiJ0L0tmzy'
         )
 
     @mark.parametrize(
