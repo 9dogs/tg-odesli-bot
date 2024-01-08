@@ -34,7 +34,8 @@ class TestOdesliBot:
             '17 https://carbonbasedlifeforms.bandcamp.com/track/6equj5\n'
             '18 https://youtu.be/ugYB3VxpivU\n'
             '19 https://spotify.link/a9uvoB7YQyb\n'
-            '20 https://open.spotify.com/intl-pt/track/1g6F8wj3IME7EiJ0L0tmzy?si=e3295c2850eb4a4f'
+            '20 https://open.spotify.com/intl-pt/track/1g6F8wj3IME7EiJ0L0tmzy'
+            '?si=e3295c2850eb4a4f'
         )
         urls = bot.extract_song_urls(text)
         assert len(urls) == 20
