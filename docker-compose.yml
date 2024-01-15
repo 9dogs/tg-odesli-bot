@@ -1,0 +1,10 @@
+services:
+  bot:
+    build:
+      context: .
+      target: builder
+      args:
+        poetry_args: "--with main,dev"
+    volumes:
+      - /opt/tg-odesli-bot/.venv
+      - .:/opt/tg-odesli-bot
