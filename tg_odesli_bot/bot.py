@@ -497,23 +497,23 @@ class OdesliBot:
             tasks.append(self.find_song_by_url(song_url))
         results = await asyncio.gather(*tasks, return_exceptions=True)
         seen_tracks = set()
-        for track, song_info in zip(tracks, results, strict=False):
-            if isinstance(song_info, Exception) or not song_info:
+        for track, song_info_ in zip(tracks, results, strict=False):
+            if isinstance(song_info_, Exception) or not song_info_:
                 continue
-            assert isinstance(song_info, SongInfo)  # mypy
-            title = f'{song_info.artist} - {song_info.title}'
+            assert isinstance(song_info_, SongInfo)  # mypy
+            title = f'{song_info_.artist} - {song_info_.title}'
             if title in seen_tracks:
                 continue
-            platform_urls, platform_names = self._format_urls(song_info)
+            platform_urls, platform_names = self._format_urls(song_info_)
             reply_text = f'{title}\n{platform_urls}'
             reply = InputTextMessageContent(reply_text, parse_mode='HTML')
             thumb_url = track['album']['images'][0]['url']
             article = InlineQueryResultArticle(
                 id=hashlib.md5(title.encode()).hexdigest(),
-                title=song_info.title,
+                title=song_info_.title,
                 thumb_url=thumb_url,
                 input_message_content=reply,
-                description=song_info.artist,
+                description=song_info_.artist,
             )
             articles.append(article)
             seen_tracks.add(title)
