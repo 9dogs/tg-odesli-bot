@@ -2,10 +2,8 @@
 **
 
 # Allowed
-!.azure-pipelines
 !tests
 !tg_odesli_bot
-!.deepsource.toml
 !.dockerignore
 !.editorconfig
 !.gitignore
@@ -15,4 +13,3 @@
 !poetry.lock
 !pyproject.toml
 !README.md
-!setup.cfg

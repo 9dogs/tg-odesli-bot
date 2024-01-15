@@ -26,7 +26,7 @@ from aiogram.types import (
 )
 from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
 from aiohttp import ClientConnectionError, TCPConnector
-from marshmallow import EXCLUDE, ValidationError
+from pydantic import ValidationError
 from spotipy import SpotifyClientCredentials
 
 from tg_odesli_bot.platforms import PLATFORMS, YouTubePlatform
@@ -171,7 +171,7 @@ class OdesliBot:
         # Event loop
         self._loop = loop or asyncio.get_event_loop()
         # Cache
-        self.cache: BaseCache = caches.get('default')  # type: ignore
+        self.cache: BaseCache = caches.get('default')
         # Telegram connection retries count
         self._tg_retries = 0
         # Spotipy client
@@ -337,7 +337,7 @@ class OdesliBot:
         tasks = [self.find_song_by_url(song_url) for song_url in song_urls]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         song_infos, exceptions = [], []
-        for item, song_url in zip(results, song_urls):
+        for item, song_url in zip(results, song_urls, strict=False):
             if isinstance(item, SongInfo):
                 song_infos.append(item)
             else:
@@ -459,7 +459,7 @@ class OdesliBot:
             if not song_info:
                 continue
             # Use hashed concatenated IDs as a result id
-            id_ = ''.join(song_info.ids)
+            id_ = ''.join(str(id_) for id_ in song_info.ids)
             result_id = hashlib.md5(id_.encode()).hexdigest()
             title = f'{song_info.artist} - {song_info.title}'
             platform_urls, platform_names = self._format_urls(song_info)
@@ -497,23 +497,23 @@ class OdesliBot:
             tasks.append(self.find_song_by_url(song_url))
         results = await asyncio.gather(*tasks, return_exceptions=True)
         seen_tracks = set()
-        for track, song_info in zip(tracks, results):
-            if isinstance(song_info, Exception) or not song_info:
+        for track, song_info_ in zip(tracks, results, strict=False):
+            if isinstance(song_info_, Exception) or not song_info_:
                 continue
-            assert isinstance(song_info, SongInfo)  # mypy
-            title = f'{song_info.artist} - {song_info.title}'
+            assert isinstance(song_info_, SongInfo)  # mypy
+            title = f'{song_info_.artist} - {song_info_.title}'
             if title in seen_tracks:
                 continue
-            platform_urls, platform_names = self._format_urls(song_info)
+            platform_urls, platform_names = self._format_urls(song_info_)
             reply_text = f'{title}\n{platform_urls}'
             reply = InputTextMessageContent(reply_text, parse_mode='HTML')
             thumb_url = track['album']['images'][0]['url']
             article = InlineQueryResultArticle(
                 id=hashlib.md5(title.encode()).hexdigest(),
-                title=song_info.title,
+                title=song_info_.title,
                 thumb_url=thumb_url,
                 input_message_content=reply,
-                description=song_info.artist,
+                description=song_info_.artist,
             )
             articles.append(article)
             seen_tracks.add(title)
@@ -661,17 +661,16 @@ class OdesliBot:
                         raise APIError(status_code=resp.status, message=text)
                     response = await resp.json()
                     logger.debug('Got Odesli API response', response=response)
-                    schema = ApiResponseSchema(unknown=EXCLUDE)
                     try:
-                        data = schema.load(response)
+                        data = ApiResponseSchema.model_validate(response)
                     except ValidationError as exc:
                         logger.error('Invalid response data', exc_info=exc)
                         raise APIError(
                             status_code=None, message='Invalid data'
-                        )
+                        ) from exc
                     else:
                         song_info = self.process_api_response(
-                            data, song_url.url
+                            data.model_dump(), song_url.url
                         )
                         # Cache processed data
                         await self.cache.set(normalized_url, song_info)

@@ -6,7 +6,7 @@ import logging.config
 import sentry_sdk
 import structlog
 from aiocache import caches
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from structlog_sentry import SentryProcessor
 
@@ -117,7 +117,7 @@ class Settings(BaseSettings):
         )
 
     @classmethod
-    def load(cls) -> 'Settings':
+    def load(cls) -> Settings:
         """Load config and init logging.
 
         :returns: a config object
