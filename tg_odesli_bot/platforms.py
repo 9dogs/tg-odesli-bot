@@ -127,6 +127,7 @@ class TidalPlatform(PlatformABC):
     key = 'tidal'
     url_re = (
         r'https?://(www\.|listen\.)?tidal\.com(/browse)?/(track|album)/\d+'
+        r'(/track/\d+)?'
     )
     name = 'Tidal'
     order = 7
