@@ -4,7 +4,6 @@ import re
 import string
 from http import HTTPStatus
 from pathlib import Path
-from typing import Union
 from unittest import mock
 from unittest.mock import Mock
 
@@ -157,7 +156,7 @@ MOCK_SPOTIFY_SEARCH_RESPONSE = {
 
 
 def make_response(
-    song_id: Union[str, int] = 1, template: dict = TEST_RESPONSE_TEMPLATE
+    song_id: str | int = 1, template: dict = TEST_RESPONSE_TEMPLATE
 ) -> dict:
     """Prepare Odesli API test response with given song id.
 

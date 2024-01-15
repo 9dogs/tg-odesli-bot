@@ -132,7 +132,7 @@ allow-star-arg-any = true
 ignore-variadic-names = true
 
 [tool.ruff.isort]
-known-first-party = ["src", "tests"]
+known-first-party = ["tg_odesli_bot", "tests"]
 
 [tool.ruff.format]
 quote-style = "single"

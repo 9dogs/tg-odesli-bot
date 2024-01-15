@@ -337,7 +337,7 @@ class OdesliBot:
         tasks = [self.find_song_by_url(song_url) for song_url in song_urls]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         song_infos, exceptions = [], []
-        for item, song_url in zip(results, song_urls):
+        for item, song_url in zip(results, song_urls, strict=False):
             if isinstance(item, SongInfo):
                 song_infos.append(item)
             else:
@@ -497,7 +497,7 @@ class OdesliBot:
             tasks.append(self.find_song_by_url(song_url))
         results = await asyncio.gather(*tasks, return_exceptions=True)
         seen_tracks = set()
-        for track, song_info in zip(tracks, results):
+        for track, song_info in zip(tracks, results, strict=False):
             if isinstance(song_info, Exception) or not song_info:
                 continue
             assert isinstance(song_info, SongInfo)  # mypy
@@ -668,7 +668,7 @@ class OdesliBot:
                         logger.error('Invalid response data', exc_info=exc)
                         raise APIError(
                             status_code=None, message='Invalid data'
-                        )
+                        ) from exc
                     else:
                         song_info = self.process_api_response(
                             data, song_url.url
