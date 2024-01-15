@@ -82,5 +82,5 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/tg-odesli-bot:${{ github.ref }} .
-          docker push ${{ secrets.DOCKER_USERNAME }}/tg-odesli-bot:${{ github.ref }}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/tg-odesli-bot:${{ github.ref_name }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/tg-odesli-bot:${{ github.ref_name }}
