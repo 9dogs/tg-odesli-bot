@@ -171,7 +171,7 @@ class OdesliBot:
         # Event loop
         self._loop = loop or asyncio.get_event_loop()
         # Cache
-        self.cache: BaseCache = caches.get('default')  # type: ignore
+        self.cache: BaseCache = caches.get('default')
         # Telegram connection retries count
         self._tg_retries = 0
         # Spotipy client
