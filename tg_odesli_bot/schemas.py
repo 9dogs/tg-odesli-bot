@@ -1,45 +1,39 @@
 """Odesli API schemas."""
-from marshmallow import EXCLUDE, Schema, fields
+from pydantic import BaseModel, Field
 
 
-class SongSchema(Schema):
+class SongSchema(BaseModel):
     """Platform song schema."""
 
     #: Identifier
-    id = fields.Str(required=True, data_key='id')
+    id: str | int
     #: Platform
-    platform = fields.Str(required=True, data_key='apiProvider')
+    platform: str = Field(..., validation_alias='apiProvider')
     #: Artist (can be missing)
-    artist = fields.Str(data_key='artistName', load_default='<Unknown>')
+    artist: str = Field('<Unknown>', validation_alias='artistName')
     #: Title
-    title = fields.Str(data_key='title')
+    title: str | None = None
     #: Thumbnail URL
-    thumbnail_url = fields.Str(data_key='thumbnailUrl')
+    thumbnail_url: str | None = Field(None, validation_alias='thumbnailUrl')
 
 
-class PlatformLink(Schema):
+class PlatformLink(BaseModel):
     """Platform link schema."""
 
     #: Identifier
-    id = fields.Str(required=True, data_key='entityUniqueId')
+    id: str | int = Field(..., validation_alias='entityUniqueId')
     #: URL
-    url = fields.URL(required=True)
+    url: str
 
 
-class ApiResponseSchema(Schema):
+class ApiResponseSchema(BaseModel):
     """Odesli API response schema."""
 
     #: Dictionary of entity_id -> SongSchema
-    songs = fields.Dict(
-        keys=fields.Str(),
-        values=fields.Nested(SongSchema, unknown=EXCLUDE),
-        data_key='entitiesByUniqueId',
-        required=True,
+    songs: dict[str, SongSchema] = Field(
+        ..., validation_alias='entitiesByUniqueId'
     )
     #: Dictionary of platform -> LinkSchema
-    links = fields.Dict(
-        keys=fields.Str(),
-        values=fields.Nested(PlatformLink, unknown=EXCLUDE),
-        data_key='linksByPlatform',
-        required=True,
+    links: dict[str, PlatformLink] = Field(
+        ..., validation_alias='linksByPlatform'
     )

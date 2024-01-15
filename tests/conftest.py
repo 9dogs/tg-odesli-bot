@@ -68,6 +68,12 @@ TEST_RESPONSE_TEMPLATE = {
             'artistName': 'Test Artist ${id}',
             'apiProvider': 'yandex',
         },
+        'BANDCAMP_SONG::B${id}': {
+            'id': '${id}',
+            'title': 'Test Title ${id}',
+            'artistName': 'Test Artist ${id}',
+            'apiProvider': 'bandcamp',
+        },
     },
     'linksByPlatform': {
         'deezer': {
@@ -118,6 +124,10 @@ TEST_RESPONSE_TEMPLATE = {
             'url': 'https://www.test.com/sc',
             'entityUniqueId': 'SOUNDCLOUD_SONG::SC${id}',
         },
+        'bandcamp': {
+            'url': 'https://www.test.com/b',
+            'entityUniqueId': 'BANDCAMP_SONG::B${id}',
+        },
     },
 }
 #: Odesli API test response template with one URL
@@ -167,6 +177,10 @@ def make_response(
     response_template = string.Template(json.dumps(template))
     response = response_template.substitute(id=str(song_id))
     payload = json.loads(response)
+    # Bandcamp song IDs are integers
+    _key = f'BANDCAMP_SONG::B{song_id}'
+    if _key in payload['entitiesByUniqueId']:
+        payload['entitiesByUniqueId'][_key]['id'] = int(song_id)
     return payload
 
 

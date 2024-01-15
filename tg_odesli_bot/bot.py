@@ -26,7 +26,7 @@ from aiogram.types import (
 )
 from aiogram.utils.exceptions import MessageCantBeDeleted, NetworkError
 from aiohttp import ClientConnectionError, TCPConnector
-from marshmallow import EXCLUDE, ValidationError
+from pydantic import ValidationError
 from spotipy import SpotifyClientCredentials
 
 from tg_odesli_bot.platforms import PLATFORMS, YouTubePlatform
@@ -459,7 +459,7 @@ class OdesliBot:
             if not song_info:
                 continue
             # Use hashed concatenated IDs as a result id
-            id_ = ''.join(song_info.ids)
+            id_ = ''.join(str(id_) for id_ in song_info.ids)
             result_id = hashlib.md5(id_.encode()).hexdigest()
             title = f'{song_info.artist} - {song_info.title}'
             platform_urls, platform_names = self._format_urls(song_info)
@@ -661,9 +661,8 @@ class OdesliBot:
                         raise APIError(status_code=resp.status, message=text)
                     response = await resp.json()
                     logger.debug('Got Odesli API response', response=response)
-                    schema = ApiResponseSchema(unknown=EXCLUDE)
                     try:
-                        data = schema.load(response)
+                        data = ApiResponseSchema.model_validate(response)
                     except ValidationError as exc:
                         logger.error('Invalid response data', exc_info=exc)
                         raise APIError(
@@ -671,7 +670,7 @@ class OdesliBot:
                         ) from exc
                     else:
                         song_info = self.process_api_response(
-                            data, song_url.url
+                            data.model_dump(), song_url.url
                         )
                         # Cache processed data
                         await self.cache.set(normalized_url, song_info)
