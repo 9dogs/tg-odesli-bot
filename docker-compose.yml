@@ -5,6 +5,7 @@ services:
       target: builder
       args:
         poetry_args: "--with main,dev"
+    command: ["/opt/tg-odesli-bot/.venv/bin/python", "-m", "tg_odesli_bot.bot"]
     volumes:
       - /opt/tg-odesli-bot/.venv
       - .:/opt/tg-odesli-bot
