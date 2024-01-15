@@ -2,28 +2,33 @@
 	fmt \
 	lint \
 	test \
+	build-dev \
 	build
 
 all:
 	@echo "fmt                 Format code."
 	@echo "lint                Lint code."
 	@echo "test                Test code."
+	@echo "build-dev           Build Docker dev image."
 	@echo "build               Build Docker image."
 
 FILES = tg_odesli_bot tests
 IMAGE_NAME = 9dogs/tg-odesli-bot:latest
 
 fmt:
-	poetry run black $(FILES)
-	poetry run isort $(FILES)
+	poetry run ruff format $(FILES)
+	poetry run ruff check --fix-only -e $(FILES)
 
 lint:
-	poetry run black --check $(FILES)
-	poetry run isort --check-only $(FILES)
-	poetry run flake8 $(FILES)
-	poetry run pydocstyle $(FILES)
+	@if ! poetry run ruff format --check $(FILES); then \
+		echo "Run 'make fmt' to fix"; \
+		false; \
+	fi
+	poetry run ruff check $(FILES)
 	poetry run mypy $(FILES)
 
+build-dev:
+	docker build -t $(IMAGE_NAME) --target=builder --build-arg poetry_args="--with main,dev" .
 build:
 	docker build -t $(IMAGE_NAME) .
 

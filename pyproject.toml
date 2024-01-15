@@ -8,19 +8,38 @@ authors = ["Mikhail Knyazev <hellishbot@gmail.com>"]
 license = "GPL-3.0-only"
 readme = "README.md"
 
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+aiocache = "^0.12.0"
+aiogram = "<3"
+marshmallow = "^3.19.0"
+python-dotenv = "^1.0.0"
+sentry-sdk = "^1"
+structlog = "^23.1.0"
+structlog-sentry = "^2.0.0"
+aiohttp = "^3.8.0"
+ujson = "^5.4.0"
+spotipy = "^2.22.1"
+pydantic = "^2.0"
+pydantic-settings = "^2"
 
-[tool.black]
-line-length = 79
-skip-string-normalization = true
-target-version = ["py310", "py311"]
+[tool.poetry.group.dev]
+optional = true
 
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-default_section = "THIRDPARTY"
-known_first_party = "tg_odesli_bot,tests"
+[tool.poetry.group.dev.dependencies]
+aioresponses = "^0.7.0"
+ruff = ">0.1"
+coverage = "^7.0"
+mypy = "^1.0"
+pytest = "^7.0"
+pytest-cov = "^4.0.0"
+pytest-aiohttp = "^1.0"
+pytest-timeout = "^2.0.0"
+asynctest = "^0.13.0"
+toml = "^0.10.2"
+
+[tool.poetry.scripts]
+tg-odesli-bot = "tg_odesli_bot.bot:main"
 
 [tool.pytest.ini_options]
 junit_family = "xunit2"
@@ -51,41 +70,72 @@ branch = true
 ignore = ["D202", "D203", "D205", "D213", "D400", "D415"]
 match = ".*\\.py"
 
-[tool.poetry.dependencies]
-python = ">=3.10,<=3.12"
-aiocache = "^0.12.0"
-aiogram = "^2.0"
-marshmallow = "^3.17.0"
-python-dotenv = "^1.0.0"
-sentry-sdk = "^1.0.0"
-structlog = "^23.1.0"
-structlog-sentry = "^2.0.0"
-aiohttp = "^3.8.0"
-ujson = "^5.4.0"
-spotipy = "^2.22.1"
-pydantic = "^1.10.5"
+[tool.ruff]
+select = [
+    "F",  # Pyflakes
+    "E",  # pycodestyle
+    "W",  # pycodestyle
+    "I",  # isort
+    "N",  # pep8-naming
+    "D",  # pydocstyle
+    "UP",  # pyupgrade
+    "BLE",  # flake8-blind-except
+    "B",  # flake8-bugbear
+    "A",  # flake8-builtins
+    "C4", # flake8-comprehensions
+    "T10",  # flake8-debugger
+    "PIE",  # flake8-pie
+    "T20",  # flake8-print
+    "Q",  # flake8-quotes
+    "SIM",  # flake8-simplify
+    "PTH",  # flake8-use-pathlib
+    "PL",  # Pylint
+]
+dummy-variable-rgx = "^__$"
+line-length = 79
+target-version = "py310"
+ignore = [
+    # Missing type annotation for self in a class method
+    "ANN101",
+    # Missing type annotation for a class attribute
+    "ANN102",
+    # Class attribute {name} is shadowing a python builtin (e.g., `id`)
+    "A003",
+    # Do not perform function call in argument defaults
+    "B008",
+    # 1 blank line required before class docstring
+    "D203",
+    # 1 blank line required between summary line and description
+    "D205",
+    # Multi-line docstring summary should start at the second line
+    "D213",
+    # Magic value used in comparison, consider replacing {value} with a constant variable
+    "PLR2004",
+    # Too many arguments to function call
+    "PLR0913",
+    # Too many branches
+    "PLR0912",
+    # Too many statements
+    "PLR0915",
+]
+src = ["src", "tests"]
+output-format = "grouped"
 
-[tool.poetry.dev-dependencies]
-aioresponses = "^0.7.0"
-black = "^23.0"
-isort = "^5.10.0"
-flake8 = "^6.0.0"
-flake8-bugbear = "^23.0.0"
-flake8-comprehensions = "^3.2.2"
-flake8-debugger = "^4.0.0"
-flake8-print = "^5.0.0"
-flake8-quotes = "^3.2.0"
-flake8-todo = "^0.7"
-pep8-naming = "^0.13.0"
-pydocstyle = "^6.0.0"
-coverage = "^7.0"
-mypy = "^1.0"
-pytest = "^7.0"
-pytest-cov = "^4.0.0"
-pytest-aiohttp = "^1.0"
-pytest-timeout = "^2.0.0"
-asynctest = "^0.13.0"
-toml = "^0.10.2"
+[tool.ruff.flake8-quotes]
+inline-quotes = "single"
+docstring-quotes = "double"
 
-[tool.poetry.scripts]
-tg-odesli-bot = "tg_odesli_bot.bot:main"
+[tool.ruff.flake8-annotations]
+allow-star-arg-any = true
+
+[tool.ruff.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[tool.ruff.isort]
+known-first-party = ["src", "tests"]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
