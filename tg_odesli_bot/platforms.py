@@ -59,7 +59,7 @@ class YandexMusicPlatform(PlatformABC):
 
     key = 'yandex'
     url_re = (
-        r'https?://([a-zA-Z\d-]+\.)*music\.yandex\.(com|ru|by)/(album|track)/'
+        r'https?://([a-zA-Z\d-]+\.)*music\.yandex\.(com|ru|by|kz)/(album|track)/'
         r'[^\s.,]*'
     )
     name = 'Yandex Music'
