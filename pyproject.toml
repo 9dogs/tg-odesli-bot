@@ -42,6 +42,7 @@ tg-odesli-bot = "tg_odesli_bot.bot:main"
 
 [tool.pytest.ini_options]
 junit_family = "xunit2"
+asyncio_default_fixture_loop_scope = "function"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 
