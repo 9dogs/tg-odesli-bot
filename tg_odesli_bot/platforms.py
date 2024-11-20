@@ -1,4 +1,5 @@
 """Supported platforms."""
+
 import re
 from abc import ABC
 from re import Pattern

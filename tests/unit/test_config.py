@@ -1,4 +1,5 @@
 """Tests for configuration."""
+
 from tg_odesli_bot.settings import TestSettings
 
 
