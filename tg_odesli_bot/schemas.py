@@ -1,4 +1,5 @@
 """Odesli API schemas."""
+
 from pydantic import BaseModel, Field
 
 

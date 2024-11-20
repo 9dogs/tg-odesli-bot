@@ -1,4 +1,5 @@
 """Unit tests for Odesli bot."""
+
 from pytest import mark
 
 from tg_odesli_bot.bot import OdesliBot, SongInfo

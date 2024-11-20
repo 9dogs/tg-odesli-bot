@@ -1,4 +1,5 @@
 """Integration tests for Odesli bot."""
+
 import asyncio
 import re
 from http import HTTPStatus

@@ -1,10 +1,10 @@
-FROM python:3.11.7-bookworm AS builder
+FROM python:3.11.10-bookworm AS builder
 
 LABEL maintainer="Mikhail.Knyazev@phystech.edu"
 LABEL description="Telegram Bot to share music with Odesli (former Songlink) service."
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 ARG poetry_args='--without dev'
 
@@ -19,10 +19,10 @@ WORKDIR /opt/tg-odesli-bot
 RUN poetry install --no-interaction --no-ansi $poetry_args
 # Copy project files
 COPY . /opt/tg-odesli-bot
-ENV PYTHONPATH "${PYTHONPATH}:/opt/tg-odesli-bot"
+ENV PYTHONPATH="/opt/tg-odesli-bot"
 
 
-FROM python:3.11.7-slim-bookworm
+FROM python:3.11.10-slim-bookworm
 
 ARG UID=997
 ARG GID=997
@@ -34,6 +34,5 @@ USER bot
 # Copy project files
 COPY --from=builder --chown=bot:bot /opt/tg-odesli-bot /opt/tg-odesli-bot
 WORKDIR /opt/tg-odesli-bot
-ENV PYTHONPATH "${PYTHONPATH}:/opt/tg-odesli-bot"
 
 CMD ["/opt/tg-odesli-bot/.venv/bin/python", "-m", "tg_odesli_bot.bot"]
