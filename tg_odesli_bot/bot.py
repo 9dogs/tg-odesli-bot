@@ -253,6 +253,23 @@ class OdesliBot:
                 message = message.replace(url, f'[{index}]')
         return message
 
+    async def _maybe_resolve_redirect(self, url: str) -> str:
+        """Resolve a redirect if the URL is a short link.
+
+        For now, resolves only "*.page.link" Firebase dynamic links.
+
+        :param url: URL
+        :returns: resolved URL
+        """
+        parsed = urlparse(url)
+        if parsed.netloc.endswith('.page.link'):
+            async with self.session.head(url, allow_redirects=True) as resp:
+                self.logger.debug(
+                    'Resolved redirect', url=url, resolved=str(resp.url)
+                )
+                return str(resp.url)
+        return url
+
     def extract_song_urls(
         self, text: str, skip_youtube: bool = False
     ) -> list[SongUrl]:
@@ -321,17 +338,17 @@ class OdesliBot:
         return merged_song_infos
 
     async def _find_songs(
-        self, text: str, group_message: bool
+        self, text: str, is_group_message: bool
     ) -> tuple[SongInfo, ...]:
         """Find song info based on given text.
 
         :param text: message text
-        :param group_message: text is from a group message
+        :param is_group_message: text is from a group message
         :returns: tuple of SongInfo instances
         :raise SongNotFoundError: if Odesli couldn't find any song
         """
         # Extract song URLs from the message
-        song_urls = self.extract_song_urls(text, skip_youtube=group_message)
+        song_urls = self.extract_song_urls(text, skip_youtube=is_group_message)
         if not song_urls:
             return ()
         # Get songs information by its URLs via Odesli service API
@@ -441,7 +458,7 @@ class OdesliBot:
             await self.bot.answer_inline_query(inline_query.id, results=[])
             return
         try:
-            song_infos = await self._find_songs(query, group_message=False)
+            song_infos = await self._find_songs(query, is_group_message=False)
         except SongNotFoundError:
             reply = InputTextMessageContent(
                 "Sorry, Odesli couldn't find that song", parse_mode='HTML'
@@ -536,7 +553,7 @@ class OdesliBot:
         )
         try:
             song_infos = await self._find_songs(
-                message.text, group_message=group_message
+                message.text, is_group_message=group_message
             )
         except SongNotFoundError:
             await message.reply(
@@ -611,8 +628,9 @@ class OdesliBot:
         :raises APIError: if Odesli API returned an error
         """
         logger = self.logger_var.get()
-        # Normalize URL to use as a consistent cache key
-        normalized_url = self.normalize_url(song_url.url)
+        # Resolve and normalize URL to use as a consistent cache key
+        resolved_url = await self._maybe_resolve_redirect(song_url.url)
+        normalized_url = self.normalize_url(resolved_url)
         params = {'url': normalized_url}
         if self.config.ODESLI_API_KEY:
             params['api_key'] = self.config.ODESLI_API_KEY
