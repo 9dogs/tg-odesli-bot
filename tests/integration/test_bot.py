@@ -90,7 +90,7 @@ class TestOdesliBot:
         """
         supported_platforms = (
             'Deezer | SoundCloud | Yandex Music | Spotify | YouTube Music '
-            '| YouTube | Apple Music | Tidal | Bandcamp'
+            '| YouTube | Apple Music | Tidal | Amazon Music | Bandcamp'
         )
         message = make_mock_message(text=text)
         reply_text = bot.WELCOME_MSG_TEMPLATE.format(
@@ -117,6 +117,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
@@ -168,6 +169,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
@@ -197,6 +199,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
 
@@ -210,7 +213,7 @@ class TestOdesliBot:
             assert result.thumb_url == 'http://thumb1'
             assert result.description == (
                 'Deezer | SoundCloud | Yandex Music | Spotify | YouTube Music '
-                '| YouTube | Apple Music | Tidal | Bandcamp'
+                '| YouTube | Apple Music | Tidal | Amazon Music | Bandcamp'
             )
 
         monkeypatch.setattr(
@@ -235,6 +238,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
 
@@ -248,7 +252,7 @@ class TestOdesliBot:
             assert result.thumb_url == 'http://thumb1'
             assert result.description == (
                 'Deezer | SoundCloud | Yandex Music | Spotify | YouTube Music '
-                '| YouTube | Apple Music | Tidal | Bandcamp'
+                '| YouTube | Apple Music | Tidal | Amazon Music | Bandcamp'
             )
 
         monkeypatch.setattr(
@@ -284,6 +288,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
@@ -319,6 +324,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
 
@@ -446,6 +452,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
@@ -469,6 +476,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         await bot.dispatcher.message_handlers.notify(message)
@@ -494,6 +502,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         api_url = f'{bot.config.ODESLI_API_URL}?url={url}'
@@ -525,6 +534,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>\n'
             '2. Test Artist 2 - Test Title 2\n'
             '<a href="https://www.test.com/d">Deezer</a> | '
@@ -535,6 +545,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         api_url1 = f'{bot.config.ODESLI_API_URL}?url={url1}'
@@ -564,6 +575,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         api_url = f'{bot.config.ODESLI_API_URL}?url={url}'
@@ -611,6 +623,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         api_url1 = f'{bot.config.ODESLI_API_URL}?url={url1}'
@@ -646,6 +659,7 @@ class TestOdesliBot:
             '<a href="https://www.test.com/y">YouTube</a> | '
             '<a href="https://www.test.com/am">Apple Music</a> | '
             '<a href="https://www.test.com/t">Tidal</a> | '
+            '<a href="https://www.test.com/a">Amazon Music</a> | '
             '<a href="https://www.test.com/b">Bandcamp</a>'
         )
         url1 = f'{bot.config.ODESLI_API_URL}?url=https://deezer.com/track/1'
