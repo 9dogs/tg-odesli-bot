@@ -135,10 +135,19 @@ class TidalPlatform(PlatformABC):
     order = 7
 
 
+class AmazonMusicPlatform(PlatformABC):
+    """Amazon Music platform."""
+
+    key = 'amazonMusic'
+    url_re = r'https?://music\.amazon\.[a-z.]+/(albums|tracks)/[^\s.,]*'
+    name = 'Amazon Music'
+    order = 8
+
+
 class BandcampPlatform(PlatformABC):
     """Bandcamp platform."""
 
     key = 'bandcamp'
     url_re = r'https?://[^\s.,]*\.bandcamp\.com/(album|track)/[^\s.,]*'
     name = 'Bandcamp'
-    order = 8
+    order = 9

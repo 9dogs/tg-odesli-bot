@@ -51,12 +51,6 @@ TEST_RESPONSE_TEMPLATE = {
             'artistName': 'Test Artist ${id}',
             'apiProvider': 'tidal',
         },
-        'NAPSTER_SONG::N${id}': {
-            'id': 'N${id}',
-            'title': 'Test Title ${id}',
-            'artistName': 'Test Artist ${id}',
-            'apiProvider': 'napster',
-        },
         'SOUNDCLOUD_SONG::SC${id}': {
             'id': 'SC${id}',
             'title': 'Test Title ${id}',
@@ -104,10 +98,6 @@ TEST_RESPONSE_TEMPLATE = {
         'tidal': {
             'url': 'https://www.test.com/t',
             'entityUniqueId': 'TIDAL_SONG::T${id}',
-        },
-        'napster': {
-            'url': 'https://www.test.com/n',
-            'entityUniqueId': 'NAPSTER_SONG::N${id}',
         },
         'yandex': {
             'url': 'https://www.test.com/yn',

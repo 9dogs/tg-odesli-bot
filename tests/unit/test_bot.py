@@ -36,10 +36,12 @@ class TestOdesliBot:
             '19 https://spotify.link/a9uvoB7YQyb\n'
             '20 https://open.spotify.com/intl-pt/track/1g6F8wj3IME7EiJ0L0tmzy'
             '?si=e3295c2850eb4a4f\n'
-            '21 https://link.deezer.com/s/3217coiFkem5ofFuAuqzP'
+            '21 https://link.deezer.com/s/3217coiFkem5ofFuAuqzP\n'
+            '22 https://music.amazon.com/albums/B071771D4J?trackAsin=B0723D5XRV\n'
+            '23 https://music.amazon.co.uk/tracks/B00IL4J4B8'
         )
         urls = bot.extract_song_urls(text)
-        assert len(urls) == 21
+        assert len(urls) == 23
         deezer_url = urls[0]
         assert deezer_url.platform_key == 'deezer'
         assert deezer_url.url == 'https://www.deezer.com/track/568497412'
@@ -122,13 +124,21 @@ class TestOdesliBot:
         tidal = urls[18]
         assert tidal.platform_key == 'tidal'
         assert tidal.url == 'https://tidal.com/track/139494756'
-        bandcamp_album = urls[19]
+        amazon_track = urls[19]
+        assert amazon_track.platform_key == 'amazonMusic'
+        assert amazon_track.url == (
+            'https://music.amazon.com/albums/B071771D4J?trackAsin=B0723D5XRV'
+        )
+        amazon_uk = urls[20]
+        assert amazon_uk.platform_key == 'amazonMusic'
+        assert amazon_uk.url == 'https://music.amazon.co.uk/tracks/B00IL4J4B8'
+        bandcamp_album = urls[21]
         assert bandcamp_album.platform_key == 'bandcamp'
         assert bandcamp_album.url == (
             'https://gunnarspardel.bandcamp.com/album/simplicity-in-a-'
             'complex-world'
         )
-        bandcamp_track = urls[20]
+        bandcamp_track = urls[22]
         assert bandcamp_track.platform_key == 'bandcamp'
         assert bandcamp_track.url == (
             'https://carbonbasedlifeforms.bandcamp.com/track/6equj5'
