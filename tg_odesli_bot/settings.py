@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     #: Telegram bot API key
     TG_API_TOKEN: str
     #: Odesli API URL
-    ODESLI_API_URL: str = 'https://api.song.link/v1-alpha.1/links'
+    ODESLI_API_URL: str = 'https://api.odesli.co/v1-alpha.1/links'
     #: Odesli API key
     ODESLI_API_KEY: str | None = None
     #: Sentry DSN
