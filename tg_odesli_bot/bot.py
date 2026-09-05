@@ -633,7 +633,7 @@ class OdesliBot:
         normalized_url = self.normalize_url(resolved_url)
         params = {'url': normalized_url}
         if self.config.ODESLI_API_KEY:
-            params['api_key'] = self.config.ODESLI_API_KEY
+            params['key'] = self.config.ODESLI_API_KEY
         logger = logger.bind(url=self.config.ODESLI_API_URL, params=params)
         _retries = 0
         while _retries < self.API_MAX_RETRIES:
